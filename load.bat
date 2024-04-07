@@ -1,0 +1,1 @@
+lua %~dp0start.lua
