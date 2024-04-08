@@ -1,0 +1,3 @@
+local wconsole = {}
+
+return wconsole
