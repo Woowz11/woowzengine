@@ -1,3 +1,5 @@
+local base = require("wbase")
+base.Settings.Install()
 local console = require("wconsole")
 console.Install()
 
@@ -6,7 +8,6 @@ game.start()
 
 
 local update = require("update")
-local base = require("wbase")
 --[[async(function(to)
     while base.Time <= to do
         sleep(1)

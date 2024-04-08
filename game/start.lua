@@ -4,8 +4,7 @@ local window = require("wwindow")
 local game = {}
 
 game.start = function()
-    local win = window.CreateWindow("hi",500,500)
-    --window.SetTitle(win,"NOOOOOO!!!!!")
+    local win = window.CreateWindow()
 end
 
 return game

@@ -5,22 +5,33 @@ local wbase = {}
 wbase.Time = 0
 wbase.StartDate = sys.Datetime()
 
+wbase.PathToGame = ""
+
 wbase.Settings = {
-    Console = true,
+    Console = false,
     Game = {
         Name = "New Game",
         Version = "0.0.0",
         Author = "Unknown"
     },
-    Version = "0"
+    Version = "0",
+
+    Install = function()
+        if wbase.Programms.RunnedCount("woowzengine")>1 then sys.exit() end
+        wbase.PathToGame = wbase.String.Replace(sys.File("woowzengine.exe").fullpath, "woowzengine.exe","")
+
+        local info = wbase.Json.Decode(wbase.File.Read("info.json"))
+        wbase.Settings.Version = info.Version
+
+        local settings = wbase.Json.Decode(wbase.File.Read("game/settings.json"))
+        wbase.Settings.Console = settings.Console
+
+        local game = wbase.Json.Decode(wbase.File.Read("game/gameinfo.json"))
+        wbase.Settings.Game.Name = game.GameName
+        wbase.Settings.Game.Version = game.GameVersion
+        wbase.Settings.Game.Author = game.Author
+    end
 }
-
-wbase.Sleep = function(n)
-    --local t0 = sys.clock()
-    --while sys.clock() - t0 <= n do end
-    sys.cmd("sleep "..tonumber(n))
-
-end
 
 wbase.GetDate = function(what_get)
     local date = sys.Datetime()
@@ -74,26 +85,83 @@ wbase.String = {
         end
         return result
     end,
-    ToTable = function(str)
-        return json.decode(str)
+    --Делает символы большими
+    Upper = function(str)
+        return string.upper(str)
+    end,
+    --Делает символы маленькими
+    Lower = function(str)
+        return string.lower(str)
+    end,
+    --Делает символы маленькими
+    Replace = function(str,that,tothat)
+        return str:gsub(that,tothat)
+    end,
+    --Ищет в строке строку
+    Find = function(str,whatfind)
+        return select(2, string.gsub(str, whatfind, ""))
+    end,
+    --Превращает строку в таблицу разделяя её на части
+    Split = function(str, pattern)
+        local Table = {}
+        local fpat = "(.-)" .. pattern
+        local last_end = 1
+        local s, e, cap = str:find(fpat, 1)
+        while s do
+            if s ~= 1 or cap ~= "" then
+            table.insert(Table,cap)
+            end
+            last_end = e+1
+            s, e, cap = str:find(fpat, last_end)
+        end
+        if last_end <= #str then
+            cap = str:sub(last_end)
+            table.insert(Table, cap)
+        end
+        return Table
     end
+}
 
+wbase.Programms = {
+    --Получить кол-во запущеных приложений
+    RunnedCount = function(programmname)
+        return wbase.String.Find(wbase.CMD('tasklist /FI "IMAGENAME eq woowzengine.exe"'),programmname..".exe")
+    end
 }
 
 wbase.Json = {
     --Конвертировать в json
-    ToJson = function(tab)
+    Encode = function(tab)
         return json.encode(tab)
     end,
     --Json конвертировать в таблицу
-    ToTable = function(str)
+    Decode = function(str)
         return json.decode(str)
     end
 }
 
---Получить содержимое файла
-wbase.ReadFile = function(path)
-    
+wbase.File = {
+    --Получить содержимое файла
+    Read = function(path)
+        path = wbase.PathToGame..path
+        local file = sys.File(path)
+        file:open("read")
+        local result = file:read()
+        file:close()
+        return tostring(result)
+    end
+}
+
+--Запустить команду cmd и получить результат
+wbase.CMD = function(cmd, raw)
+    local f = assert(io.popen(cmd, 'r'))
+    local s = assert(f:read('*a'))
+    f:close()
+    if raw then return s end
+    s = string.gsub(s, '^%s+', '')
+    s = string.gsub(s, '%s+$', '')
+    s = string.gsub(s, '[\n\r]+', ' ')
+    return s
 end
 
 return wbase
