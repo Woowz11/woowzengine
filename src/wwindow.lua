@@ -4,6 +4,9 @@ local console = require("wconsole")
 
 local wwindow = {}
 
+--Окна
+wwindow.Windows = {}
+
 --Главное окно
 wwindow.MainWindow = nil
 
@@ -28,7 +31,7 @@ wwindow.CreateWindow = function(title, width, height)
     local win = ui.Window(title,width,height)
     console.PrintLog("WINDOW","Window ["..title.."] created!")
     if wwindow.MainWindow == nil then wwindow.SetMainWindow(win)  end
-    ui.run(win):wait()
+    table.insert(wwindow.Windows,win)
 end
 
 return wwindow
