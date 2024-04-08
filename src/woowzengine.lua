@@ -1,5 +1,5 @@
-local log = require("logger")
-log.StartLog()
+local console = require("wconsole")
+console.Install()
 
 local game = require("start")
 game.start()

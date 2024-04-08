@@ -1,6 +1,6 @@
 local ui = require("ui")
 local base = require("wbase")
-local log = require("logger")
+local console = require("wconsole")
 
 local wwindow = {}
 
@@ -14,7 +14,7 @@ wwindow.MainWindow = nil
 wwindow.SetMainWindow = function(win)
     wwindow.MainWindow = win
     function win:onClose()
-        log.EndLog()
+        console.PrintLog("WINDOW","Main window closed...")
     end
 end
 
