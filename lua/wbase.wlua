@@ -10,11 +10,11 @@ wbase.PathToGame = ""
 wbase.Settings = {
     Console = false,
     Game = {
-        Name = "New Game",
-        Version = "0.0.0",
-        Author = "Unknown"
+        Name = "LOADING ERROR (Game Name)",
+        Version = "LOADING ERROR (Game Version)",
+        Author = "LOADING ERROR (Author)"
     },
-    Version = "0",
+    Version = "LOADING ERROR (Version)",
 
     Install = function()
         if wbase.Programms.RunnedCount("woowzengine")>1 then sys.exit() end

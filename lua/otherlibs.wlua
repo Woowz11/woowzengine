@@ -21,4 +21,14 @@ otherlibs.Install = function()
 end
 
 return otherlibs]]
-return false
+
+local console = require("console")
+
+local test = {}
+
+test.Test = function()
+    console.writecolor("red","test".."\n")
+    --os.execute("msg %username% Your message here")
+end
+
+return test

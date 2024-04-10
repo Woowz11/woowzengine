@@ -1,6 +1,6 @@
 local console = nil
 local base = require("wbase")
-local ui = require("ui")
+--local ui = require("ui")
 
 local wconsole = {}
 
@@ -33,7 +33,7 @@ wconsole.PrintLog = function(base_,text,color,presymbol)
 end
 
 wconsole.DebugMessage = function(text)
-    ui.msg(text,"Debug Message")
+    --ui.msg(text,"Debug Message")
 end
 
 wconsole.Print = function(text)

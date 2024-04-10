@@ -29,18 +29,30 @@ local lanes = require("lanes").configure({
     verbose_errors = true
 })
 
-local update = lanes.require("update")
---local test = lanes.require("ui")
-local thread = lanes.gen("*",function()
+local test = 0
+
+--local update = lanes.require("update")
+--local test_ = lanes.require("update")
+--local c_ = require("console")
+--local console = lanes.require("wconsole")
+
+--lanes.require("json")
+--lanes.require("wbase")
+--lanes.require("console")
+--lanes.require("sys")
+
+local test_ = lanes.require("wconsole")
+--lanes.require("update")
+
+local thread = lanes.gen("*",{package = {}, required = {"update","test","wconsole","wbase","json"}, priority = max_prio},function()
     while true do
-        update.Update()
-        --test.msg("test")
+        --test_.Test()
+        test_.Error("test")
     end
 end)()
 
 
-local test = 0
-while (test < 300) do
+while (test < 500) do
     test = test + 1
     console.Print("test "..test)
 end

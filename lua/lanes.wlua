@@ -333,6 +333,11 @@ lanes.configure = function( settings_)
         local priority, globals, package, required, gc_cb = opt.priority, opt.globals, opt.package or package, opt.required, opt.gc_cb
         return function( ...)
             -- must pass functions args last else they will be truncated to the first one
+			--if required ~= nil then
+			--for _, test in pairs(required) do
+			--	os.execute("msg %username% "..test)
+			--end
+			--end
             return core_lane_new( func, libs, priority, globals, package, required, gc_cb, ...)
         end
     end -- gen()
