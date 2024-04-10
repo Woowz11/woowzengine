@@ -1,0 +1,5 @@
+﻿  Woowzengine.cpp
+F:\VS\VC\Tools\MSVC\14.39.33519\include\string_view(12): warning STL4038: The contents of <string_view> are available only with C++17 or later.
+F:\woowzengine\woowzengine\Woowzengine.cpp(12,23): warning C4129: w: неизвестная escape-последовательность
+F:\woowzengine\woowzengine\Woowzengine.cpp(12,23): warning C4129: e: неизвестная escape-последовательность
+  woowzengine.vcxproj -> F:\woowzengine\woowzengine\x64\Debug\woowzengine.exe
