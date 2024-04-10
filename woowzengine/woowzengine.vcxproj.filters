@@ -13,10 +13,45 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Исходные файлы\BaseComponents">
+      <UniqueIdentifier>{4a2ccc3f-b932-48f1-a9aa-11654f2d73b1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Woowzengine.cpp">
+    <ClCompile Include="Source.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="OpenGame.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="Base.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="Console.cpp">
+      <Filter>Исходные файлы\BaseComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="Files.cpp">
+      <Filter>Исходные файлы\BaseComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="Easyer.cpp">
+      <Filter>Исходные файлы\BaseComponents</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="OpenGame.h">
+      <Filter>Исходные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="Base.h">
+      <Filter>Исходные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="Console.h">
+      <Filter>Исходные файлы\BaseComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="Files.h">
+      <Filter>Исходные файлы\BaseComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="Easyer.h">
+      <Filter>Исходные файлы\BaseComponents</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
