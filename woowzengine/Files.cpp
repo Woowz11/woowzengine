@@ -2,7 +2,7 @@
 #include <sys/stat.h>
 #include <direct.h>
 #include <filesystem>
-#include <fstream> 
+#include <fstream>
 #include "Files.h"
 #include "Easyer.h"
 #include "Base.h"
@@ -52,12 +52,22 @@ void AddFileInfo(string Dir, string Info) {
 	}
 }
 
+/*Переминовать файл*/
+void RenameFile(string Dir, string DirAndNewName) {
+	if (HasDirectory(Dir) == true) {
+		rename(StringToConstChar(Dir), StringToConstChar(DirAndNewName));
+	}
+	else {
+		PE("File [" + Dir + "] not found to rename!", "F0000");
+	}
+}
+
 /*Получить данные из файла*/
 string GetFileInfo(string Dir) {
-	if (HasDirectory(Dir) == false) { return "ERROR_NOT_FOUND_FILE_CANT_READ"; }
+	if (HasDirectory(Dir) == false) { PE("File ["+Dir+"] was not found! When trying to read it.","F0001"); return "ERROR_F0001"; }
 	ifstream file;
 	file.open(Dir);
-	string result = "ERROR_FILE_NOT_OPEN";
+	string result = "ERROR_F0002";
 	string line;
 	if (file.is_open()) {
 		result = "";
@@ -65,6 +75,9 @@ string GetFileInfo(string Dir) {
 			result = result + line + "\n";
 		}
 		file.close();
+	}
+	else {
+		PE("File was not opened! When trying to read it.","F0002");
 	}
 
 	return result;

@@ -2,6 +2,7 @@
 #pragma once
 using namespace std;
 
+void RenameFile(string Dir, string DirAndNewName);
 bool HasDirectory(string Dir);
 bool CreateDirectory(string Dir);
 bool CreateFile(string Dir);

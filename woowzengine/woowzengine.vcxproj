@@ -137,15 +137,19 @@
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="Easyer.cpp" />
     <ClCompile Include="Files.cpp" />
+    <ClCompile Include="Logger.cpp" />
     <ClCompile Include="OpenGame.cpp" />
     <ClCompile Include="Source.cpp" />
+    <ClCompile Include="WindowsElements.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Base.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="Easyer.h" />
     <ClInclude Include="Files.h" />
+    <ClInclude Include="Logger.h" />
     <ClInclude Include="OpenGame.h" />
+    <ClInclude Include="WindowsElements.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

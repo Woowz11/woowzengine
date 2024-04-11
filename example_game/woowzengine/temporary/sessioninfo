@@ -1,0 +1,7 @@
+{
+    "EngineJson": "F:/woowzengine/example_game/game/engine.json",
+    "GameJson": "F:/woowzengine/example_game/game/game.json",
+    "GamePath": "F:/woowzengine/example_game/",
+    "SourcePath": "F:/woowzengine/example_game/game/",
+    "Version": "0.0.1"
+}

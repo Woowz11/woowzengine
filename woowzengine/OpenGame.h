@@ -2,6 +2,7 @@
 #pragma once
 using namespace std;
 
-void CheckFiles();
-void Install();
-void OpenGame(string);
+void CheckFiles(string);
+void Install(string);
+void GameInstall();
+void OpenGame(string, string);

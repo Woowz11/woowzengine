@@ -1,37 +1,77 @@
 #include <iostream>
 #include <string>
+#include <map>
 #include "OpenGame.h"
 #include "Base.h"
 #include "Files.h"
+#include "Logger.h"
+#include "Easyer.h"
 
 using namespace std;
 
-string GamePath = "";
+string SGamePath = "";
+bool SessionInfoBroken = false;
+bool JGameBroken = false;
+bool JEngineBroken = false;
 
-void CheckFiles() {
-	GetOrCreateFolder(GamePath + "woowzengine");
-	GetOrCreateFolder(GamePath + "woowzengine/log");
-	GetOrCreateFolder(GamePath + "woowzengine/temporary");
-	GetOrCreateFile  (GamePath + "woowzengine/temporary/sessioninfo.json");
+void CheckFiles(string ev) {
+	GetOrCreateFolder(SGamePath + "woowzengine");
+	GetOrCreateFolder(SGamePath + "woowzengine/log");
+	GetOrCreateFolder(SGamePath + "woowzengine/temporary");
+
+	string OurGamePath = SGamePath + "game";
+	GetOrCreateFolder(OurGamePath);
+	string JEngine = OurGamePath + "/engine.json";
+	GetOrCreateFile(JEngine);
+	if (!JSONValid(JEngine)) {
+		bool JEngineBroken = true;
+		WriteToFile(JEngine, "{}");
+	}
+	CreateValueJson(JEngine, "Console", "true");
+	CreateValueJson(JEngine, "LogType", "log");
+	CreateValueJson(JEngine, "LogFormat", "%y-%mn-%d-%h-%m-%s");
+
+	string JGame = OurGamePath + "/game.json";
+	GetOrCreateFile(JGame);
+	if (!JSONValid(JGame)) {
+		bool JGameBroken = true;
+		WriteToFile(JGame, "{}");
+	}
+	CreateValueJson(JGame, "Name",    "Example Game");
+	CreateValueJson(JGame, "Version", "0.0.0");
+	CreateValueJson(JGame, "Author",  "Unknown");
+
+	if (!JSONValid(SGamePath + "woowzengine/temporary/sessioninfo")) { SessionInfoBroken = true; }
+
+	map<string, string> SessionInfoInfo = { {"GamePath",SGamePath},{"Version",ev},{"SourcePath",SGamePath + "game/"},{"EngineJson",JEngine},{"GameJson",JGame}};
+	WriteToFile(SGamePath + "woowzengine/temporary/sessioninfo",ConvertToJSON(SessionInfoInfo));
 }
-void Install() {
-	CheckFiles();
+
+void GameInstall() {
 
 }
 
-void OpenGame(string GamePath_) {
-	GamePath = GamePath_;
-	Install();
+void Install(string ev) {
+	BaseInstall(SGamePath);
+	CheckFiles(ev);
+	LoggerInstall();
 
-	string file = GamePath + "woowzengine/temporary/sessioninfo.json";
-	WriteToFile(file, "START", false);
-	WriteToFile(file, "a1", true);
-	WriteToFile(file, "b2", true);
-	WriteToFile(file, "c3", true);
-	WriteToFile(file, "d4", true);
-	WriteToFile(file, "e5", true);
-	WriteToFile(file, "f6", true);
-	WriteToFile(file, "g&", true);
-	WriteToFile(file, "eND", true);
+	if (SessionInfoBroken) {
+		PW("Sessioninfo has corrupted! File has been recreated!", "W0001");
+	}
+	if (JGameBroken) {
+		PW("game.json has corrupted or was not created! File has been recreated!", "W0002");
+	}
+	if (JEngineBroken) {
+		PW("engine.json has corrupted or was not created! File has been recreated!", "W0003");
+	}
 
+	GameInstall();
+}
+
+void OpenGame(string GamePath_,string EngineVersion_) {
+	SGamePath = StringToPath(GamePath_);
+	Install(EngineVersion_);
+
+	P("Hi!!!");
 }

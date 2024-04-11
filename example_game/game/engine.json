@@ -1,0 +1,5 @@
+{
+    "Console": "true",
+    "LogFormat": "%y-%mn-%d-%h-%m-%s",
+    "LogType": "log"
+}

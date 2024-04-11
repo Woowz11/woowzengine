@@ -2,4 +2,4 @@
 #pragma once
 using namespace std;
 
-int PrintToConsole(string);
+int PrintToConsole(string,int = -1);

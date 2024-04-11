@@ -36,6 +36,12 @@
     <ClCompile Include="Easyer.cpp">
       <Filter>Исходные файлы\BaseComponents</Filter>
     </ClCompile>
+    <ClCompile Include="Logger.cpp">
+      <Filter>Исходные файлы\BaseComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowsElements.cpp">
+      <Filter>Исходные файлы\BaseComponents</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="OpenGame.h">
@@ -51,6 +57,12 @@
       <Filter>Исходные файлы\BaseComponents</Filter>
     </ClInclude>
     <ClInclude Include="Easyer.h">
+      <Filter>Исходные файлы\BaseComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="Logger.h">
+      <Filter>Исходные файлы\BaseComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowsElements.h">
       <Filter>Исходные файлы\BaseComponents</Filter>
     </ClInclude>
   </ItemGroup>
