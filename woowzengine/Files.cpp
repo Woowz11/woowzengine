@@ -1,3 +1,7 @@
+#define NOMINMAX 1
+#define byte win_byte_override
+#include "Windows.h"
+
 #include <iostream>
 #include <sys/stat.h>
 #include <direct.h>
@@ -64,7 +68,7 @@ void RenameFile(string Dir, string DirAndNewName) {
 
 /*Получить данные из файла*/
 string GetFileInfo(string Dir) {
-	if (HasDirectory(Dir) == false) { PE("File ["+Dir+"] was not found! When trying to read it.","F0001"); return "ERROR_F0001"; }
+	if (HasDirectory(Dir) == false) { PE("File [" + Dir + "] was not found! When trying to read it.", "F0001"); return "ERROR_F0001"; }
 	ifstream file;
 	file.open(Dir);
 	string result = "ERROR_F0002";

@@ -1,5 +1,8 @@
+#define NOMINMAX 1
+#define byte win_byte_override
+#include "Windows.h"
+
 #include <iostream>
-#include <windows.h>
 #include <string>
 #include "Console.h"
 

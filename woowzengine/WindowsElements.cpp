@@ -1,7 +1,9 @@
+#define _HAS_STD_BYTE 0
+#include "Windows.h"
+
 #include <iostream>
 #include <string>
 #include "WindowsElements.h"
-#include "Windows.h"
 #include "Easyer.h"
 #include "Base.h"
 #include "Logger.h"

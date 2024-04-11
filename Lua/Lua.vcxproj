@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\woowzengine\LIBS\LUA\lapi.c" />
+    <ClCompile Include="..\woowzengine\LIBS\LUA\lauxlib.c" />
+    <ClCompile Include="..\woowzengine\LIBS\LUA\lbaselib.c" />
+    <ClCompile Include="..\woowzengine\LIBS\LUA\lcode.c" />
+    <ClCompile Include="..\woowzengine\LIBS\LUA\lcorolib.c" />
+    <ClCompile Include="..\woowzengine\LIBS\LUA\lctype.c" />
+    <ClCompile Include="..\woowzengine\LIBS\LUA\ldblib.c" />
+    <ClCompile Include="..\woowzengine\LIBS\LUA\ldebug.c" />
+    <ClCompile Include="..\woowzengine\LIBS\LUA\ldo.c" />
+    <ClCompile Include="..\woowzengine\LIBS\LUA\ldump.c" />
+    <ClCompile Include="..\woowzengine\LIBS\LUA\lfunc.c" />
+    <ClCompile Include="..\woowzengine\LIBS\LUA\lgc.c" />
+    <ClCompile Include="..\woowzengine\LIBS\LUA\linit.c" />
+    <ClCompile Include="..\woowzengine\LIBS\LUA\liolib.c" />
+    <ClCompile Include="..\woowzengine\LIBS\LUA\llex.c" />
+    <ClCompile Include="..\woowzengine\LIBS\LUA\lmathlib.c" />
+    <ClCompile Include="..\woowzengine\LIBS\LUA\lmem.c" />
+    <ClCompile Include="..\woowzengine\LIBS\LUA\loadlib.c" />
+    <ClCompile Include="..\woowzengine\LIBS\LUA\lobject.c" />
+    <ClCompile Include="..\woowzengine\LIBS\LUA\lopcodes.c" />
+    <ClCompile Include="..\woowzengine\LIBS\LUA\loslib.c" />
+    <ClCompile Include="..\woowzengine\LIBS\LUA\lparser.c" />
+    <ClCompile Include="..\woowzengine\LIBS\LUA\lstate.c" />
+    <ClCompile Include="..\woowzengine\LIBS\LUA\lstring.c" />
+    <ClCompile Include="..\woowzengine\LIBS\LUA\lstrlib.c" />
+    <ClCompile Include="..\woowzengine\LIBS\LUA\ltable.c" />
+    <ClCompile Include="..\woowzengine\LIBS\LUA\ltablib.c" />
+    <ClCompile Include="..\woowzengine\LIBS\LUA\ltm.c" />
+    <ClCompile Include="..\woowzengine\LIBS\LUA\lua.c" />
+    <ClCompile Include="..\woowzengine\LIBS\LUA\lundump.c" />
+    <ClCompile Include="..\woowzengine\LIBS\LUA\lutf8lib.c" />
+    <ClCompile Include="..\woowzengine\LIBS\LUA\lvm.c" />
+    <ClCompile Include="..\woowzengine\LIBS\LUA\lzio.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\woowzengine\LIBS\LUA\lapi.h" />
+    <ClInclude Include="..\woowzengine\LIBS\LUA\lauxlib.h" />
+    <ClInclude Include="..\woowzengine\LIBS\LUA\lcode.h" />
+    <ClInclude Include="..\woowzengine\LIBS\LUA\lctype.h" />
+    <ClInclude Include="..\woowzengine\LIBS\LUA\ldebug.h" />
+    <ClInclude Include="..\woowzengine\LIBS\LUA\ldo.h" />
+    <ClInclude Include="..\woowzengine\LIBS\LUA\lfunc.h" />
+    <ClInclude Include="..\woowzengine\LIBS\LUA\lgc.h" />
+    <ClInclude Include="..\woowzengine\LIBS\LUA\ljumptab.h" />
+    <ClInclude Include="..\woowzengine\LIBS\LUA\llex.h" />
+    <ClInclude Include="..\woowzengine\LIBS\LUA\llimits.h" />
+    <ClInclude Include="..\woowzengine\LIBS\LUA\lmem.h" />
+    <ClInclude Include="..\woowzengine\LIBS\LUA\lobject.h" />
+    <ClInclude Include="..\woowzengine\LIBS\LUA\lopcodes.h" />
+    <ClInclude Include="..\woowzengine\LIBS\LUA\lopnames.h" />
+    <ClInclude Include="..\woowzengine\LIBS\LUA\lparser.h" />
+    <ClInclude Include="..\woowzengine\LIBS\LUA\lprefix.h" />
+    <ClInclude Include="..\woowzengine\LIBS\LUA\lstate.h" />
+    <ClInclude Include="..\woowzengine\LIBS\LUA\lstring.h" />
+    <ClInclude Include="..\woowzengine\LIBS\LUA\ltable.h" />
+    <ClInclude Include="..\woowzengine\LIBS\LUA\ltm.h" />
+    <ClInclude Include="..\woowzengine\LIBS\LUA\lua.h" />
+    <ClInclude Include="..\woowzengine\LIBS\LUA\lua.hpp" />
+    <ClInclude Include="..\woowzengine\LIBS\LUA\luaconf.h" />
+    <ClInclude Include="..\woowzengine\LIBS\LUA\lualib.h" />
+    <ClInclude Include="..\woowzengine\LIBS\LUA\lundump.h" />
+    <ClInclude Include="..\woowzengine\LIBS\LUA\lvm.h" />
+    <ClInclude Include="..\woowzengine\LIBS\LUA\lzio.h" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{64314463-a0db-4690-8588-414d19dc55b3}</ProjectGuid>
+    <RootNamespace>Lua</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)Build\$(ProjectName)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)Intermediate\$(ProjectName)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)Build\$(ProjectName)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)Intermediate\$(ProjectName)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

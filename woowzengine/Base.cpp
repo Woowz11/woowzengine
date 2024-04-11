@@ -1,10 +1,13 @@
+#define NOMINMAX 1
+#define byte win_byte_override
+#include "Windows.h"
+
 #include <iostream>
 #include <filesystem>
 #include <regex>
 #include <map>
 #include <fstream>
 #include <nlohmann/json.hpp>
-#include "Windows.h"
 #include "time.h"
 #include "Base.h"
 #include "Console.h"
@@ -292,6 +295,16 @@ string GetTimeComponent(time_t Time, string Tag) {
 	return FillString(to_string(Val), AddZeros, '0', true);
 }
 
+/*Превращает строку в bool*/
+bool StringToBool(string Str) {
+	string Bool = Lowercase(Str);
+	bool result = false;
+	if (Bool == "true" || Bool == "yes" || Bool == "1" || Bool == "y" || Bool == "t" || Bool == "+") {
+		result = true;
+	}
+	return result;
+}
+
 /*Получить текущее время используя теги*/
 string GetTime(string Tag) {
 	return GetTimeComponent(time(0),Tag);
@@ -346,4 +359,12 @@ void WriteToFile(string Path, string Text, bool AddToNextLine) {
 /*Заменяет символы в строке*/
 string ReplaceString(string Str, string That = " ", string ToThat = "") {
 	return regex_replace(Str,regex("\\"+That),ToThat);
+}
+
+/*Говорит есть в строке строка*/
+bool StringHasString(string Str, string WhatNeedFound) {
+	if (Str.find(WhatNeedFound) != std::string::npos) {
+		return true;
+	}
+	return false;
 }

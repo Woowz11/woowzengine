@@ -1,5 +1,8 @@
-#include <iostream>
+#define NOMINMAX 1
+#define byte win_byte_override
 #include "Windows.h"
+
+#include <iostream>
 #pragma once
 using namespace std;
 

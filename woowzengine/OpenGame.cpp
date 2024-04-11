@@ -1,11 +1,13 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include "Windows.h"
 #include "OpenGame.h"
 #include "Base.h"
 #include "Files.h"
 #include "Logger.h"
 #include "Easyer.h"
+#include "LuaCompile.h"
 
 using namespace std;
 
@@ -18,6 +20,10 @@ void CheckFiles(string ev) {
 	GetOrCreateFolder(SGamePath + "woowzengine");
 	GetOrCreateFolder(SGamePath + "woowzengine/log");
 	GetOrCreateFolder(SGamePath + "woowzengine/temporary");
+
+	string SessionInfoPath = SGamePath + "woowzengine/temporary/sessioninfo";
+	GetOrCreateFile(SessionInfoPath);
+	if (!JSONValid(SessionInfoPath)) { SessionInfoBroken = true; }
 
 	string OurGamePath = SGamePath + "game";
 	GetOrCreateFolder(OurGamePath);
@@ -41,14 +47,12 @@ void CheckFiles(string ev) {
 	CreateValueJson(JGame, "Version", "0.0.0");
 	CreateValueJson(JGame, "Author",  "Unknown");
 
-	if (!JSONValid(SGamePath + "woowzengine/temporary/sessioninfo")) { SessionInfoBroken = true; }
-
-	map<string, string> SessionInfoInfo = { {"GamePath",SGamePath},{"Version",ev},{"SourcePath",SGamePath + "game/"},{"EngineJson",JEngine},{"GameJson",JGame}};
-	WriteToFile(SGamePath + "woowzengine/temporary/sessioninfo",ConvertToJSON(SessionInfoInfo));
+	map<string, string> SessionInfoInfo = { {"GamePath",SGamePath},{"Version",ev},{"SourcePath",SGamePath + "game/"},{"EngineJson",JEngine},{"GameJson",JGame},{"SessionPath",SGamePath + "woowzengine/temporary/sessioninfo"} };
+	WriteToFile(SessionInfoPath,ConvertToJSON(SessionInfoInfo));
 }
 
 void GameInstall() {
-
+	LuaCompile();
 }
 
 void Install(string ev) {
@@ -65,7 +69,9 @@ void Install(string ev) {
 	if (JEngineBroken) {
 		PW("engine.json has corrupted or was not created! File has been recreated!", "W0003");
 	}
-
+	if (StringToBool(GetEngineInfo("Console"))) {
+		::ShowWindow(::GetConsoleWindow(), SW_SHOW);
+	}
 	GameInstall();
 }
 
@@ -73,5 +79,5 @@ void OpenGame(string GamePath_,string EngineVersion_) {
 	SGamePath = StringToPath(GamePath_);
 	Install(EngineVersion_);
 
-	P("Hi!!!");
+	PP("Hi!!!");
 }

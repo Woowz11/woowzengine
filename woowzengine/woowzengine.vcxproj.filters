@@ -42,6 +42,9 @@
     <ClCompile Include="WindowsElements.cpp">
       <Filter>Исходные файлы\BaseComponents</Filter>
     </ClCompile>
+    <ClCompile Include="LuaCompile.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="OpenGame.h">
@@ -64,6 +67,9 @@
     </ClInclude>
     <ClInclude Include="WindowsElements.h">
       <Filter>Исходные файлы\BaseComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="LuaCompile.h">
+      <Filter>Исходные файлы</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

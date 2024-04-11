@@ -2,6 +2,8 @@
     "EngineJson": "F:/woowzengine/example_game/game/engine.json",
     "GameJson": "F:/woowzengine/example_game/game/game.json",
     "GamePath": "F:/woowzengine/example_game/",
+    "LuaLibs": "F:\\woowzengine\\example_game\\lua\\?.lua;F:\\woowzengine\\example_game\\lua\\?\\init.lua;F:\\woowzengine\\example_game\\?.lua;F:\\woowzengine\\example_game\\?\\init.lua;F:\\woowzengine\\example_game\\..\\share\\lua\\5.4\\?.lua;F:\\woowzengine\\example_game\\..\\share\\lua\\5.4\\?\\init.lua;.\\?.lua;.\\?\\init.lua;F:/woowzengine/example_game/game/?.lua",
+    "SessionPath": "F:/woowzengine/example_game/woowzengine/temporary/sessioninfo",
     "SourcePath": "F:/woowzengine/example_game/game/",
-    "Version": "0.0.1"
+    "Version": "0.0.1a"
 }
