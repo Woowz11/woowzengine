@@ -1,7 +1,10 @@
+#define NOMINMAX 1
+#define byte win_byte_override
+#include "Windows.h"
+
 #include <iostream>
 #include <string>
 #include <map>
-#include "Windows.h"
 #include "OpenGame.h"
 #include "Base.h"
 #include "Files.h"
@@ -15,6 +18,7 @@ string SGamePath = "";
 bool SessionInfoBroken = false;
 bool JGameBroken = false;
 bool JEngineBroken = false;
+bool HasStartScript = true;
 
 void CheckFiles(string ev) {
 	GetOrCreateFolder(SGamePath + "woowzengine");
@@ -34,8 +38,11 @@ void CheckFiles(string ev) {
 		WriteToFile(JEngine, "{}");
 	}
 	CreateValueJson(JEngine, "Console", "true");
+	CreateValueJson(JEngine, "SafeMode", "true");
 	CreateValueJson(JEngine, "LogType", "log");
 	CreateValueJson(JEngine, "LogFormat", "%y-%mn-%d-%h-%m-%s");
+	CreateValueJson(JEngine, "LogStyle", "%b[%s:%m:%h][%t] %c");
+	CreateValueJson(JEngine, "LogFatal", "-FATAL");
 
 	string JGame = OurGamePath + "/game.json";
 	GetOrCreateFile(JGame);
@@ -47,8 +54,20 @@ void CheckFiles(string ev) {
 	CreateValueJson(JGame, "Version", "0.0.0");
 	CreateValueJson(JGame, "Author",  "Unknown");
 
-	map<string, string> SessionInfoInfo = { {"GamePath",SGamePath},{"Version",ev},{"SourcePath",SGamePath + "game/"},{"EngineJson",JEngine},{"GameJson",JGame},{"SessionPath",SGamePath + "woowzengine/temporary/sessioninfo"} };
+	if (!HasDirectory(OurGamePath + "/start.lua")) {
+		HasStartScript = false;
+	}
+	GetOrCreateFile(OurGamePath + "/start.lua");
+	if (!HasStartScript) {
+		WriteToFile(OurGamePath + "/start.lua","--[[Example script start.lua\nRuns when the game starts.]]\n\nCheckLua()");
+	}
+
+	int Seed = (int)std::time(nullptr);
+
+	map<string, string> SessionInfoInfo = { {"Seed",to_string(Seed)},{"GamePath",SGamePath},{"Version",ev},{"SourcePath",SGamePath + "game/"},{"EngineJson",JEngine},{"GameJson",JGame},{"SessionPath",SGamePath + "woowzengine/temporary/sessioninfo"}};
 	WriteToFile(SessionInfoPath,ConvertToJSON(SessionInfoInfo));
+
+	SetRandomSeed(Seed);
 }
 
 void GameInstall() {
@@ -60,6 +79,14 @@ void Install(string ev) {
 	CheckFiles(ev);
 	LoggerInstall();
 
+	P("ENGINE", "WoowzEngine ["+GetSessionInfo("Version") + "] started!");
+	P("ENGINE", "Start game ["+GetGameInfo("Name") + " ("+GetGameInfo("Version") + ")] by [" + GetGameInfo("Author") + "] ");
+	if (SafeMode()) {
+		P("SAVEMOD", "Safe mode enabled!",10);
+	}
+	else {
+		P("SAVEMOD", "Safe mode disabled!", 14);
+	}
 	if (SessionInfoBroken) {
 		PW("Sessioninfo has corrupted! File has been recreated!", "W0001");
 	}
@@ -78,6 +105,4 @@ void Install(string ev) {
 void OpenGame(string GamePath_,string EngineVersion_) {
 	SGamePath = StringToPath(GamePath_);
 	Install(EngineVersion_);
-
-	PP("Hi!!!");
 }

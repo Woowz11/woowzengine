@@ -1,6 +1,5 @@
 #pragma once
 using namespace std;
 
-/*Зона игры*/
-
+void CompileScript(string Path);
 void LuaCompile();

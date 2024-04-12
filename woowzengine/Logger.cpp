@@ -18,11 +18,16 @@ void LoggerInstall() {
 		LogsType = LogsType_;
 	}
 	else {
-		MessageBoxFatal("LogsType (engine.json) contains illegal characters in windows (\\ / : * ? \" < > | + .)", "C0011", true);
+		MessageBoxFatal("LogType (engine.json) contains illegal characters in windows (\\ / : * ? \" < > | + .)", "C0011", true);
 	}
+
+	if (!NameWindowsAccept(GetEngineInfo("LogFatal"))) {
+		MessageBoxFatal("LogFatal (engine.json) contains illegal characters in windows (\\ / : * ? \" < > | + .)", "C0015", true);
+	}
+
 	string LogFormat = GetEngineInfo("LogFormat");
 	if(StringEmpty(LogFormat)){ MessageBoxFatal("LogsFormat (engine.json) can't be empty!", "C0012", true); }
-	if(!NameWindowsAccept(LogFormat)){ MessageBoxFatal("LogsFormat (engine.json) contains illegal characters in windows (\\ / : * ? \" < > | + .)", "C0013", true); }
+	if(!NameWindowsAccept(LogFormat)){ MessageBoxFatal("LogFormat (engine.json) contains illegal characters in windows (\\ / : * ? \" < > | + .)", "C0013", true); }
 	string LogName = ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(LogFormat, "%w", GetTime("w")), "%y", GetTime("y")), "%mn", GetTime("mn")), "%d", GetTime("d")), "%h", GetTime("h")), "%m", GetTime("m")), "%s", GetTime("s"));
 	CreateLog(LogName);
 }
@@ -30,9 +35,10 @@ void LoggerInstall() {
 /*Создать лог*/
 void CreateLog(string LogName) {
 	NowLog = LogName;
-	if (HasDirectory(GetSessionInfo("GamePath") + LogsPath + LogName + "." + LogsType)) { PF("Log file with that name already exists! Check LogFormat (engine.json), it could be because of that!", "C0003", true); }
+	string log = GetSessionInfo("GamePath") + LogsPath + LogName + "." + LogsType;
+	if (HasDirectory(log)) { PF("Log file with that name ["+log+"] already exists! Check LogFormat (engine.json), it could be because of that!", "C0003", true); }
 	else {
-		GetOrCreateFile(GetSessionInfo("GamePath") + LogsPath + LogName + "." + LogsType);
+		GetOrCreateFile(log);
 	}
 }
 
@@ -47,5 +53,5 @@ void PrintToLog(string Text) {
 
 /*Обозначает что в логах фатальная ошибка*/
 void LogsFatal() {
-	RenameFile(GetSessionInfo("GamePath") + LogsPath + NowLog + "." + LogsType, GetSessionInfo("GamePath") + LogsPath + NowLog + "-FATAL" + "." + LogsType);
+	RenameFile(GetSessionInfo("GamePath") + LogsPath + NowLog + "." + LogsType, GetSessionInfo("GamePath") + LogsPath + NowLog + GetEngineInfo("LogFatal") + "." + LogsType);
 }

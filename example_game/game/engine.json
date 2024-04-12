@@ -1,5 +1,8 @@
 {
     "Console": "true",
+    "LogFatal": "-FATAL",
     "LogFormat": "%y-%mn-%d-%h-%m-%s",
-    "LogType": "log"
+    "LogStyle": "%b[%s:%m:%h][%t] %c",
+    "LogType": "log",
+    "SafeMode": "false"
 }

@@ -14,6 +14,21 @@
 
 using namespace std;
 
+/*Превращает дробное число в double*/
+double FloatToDouble(float f) {
+	return (double)f;
+}
+
+/*Превращает строку в дробное число*/
+int StringToInt(string Str) {
+	return FloatToInt(StringToFloat(Str));
+}
+
+/*Превращает строку в дробное число*/
+float StringToFloat(string Str) {
+	return stof(Str);
+}
+
 /*Превращает число в DWORD*/
 DWORD IntToDWORD(int i) {
 	return (DWORD)i;
@@ -21,7 +36,7 @@ DWORD IntToDWORD(int i) {
 
 /*Превращает дробное число в число*/
 int FloatToInt(float f) {
-	return (int)floor(f);
+	return (int)round(f);
 }
 
 /*Превращает строку в wстроку*/

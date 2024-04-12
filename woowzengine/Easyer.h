@@ -6,6 +6,9 @@
 #pragma once
 using namespace std;
 
+double FloatToDouble(float f);
+int StringToInt(string Str);
+float StringToFloat(string Str);
 DWORD IntToDWORD(int i);
 int FloatToInt(float f);
 wstring StringToWString(string Str);

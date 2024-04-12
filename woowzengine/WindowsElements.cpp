@@ -20,4 +20,5 @@ void MessageBoxFatal(string Error, string Code, bool BrokenLogs) {
 	if (MBID == IDOK) {
 		Exit();
 	}
+	Exit();
 }

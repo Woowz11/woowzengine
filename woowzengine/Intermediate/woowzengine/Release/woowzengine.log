@@ -1,11 +1,9 @@
-﻿  Base.cpp
-F:\woowzengine\WoowzEngine\Base.cpp(133,15): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
-F:\woowzengine\WoowzEngine\Base.cpp(237,14): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
-  LuaCompile.cpp
-  OpenGame.cpp
+﻿  LuaCompile.cpp
+F:\woowzengine\WoowzEngine\LuaCompile.cpp(219,14): warning C4244: return: преобразование "float" в "int", возможна потеря данных
+F:\woowzengine\WoowzEngine\LuaCompile.cpp(224,13): warning C4244: return: преобразование "float" в "int", возможна потеря данных
   Создание кода
-  17 of 4003 functions ( 0.4%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    157 functions had inline decision re-evaluated but remain unchanged
+  30 of 5192 functions ( 0.6%) were compiled, the rest were copied from previous compilation.
+    26 functions were new in current compilation
+    219 functions had inline decision re-evaluated but remain unchanged
   Создание кода завершено
   woowzengine.vcxproj -> F:\woowzengine\WoowzEngine\Build\woowzengine\Release\woowzengine.exe

@@ -8,6 +8,9 @@
 #include <map>
 #include <fstream>
 #include <nlohmann/json.hpp>
+#include <chrono>
+#include <thread>
+#include <cstdlib>
 #include "time.h"
 #include "Base.h"
 #include "Console.h"
@@ -24,15 +27,46 @@ using json = nlohmann::json;
 
 string GamePath = "";
 string SessionInfoPath = "woowzengine/temporary/sessioninfo";
+string LogsStyle = "%b[%s:%m:%h][%t] %c";
+
+/*Проверяем безопасный режим включен или нет*/
+bool SafeMode() {
+	return StringToBool(GetEngineInfo("SafeMode"));
+}
 
 /*Выход из приложения*/
 void Exit() {
 	system("taskkill /F /T /IM woowzengine.exe");
+	exit(EXIT_SUCCESS);
+}
+
+/*Установить сид*/
+void SetRandomSeed(int seed) {
+	srand(seed);
+}
+
+/*Получить случайное число*/
+float Random(float min,float max) {
+	if (min > max) { PE("Minimum number cannot be > maximum number! Random(" + to_string(min) + "," + to_string(max) + ")", "E0004"); return -1; }
+	else {
+		return (Random() * (max - min)) + min;
+	}
+}
+float Random() {
+	int seed = StringToInt(GetSessionInfo("Seed")) + 100000000000;
+	SetSessionInfo("Seed", to_string(seed));
+	SetRandomSeed(seed);
+	return (float)static_cast<double>(rand()) / RAND_MAX;
 }
 
 /*Установка Base.cpp в проект*/
 void BaseInstall(string GamePath_) {
 	GamePath = GamePath_;
+	std::setlocale(LC_NUMERIC, "POSIX");
+	if (GetEngineInfo("LogStyle", true) != "WARN_EMPTY") {
+		LogsStyle = GetEngineInfo("LogStyle");
+	}
+	if (StringEmpty(LogsStyle)) { MessageBoxFatal("LogStyle (engine.json) can't be empty!", "C0014", true); }
 }
 
 #pragma region ConsoleZone
@@ -41,8 +75,8 @@ void Print(string Text, int Color) {
 	PrintToConsole(Text, Color);
 	PrintToLog(Text);
 }
-void Print(int Text) {
-	Print(to_string(Text));
+void Print(int Text, int Color) {
+	Print(to_string(Text),Color);
 }
 
 /*Делает символы в строке большими*/
@@ -62,11 +96,11 @@ string Lowercase(string Str) {
 /*Первращает строку в сообщение для логов*/
 string ConvertTextToConsoleLogMessage(string Text, string Module, char StartSymbol) {
 	string c(1, StartSymbol);
-	return c + "[" + GetTime("s") + ":" + GetTime("m") + ":" + GetTime("h") + "][" + Uppercase(FillString(Module, 7, ' ')) + "] " + Text;
+	return ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(LogsStyle, "%tt", Uppercase(Module)), "%c", Text), "%t", Uppercase(FillString(Module,7,' '))), "%b", c), "%w", GetTime("w")), "%y", GetTime("y")), "%mn", GetTime("mn")), "%d", GetTime("d")), "%h", GetTime("h")), "%m", GetTime("m")), "%s", GetTime("s"));
 }
 /*Отправить сообщение*/
-void P(string Module, string Text) {
-	Print(ConvertTextToConsoleLogMessage(Text, Module));
+void P(string Module, string Text, int color) {
+	Print(ConvertTextToConsoleLogMessage(Text, Module),color);
 }
 /*Отправить обычное сообщение*/
 void PP(string Text) {
@@ -106,11 +140,11 @@ bool GetOrCreateFile(string Dir) {
 	return false;
 }
 
-/*Остановить процесс на определённое кол-во секунд (Seconds > 0)*/
-void Wait(float Seconds) {
-	if (Seconds <= 0) { PE("The Wait() function only accepts a number greater than 0! Got ["+to_string(Seconds)+"]","E0000"); }
+/*Остановить процесс на определённое кол-во милисекунд (Milliseconds > 0)*/
+void Wait(int Milliseconds) {
+	if (Milliseconds <= 0) { PE("Wait(" + to_string(Milliseconds) + ") function only accepts a number >0!", "E0000"); }
 	else {
-		Sleep(IntToDWORD(FloatToInt(Seconds * 1000)));
+		std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(Milliseconds)));
 	}
 }
 
@@ -123,19 +157,19 @@ string Trim(string s) {
 	}
 	if (i > 0)
 	{
-		for (j = 0; j < s.size(); j++)
+		for (j = 0; j < s.length(); j++)
 		{
 			s[j] = s[j + i];
 		}
 		s[j] = '\0';
 	}
 
-	i = s.size() - 1;
+	i = s.length() - 1;
 	while ((s[i] == ' ') || (s[i] == '\t'))
 	{
 		i--;
 	}
-	if (i < (s.size() - 1))
+	if (i < (s.length() - 1))
 	{
 		s[i + 1] = '\0';
 	}
@@ -163,31 +197,40 @@ bool StringEmpty(string Str) {
 	return Str_.empty();
 }
 
+/*Получить название файла из пути*/
+string GetFileName(string Path) {
+	return Path.substr(Path.find_last_of("/\\") + 1);
+}
+
 /*Получить информацию из файла game.json*/
-string GetGameInfo(string ID) {
+string GetGameInfo(string ID, bool IgnoreError) {
+	if (IgnoreError && !HasDirectory(GamePath + SessionInfoPath)) { return "WARN_EMPTY"; }
 	string p = GetSessionInfo("GameJson");
-	if (!HasDirectory(p)) { PF("game.json not found!", "C0007", true); return "ERROR_C0007"; }
-	if (!JSONValid(p)) { PF("game.json corrupted!", "C0008", true); return "ERROR_C0008"; }
+	if (!HasDirectory(p)) { if (IgnoreError) { return "WARN_EMPTY"; } PF("game.json not found!", "C0007", true); return "ERROR_C0007"; }
+	if (!JSONValid(p)) { PF("game.json corrupted!\nTry deleting the file!", "C0008", true); return "ERROR_C0008"; }
 	return ReadJson(p, ID);
 }
 
 /*Получить информацию из файла engine.json*/
-string GetEngineInfo(string ID) {
+string GetEngineInfo(string ID, bool IgnoreError) {
+	if (IgnoreError && !HasDirectory(GamePath + SessionInfoPath)) { return "WARN_EMPTY"; }
 	string p = GetSessionInfo("EngineJson");
-	if (!HasDirectory(p)) { PF("engine.json not found!", "C0009", true); return "ERROR_C0009"; }
-	if (!JSONValid(p)) { PF("engine.json corrupted!", "C0010", true); return "ERROR_C0010"; }
+	if (p == "WARN_EMPTY") { return p; }
+	if (!HasDirectory(p)) { if (IgnoreError) { return "WARN_EMPTY"; } PF("engine.json not found!", "C0009", true); return "ERROR_C0009"; }
+	if (!JSONValid(p)) { PF("engine.json corrupted!\nTry deleting the file!", "C0010", true); return "ERROR_C0010"; }
 	return ReadJson(p, ID);
 }
 
 /*Получить информацию из файла sessioninfo*/
-string GetSessionInfo(string ID) {
-	if (!HasDirectory(GamePath + SessionInfoPath)) { PF("Sessioninfo not found!","C0001", true); return "ERROR_C0001"; }
+string GetSessionInfo(string ID, bool IgnoreError) {
+	if (!HasDirectory(GamePath + SessionInfoPath)) { if (IgnoreError) { return "WARN_EMPTY"; } PF("Sessioninfo not found!","C0001", true); return "ERROR_C0001"; }
 	if (!JSONValid(GamePath + SessionInfoPath)) { PF("Sessioninfo corrupted!","C0002", true); return "ERROR_C0002"; }
 	return ReadJson(GamePath + SessionInfoPath,ID);
 }
 
 /*Заменить информацию в файле sessioninfo*/
 void SetSessionInfo(string ID, string Value) {
+	if (!HasDirectory(GamePath + SessionInfoPath)) { PF("Sessioninfo not found!", "C0016", true); }
 	WriteToJson(GamePath + SessionInfoPath, ID, Value);
 }
 
@@ -234,7 +277,7 @@ string ReadJson(string Path, string ID, string IfNotFound) {
 string FillString(string Str, int Width, char Symbol, bool Invert) {
 	if (Width <= 0) { return Str; }
 	string Result = Str;
-	int AddThat = Width - Str.size();
+	int AddThat = Width - Str.length();
 	if (AddThat <= 0) { return Str; }
 	for (int i = 0; i < AddThat; i++) {
 		if (Invert) {

@@ -1,7 +1,10 @@
+#define NOMINMAX 1
+#define byte win_byte_override
+#include "Windows.h"
+
 #include <iostream>
 #include <string>
 #include <string_view>
-#include <windows.h>
 #include "OpenGame.h"
 #include "Easyer.h"
 #include "Files.h"
@@ -9,7 +12,7 @@
 
 using namespace std;
 
-string EngineVersion = "0.0.1a";
+string EngineVersion = "0.0.1b";
 
 void StartEngine(string GamePath) {
     OpenGame(GamePath, EngineVersion);
@@ -18,6 +21,7 @@ void StartEngine(string GamePath) {
 int main(int argc, char** argv)
 {
     ::ShowWindow(::GetConsoleWindow(), SW_HIDE);
+    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 8);
     SetConsoleTitle(StringToLPCWSTR("WoowzEngine Console"));
     cout << "WoowzEngine realization..." << "\n";
 
@@ -27,7 +31,7 @@ int main(int argc, char** argv)
     }
     else {
         if (!HasDirectory(StringToPath(GamePath))) {
-            MessageBoxFatal("So far the engine does not support opening games through a business window, stick this exe file in an empty folder and run .bat file!","0",true);
+            MessageBoxFatal("So far the engine does not support opening games through a dialog box, stick this exe file in an empty folder and run .bat file!","0",true);
         }
     }
 
@@ -35,6 +39,6 @@ int main(int argc, char** argv)
     cout << "Game opening: " << GamePath << "\n";
     cout << "[]==============[Log]==============[]" << "\n";
     StartEngine(GamePath);
-    system("pause");
+    std::cin.get();
     return EXIT_SUCCESS;
 }
