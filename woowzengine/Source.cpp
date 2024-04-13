@@ -9,10 +9,19 @@
 #include "Easyer.h"
 #include "Files.h"
 #include "WindowsElements.h"
+#include "base.h"
+#include "GLFW.h"
 
 using namespace std;
 
-string EngineVersion = "0.0.1b";
+string EngineVersion = "0.0.1c";
+
+bool WINAPI StopEngine(DWORD CEvent) {
+    if (CEvent == CTRL_CLOSE_EVENT) {
+        StopGLFW();
+    }
+    return true;
+}
 
 void StartEngine(string GamePath) {
     OpenGame(GamePath, EngineVersion);
@@ -38,6 +47,7 @@ int main(int argc, char** argv)
     cout << "Engine version: " << EngineVersion << "\n";
     cout << "Game opening: " << GamePath << "\n";
     cout << "[]==============[Log]==============[]" << "\n";
+    SetConsoleCtrlHandler((PHANDLER_ROUTINE)StopEngine, true);
     StartEngine(GamePath);
     std::cin.get();
     return EXIT_SUCCESS;

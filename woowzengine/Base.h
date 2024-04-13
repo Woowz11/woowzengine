@@ -4,6 +4,8 @@
 #pragma once
 using namespace std;
 
+string GetPathWithoutFileName(string path);
+string FileName(string path);
 bool SafeMode();
 void SetRandomSeed(int seed);
 float Random(float,float);

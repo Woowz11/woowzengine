@@ -11,6 +11,8 @@
 #include <chrono>
 #include <thread>
 #include <cstdlib>
+#include <algorithm>
+#include "GLFW.h"
 #include "time.h"
 #include "Base.h"
 #include "Console.h"
@@ -29,6 +31,16 @@ string GamePath = "";
 string SessionInfoPath = "woowzengine/temporary/sessioninfo";
 string LogsStyle = "%b[%s:%m:%h][%t] %c";
 
+/*Получить путь без файла*/
+string GetPathWithoutFileName(string path) {
+	return ReplaceString(path, FileName(path), "");
+}
+
+/*Получить название файла*/
+string FileName(string path) {
+	return path.substr(path.find_last_of("/\\") + 1);
+}
+
 /*Проверяем безопасный режим включен или нет*/
 bool SafeMode() {
 	return StringToBool(GetEngineInfo("SafeMode"));
@@ -43,6 +55,7 @@ void Exit() {
 /*Установить сид*/
 void SetRandomSeed(int seed) {
 	srand(seed);
+	SetSessionInfo("Seed", to_string(seed));
 }
 
 /*Получить случайное число*/
@@ -54,7 +67,6 @@ float Random(float min,float max) {
 }
 float Random() {
 	int seed = StringToInt(GetSessionInfo("Seed")) + 100000000000;
-	SetSessionInfo("Seed", to_string(seed));
 	SetRandomSeed(seed);
 	return (float)static_cast<double>(rand()) / RAND_MAX;
 }
@@ -360,6 +372,10 @@ V GetFromMap(const map<K, V>& m, const K& key) {
 	if (it != m.end()) {
 		return it->second;
 	}
+	else {
+		PE("Element not found! GetFromMap()", "E0007");
+		return V{};
+	}
 	return V{};
 }
 
@@ -401,7 +417,13 @@ void WriteToFile(string Path, string Text, bool AddToNextLine) {
 
 /*Заменяет символы в строке*/
 string ReplaceString(string Str, string That = " ", string ToThat = "") {
-	return regex_replace(Str,regex("\\"+That),ToThat);
+	string result = Str;
+	size_t pos = Str.find(That);
+	while (pos != string::npos) {
+		result.replace(pos, That.size(), ToThat);
+		pos = result.find(That, pos + ToThat.size());
+	}
+	return result;
 }
 
 /*Говорит есть в строке строка*/

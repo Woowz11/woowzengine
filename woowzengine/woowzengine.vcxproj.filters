@@ -16,6 +16,9 @@
     <Filter Include="Исходные файлы\BaseComponents">
       <UniqueIdentifier>{4a2ccc3f-b932-48f1-a9aa-11654f2d73b1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Исходные файлы\Elements">
+      <UniqueIdentifier>{4eca79b7-337e-45c5-abda-aca16ac44762}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
@@ -45,6 +48,12 @@
     <ClCompile Include="LuaCompile.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="GLFW.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderElement.h">
+      <Filter>Исходные файлы\Elements</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="OpenGame.h">
@@ -70,6 +79,27 @@
     </ClInclude>
     <ClInclude Include="LuaCompile.h">
       <Filter>Исходные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="GLFW.h">
+      <Filter>Исходные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector2.h">
+      <Filter>Исходные файлы\Elements</Filter>
+    </ClInclude>
+    <ClInclude Include="Color.h">
+      <Filter>Исходные файлы\Elements</Filter>
+    </ClInclude>
+    <ClInclude Include="Vertex.h">
+      <Filter>Исходные файлы\Elements</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>Исходные файлы\Elements</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>Исходные файлы\Elements</Filter>
+    </ClInclude>
+    <ClInclude Include="Window.h">
+      <Filter>Исходные файлы\Elements</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

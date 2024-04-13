@@ -5,12 +5,15 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include <chrono>
+#include <thread>
 #include "OpenGame.h"
 #include "Base.h"
 #include "Files.h"
 #include "Logger.h"
 #include "Easyer.h"
 #include "LuaCompile.h"
+#include "GLFW.h"
 
 using namespace std;
 
@@ -31,6 +34,7 @@ void CheckFiles(string ev) {
 
 	string OurGamePath = SGamePath + "game";
 	GetOrCreateFolder(OurGamePath);
+	GetOrCreateFolder(OurGamePath+"/engine");
 	string JEngine = OurGamePath + "/engine.json";
 	GetOrCreateFile(JEngine);
 	if (!JSONValid(JEngine)) {
@@ -70,6 +74,10 @@ void CheckFiles(string ev) {
 	SetRandomSeed(Seed);
 }
 
+void Cycle() {
+	Render();
+}
+
 void GameInstall() {
 	LuaCompile();
 }
@@ -99,10 +107,23 @@ void Install(string ev) {
 	if (StringToBool(GetEngineInfo("Console"))) {
 		::ShowWindow(::GetConsoleWindow(), SW_SHOW);
 	}
+
+	GLFWInstall();
 	GameInstall();
 }
 
 void OpenGame(string GamePath_,string EngineVersion_) {
 	SGamePath = StringToPath(GamePath_);
 	Install(EngineVersion_);
+
+	/*===========[Тестовая зона]===========*/
+
+
+
+	/*=====================================*/
+
+	while (true) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
+		Cycle();
+	}
 }

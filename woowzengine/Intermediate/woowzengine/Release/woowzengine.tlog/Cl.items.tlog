@@ -2,8 +2,10 @@ F:\woowzengine\WoowzEngine\Base.cpp;F:\woowzengine\WoowzEngine\Intermediate\woow
 F:\woowzengine\WoowzEngine\Console.cpp;F:\woowzengine\WoowzEngine\Intermediate\woowzengine\Release\Console.obj
 F:\woowzengine\WoowzEngine\Easyer.cpp;F:\woowzengine\WoowzEngine\Intermediate\woowzengine\Release\Easyer.obj
 F:\woowzengine\WoowzEngine\Files.cpp;F:\woowzengine\WoowzEngine\Intermediate\woowzengine\Release\Files.obj
+F:\woowzengine\WoowzEngine\GLFW.cpp;F:\woowzengine\WoowzEngine\Intermediate\woowzengine\Release\GLFW.obj
 F:\woowzengine\WoowzEngine\Logger.cpp;F:\woowzengine\WoowzEngine\Intermediate\woowzengine\Release\Logger.obj
 F:\woowzengine\WoowzEngine\LuaCompile.cpp;F:\woowzengine\WoowzEngine\Intermediate\woowzengine\Release\LuaCompile.obj
 F:\woowzengine\WoowzEngine\OpenGame.cpp;F:\woowzengine\WoowzEngine\Intermediate\woowzengine\Release\OpenGame.obj
+F:\woowzengine\WoowzEngine\RenderElement.h;F:\woowzengine\WoowzEngine\Intermediate\woowzengine\Release\RenderElement.obj
 F:\woowzengine\WoowzEngine\Source.cpp;F:\woowzengine\WoowzEngine\Intermediate\woowzengine\Release\Source.obj
 F:\woowzengine\WoowzEngine\WindowsElements.cpp;F:\woowzengine\WoowzEngine\Intermediate\woowzengine\Release\WindowsElements.obj

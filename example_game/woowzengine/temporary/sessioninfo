@@ -2,9 +2,11 @@
     "EngineJson": "F:/woowzengine/example_game/game/engine.json",
     "GameJson": "F:/woowzengine/example_game/game/game.json",
     "GamePath": "F:/woowzengine/example_game/",
-    "LuaLibs": "F:\\woowzengine\\WoowzEngine\\Build\\woowzengine\\Release\\lua\\?.lua;F:\\woowzengine\\WoowzEngine\\Build\\woowzengine\\Release\\lua\\?\\init.lua;F:\\woowzengine\\WoowzEngine\\Build\\woowzengine\\Release\\?.lua;F:\\woowzengine\\WoowzEngine\\Build\\woowzengine\\Release\\?\\init.lua;F:\\woowzengine\\WoowzEngine\\Build\\woowzengine\\Release\\..\\share\\lua\\5.4\\?.lua;F:\\woowzengine\\WoowzEngine\\Build\\woowzengine\\Release\\..\\share\\lua\\5.4\\?\\init.lua;.\\?.lua;.\\?\\init.lua;F:/woowzengine/example_game/game/?.lua",
-    "Seed": "1712958778",
+    "Log": "F:/woowzengine/example_game/woowzengine/log/2024-04-14-00-33-01.log",
+    "LuaLibs": "F:\\woowzengine\\WoowzEngine\\Build\\woowzengine\\Release\\lua\\?.lua;F:\\woowzengine\\WoowzEngine\\Build\\woowzengine\\Release\\lua\\?\\init.lua;F:\\woowzengine\\WoowzEngine\\Build\\woowzengine\\Release\\?.lua;F:\\woowzengine\\WoowzEngine\\Build\\woowzengine\\Release\\?\\init.lua;F:\\woowzengine\\WoowzEngine\\Build\\woowzengine\\Release\\..\\share\\lua\\5.4\\?.lua;F:\\woowzengine\\WoowzEngine\\Build\\woowzengine\\Release\\..\\share\\lua\\5.4\\?\\init.lua;.\\?.lua;.\\?\\init.lua;F:/woowzengine/example_game/game/?.lua;F:/woowzengine/example_game/game/engine/?.lua",
+    "MainWindow": "test1",
+    "Seed": "1713043981",
     "SessionPath": "F:/woowzengine/example_game/woowzengine/temporary/sessioninfo",
     "SourcePath": "F:/woowzengine/example_game/game/",
-    "Version": "0.0.1b"
+    "Version": "0.0.1c"
 }

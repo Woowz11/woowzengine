@@ -61,7 +61,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>F:\woowzengine\woowzengine\LIBS\JSON\include;F:\woowzengine\woowzengine\GL\GLFW\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>F:\woowzengine\woowzengine\LIBS\JSON\include;F:\woowzengine\woowzengine\GL\GLFW\include;F:\woowzengine\woowzengine\GL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile />
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -80,7 +80,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>F:\woowzengine\woowzengine\LIBS\JSON\include;F:\woowzengine\woowzengine\GL\GLFW\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>F:\woowzengine\woowzengine\LIBS\JSON\include;F:\woowzengine\woowzengine\GL\GLFW\include;F:\woowzengine\woowzengine\GL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile />
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -98,20 +98,29 @@
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="Easyer.cpp" />
     <ClCompile Include="Files.cpp" />
+    <ClCompile Include="GLFW.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="LuaCompile.cpp" />
     <ClCompile Include="OpenGame.cpp" />
+    <ClCompile Include="RenderElement.h" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="WindowsElements.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Base.h" />
+    <ClInclude Include="Color.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="Easyer.h" />
     <ClInclude Include="Files.h" />
+    <ClInclude Include="GLFW.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="LuaCompile.h" />
     <ClInclude Include="OpenGame.h" />
+    <ClInclude Include="Scene.h" />
+    <ClInclude Include="Texture.h" />
+    <ClInclude Include="Vector2.h" />
+    <ClInclude Include="Vertex.h" />
+    <ClInclude Include="Window.h" />
     <ClInclude Include="WindowsElements.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

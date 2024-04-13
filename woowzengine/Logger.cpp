@@ -40,6 +40,7 @@ void CreateLog(string LogName) {
 	else {
 		GetOrCreateFile(log);
 	}
+	SetSessionInfo("Log",log);
 }
 
 /*Записать в лог*/

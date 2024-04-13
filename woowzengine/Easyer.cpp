@@ -14,6 +14,12 @@
 
 using namespace std;
 
+/*Превращает символ в строку*/
+string CharToString(char c) {
+	string s(1, c);
+	return s;
+}
+
 /*Превращает дробное число в double*/
 double FloatToDouble(float f) {
 	return (double)f;
@@ -26,7 +32,19 @@ int StringToInt(string Str) {
 
 /*Превращает строку в дробное число*/
 float StringToFloat(string Str) {
-	return stof(Str);
+	try {
+		float f = stof(Str);
+		return f;
+	}
+	catch (const std::invalid_argument& e) {
+		PE("It is not possible to convert a string to a number! StringToFloat('"+Str+"')", "E0005");
+		return -1;
+	}
+	catch (const std::out_of_range& e) {
+		PE("Can't convert a string to a number because it's huge! StringToFloat('"+Str+"')", "E0006");
+		return -1;
+	}
+	return -1;
 }
 
 /*Превращает число в DWORD*/

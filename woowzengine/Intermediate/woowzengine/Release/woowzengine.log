@@ -1,9 +1,26 @@
-﻿  LuaCompile.cpp
-F:\woowzengine\WoowzEngine\LuaCompile.cpp(219,14): warning C4244: return: преобразование "float" в "int", возможна потеря данных
-F:\woowzengine\WoowzEngine\LuaCompile.cpp(224,13): warning C4244: return: преобразование "float" в "int", возможна потеря данных
+﻿  GLFW.cpp
+F:\woowzengine\woowzengine\GL\include\glad\gl.c(2302,5): warning C4551: в вызове функции отсутствует список аргументов
+  (компиляция исходного файла "GLFW.cpp")
+  
+F:\woowzengine\WoowzEngine\GLFW.cpp(48,75): warning C4244: аргумент: преобразование "int" в "GLfloat", возможна потеря данных
+F:\woowzengine\WoowzEngine\GLFW.cpp(48,57): warning C4244: аргумент: преобразование "int" в "GLfloat", возможна потеря данных
+F:\woowzengine\WoowzEngine\GLFW.cpp(48,39): warning C4244: аргумент: преобразование "int" в "GLfloat", возможна потеря данных
+F:\woowzengine\WoowzEngine\GLFW.cpp(48,22): warning C4244: аргумент: преобразование "int" в "GLfloat", возможна потеря данных
+F:\woowzengine\WoowzEngine\GLFW.cpp(50,77): warning C4244: аргумент: преобразование "int" в "GLfloat", возможна потеря данных
+F:\woowzengine\WoowzEngine\GLFW.cpp(50,59): warning C4244: аргумент: преобразование "int" в "GLfloat", возможна потеря данных
+F:\woowzengine\WoowzEngine\GLFW.cpp(50,41): warning C4244: аргумент: преобразование "int" в "GLfloat", возможна потеря данных
+F:\woowzengine\WoowzEngine\GLFW.cpp(50,23): warning C4244: аргумент: преобразование "int" в "GLfloat", возможна потеря данных
+F:\woowzengine\WoowzEngine\GLFW.cpp(52,77): warning C4244: аргумент: преобразование "int" в "GLfloat", возможна потеря данных
+F:\woowzengine\WoowzEngine\GLFW.cpp(52,59): warning C4244: аргумент: преобразование "int" в "GLfloat", возможна потеря данных
+F:\woowzengine\WoowzEngine\GLFW.cpp(52,41): warning C4244: аргумент: преобразование "int" в "GLfloat", возможна потеря данных
+F:\woowzengine\WoowzEngine\GLFW.cpp(52,23): warning C4244: аргумент: преобразование "int" в "GLfloat", возможна потеря данных
+  LuaCompile.cpp
+F:\woowzengine\WoowzEngine\LuaCompile.cpp(234,14): warning C4244: return: преобразование "float" в "int", возможна потеря данных
+F:\woowzengine\WoowzEngine\LuaCompile.cpp(239,13): warning C4244: return: преобразование "float" в "int", возможна потеря данных
+F:\woowzengine\WoowzEngine\LuaCompile.cpp(409,19): warning C4267: return: преобразование из "size_t" в "int"; возможна потеря данных
   Создание кода
-  30 of 5192 functions ( 0.6%) were compiled, the rest were copied from previous compilation.
-    26 functions were new in current compilation
-    219 functions had inline decision re-evaluated but remain unchanged
+  6 of 5594 functions ( 0.1%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    20 functions had inline decision re-evaluated but remain unchanged
   Создание кода завершено
   woowzengine.vcxproj -> F:\woowzengine\WoowzEngine\Build\woowzengine\Release\woowzengine.exe

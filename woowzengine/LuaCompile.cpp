@@ -7,8 +7,11 @@
 #include "Base.h"
 #include "Easyer.h"
 #include "Files.h"
+#include "GLFW.h"
 
 using namespace std;
+
+sol::state lua{};
 
 /*Зона игры*/
 
@@ -29,6 +32,7 @@ void l_Wait(int milisec) {
 
 /*Вернуть случайное число от 0 до 1*/
 float l_Random(float min,float max) {
+	if (min == 0 && max == 0) { return Random(); }
 	return Random(min,max);
 }
 
@@ -143,13 +147,24 @@ void l_CreateDirectory(string path) {
 
 /*Создать файл*/
 void l_CreateFile(string pathandname, string source) {
-		if (SafeMode()) { PW("Function [CreateFile('" + pathandname + "','"+source+"')] cannot be started in SafeMode!", "LW0003"); }
-		else {
-			GetOrCreateFile(pathandname);
-			if (!StringEmpty(source)) {
-				WriteToFile(pathandname, source);
-			}
+	if (SafeMode()) { PW("Function [CreateFile('" + pathandname + "','" + source + "')] cannot be started in SafeMode!", "LW0003"); }
+	else {
+		GetOrCreateFile(pathandname);
+		if (!StringEmpty(source)) {
+			WriteToFile(pathandname, source);
 		}
+	}
+}
+
+/*Переменовать файл*/
+void l_RenameFile(string path, string newname) {
+	if (SafeMode()) { PW("Function [RenameFile('" + path + "','" + newname + "')] cannot be started in SafeMode!", "LW0008"); }
+	else {
+		if (!HasDirectory(path)) { PE("File not found! RenameFile('"+path+"','"+newname+"')","L0007"); }
+		else {
+			RenameFile(path,GetPathWithoutFileName(path)+newname);
+		}
+	}
 }
 
 /*Запись переменных в JSON*/
@@ -162,8 +177,8 @@ void l_WriteJSON(string path, string id, string val) {
 
 /*Получить данные из json файла*/
 string l_ReadJSON(string path, string id) {
-	if (HasDirectory(path)) { PE("Json file [" + path + "] not found!", "L0006"); return "ERROR"; }
-	if(!JSONValid(path)){ PE("Json file ["+path+"] corrupted!","L0005"); return "ERROR"; }
+	if (HasDirectory(path)) { PE("Json file not found! ReadJSON('"+path+"','"+id+"')", "L0006"); return "ERROR"; }
+	if(!JSONValid(path)){ PE("Json file corrupted! ReadJSON('" + path + "','" + id + "')","L0005"); return "ERROR"; }
 	return ReadJson(path,id);
 }
 
@@ -345,9 +360,144 @@ float l_Modf(float f, float * f2) {
 	return modff(f, f2);
 }
 
+/*Ищет строку в строке*/
+bool l_HasString(string Str, string whatneedfound) {
+	if (Str == "") { PE("String cannot be empty! HasString('','"+whatneedfound+"')", "L0012"); return false; }
+	if (whatneedfound == "") { PW("The string to be found cannot be empty! HasString('" + Str + "','')", "LW0010"); return true; }
+	return StringHasString(Str, whatneedfound);
+}
+
+/*Замена строк в строке*/
+string l_Replace(string Str, string that, string tothat) {
+	if (Str == "") { PE("String cannot be empty! Replace('','"+that+"','"+tothat+"')", "L0010"); return "ERROR_L0010"; }
+	if (that == "") { PE("Replace string cannot be empty! Replace('" + Str + "','','" + tothat + "')","L0008"); return "ERROR_L0008"; }
+	if (that == tothat) { PW("Replace strings can't be the same! Replace('"+Str+"','"+that+"','"+tothat+"')","LW0009"); return Str; }
+	return ReplaceString(Str, that, tothat);
+}
+
+/*Удалить строку из строки*/
+string l_Remove(string Str, string that) {
+	if (Str == "") { PE("String cannot be empty! Remove('','" + that + "')", "L0011"); return "ERROR_L0011"; }
+	if (that == "") { PE("Remove string cannot be empty! Remove('" + Str + "','" + that + "')", "L0009"); return "ERROR_L0009"; }
+	return ReplaceString(Str, that, "");
+}
+
+/*Получить таблицу символов*/
+sol::table l_Charcters(string Str) {
+	if (Str == "") { PW("String cannot be empty! Charcters('')","LW0011"); return lua.create_table(); }
+	sol::table tbl = lua.create_table();
+	for (char& c : Str) {
+		tbl.add(CharToString(c));
+	}
+	return tbl;
+}
+
+/*Делает строку заглавной*/
+string l_Uppercase(string Str) {
+	if (Str == "") { PW("String cannot be empty! Uppercase('')", "LW0012"); return ""; }
+	return Uppercase(Str);
+}
+
+/*Делает строку не заглавной*/
+string l_Lowercase(string Str) {
+	if (Str == "") { PW("String cannot be empty! Lowercase('')", "LW0013"); return ""; }
+	return Lowercase(Str);
+}
+
+/*Получает размер строки*/
+int l_Length(string Str) {
+	return Str.length();
+}
+
+/*Удаление части строки*/
+string l_SubStr(string Str, int pos, int size) {
+	return Str.substr(pos, size);
+}
+
+/*Превращает строку в число*/
+float l_ToNumber(string Str) {
+	return StringToFloat(Str);
+}
+
+/*Запуск команды cmd*/
+void l_Cmd(string command) {
+	if (SafeMode()) { PW("Function [Cmd('" + command + "')] cannot be started in SafeMode!", "LW0014"); }
+	else {
+		system(StringToConstChar(command));
+	}
+}
+
+/*Создать окно*/
+void l_CreateWindow(string id, string Title, int sizex, int sizey) {
+	int x = sizex;
+	int y = sizey;
+	if (sizex == 0) { x = 640; }
+	if (sizey == 0) { y = 480; }
+	CreateWindowGLFW(id, x, y, Title);
+}
+
+/*Уничтожить окно*/
+void l_DestroyWindow(string id) {
+	DestroyWindowGLFW(id);
+}
+
+/*Проверяет есть ли окно в данных*/
+bool l_HasWindow(string id) {
+	return HasWindow(id);
+}
+
+/*Делает окно главным*/
+void l_SetWindowMain(string id) {
+	SetWindowToMain(id);
+}
+
+/*Получить айди главного окна*/
+string l_MainWindow() {
+	return GetSessionInfo("MainWindow");
+}
+
+/*Получить сид*/
+int l_Seed() {
+	return StringToInt(GetSessionInfo("Seed"));
+}
+
+/*Установить сид*/
+void l_SetSeed(int seed) {
+	SetRandomSeed(seed);
+}
+
+/*Получить размер окна X*/
+int l_GetWindowX(string id) {
+	return GetWindowSize(id, false);
+}
+
+/*Получить размер окна Y*/
+int l_GetWindowY(string id) {
+	return GetWindowSize(id, true);
+}
+
+/*Изменить размер экрана по X*/
+void l_SetWindowX(string id, int i) {
+	SetWindowSize(id, false, i);
+}
+
+/*Изменить размер экрана по Y*/
+void l_SetWindowY(string id, int i) {
+	SetWindowSize(id, true, i);
+}
+
+/*Изменяет название окна*/
+void l_SetWindowTitle(string id, string title) {
+	SetWindowTitle(id, title);
+}
+
+/*Изменение авторазмера у окна*/
+void l_SetWindowAutoSize(string id, bool b) {
+	SetWindowAutosize(id, b);
+}
+
 /*Зона woowzengine*/
 
-sol::state lua{};
 void CompileScript(string Path) {
 	try {
 		lua.script_file(Path);
@@ -382,8 +532,18 @@ void LuaCompile() {
 	lua["Log10E"] = sol::as_table(0.434294481903251827651);
 	lua["Ln2"] = sol::as_table(0.693147180559945309417);
 	lua["Ln10"] = sol::as_table(2.30258509299404568402);
-	string gamepath = GetSessionInfo("SourcePath");
-	lua["GamePath"] = sol::as_table(gamepath.substr(0, gamepath.size() - 1));
+	string sourcepath = GetSessionInfo("GamePath");
+	sourcepath = sourcepath.substr(0, sourcepath.size() - 1);
+	lua["SourcePath"] = sol::as_table(sourcepath);
+	lua["GamePath"] = sol::as_table(sourcepath + "/game");
+	lua["EnginePath"] = sol::as_table(sourcepath + "/woowzengine");
+	lua["EngineVersion"] = sol::as_table(GetSessionInfo("Version"));
+	lua["LogPath"] = sol::as_table(GetSessionInfo("Log"));
+	lua["Version"] = sol::as_table(GetGameInfo("Version"));
+	lua["GameName"] = sol::as_table(GetGameInfo("Name"));
+	lua["Author"] = sol::as_table(GetGameInfo("Author"));
+	lua["SafeMode"] = sol::as_table(StringToBool(GetEngineInfo("SafeMode")));
+	lua["ConsoleEnabled"] = sol::as_table(StringToBool(GetEngineInfo("Console")));
 
 	/*Функции*/
 	lua.set_function("CheckLua", &l_CheckLua);
@@ -403,6 +563,7 @@ void LuaCompile() {
 	lua.set_function("WriteFile", &l_WriteFile);
 	lua.set_function("CreateDirectory", &l_CreateDirectory);
 	lua.set_function("CreateFile", &l_CreateFile);
+	lua.set_function("RenameFile", &l_RenameFile);
 	lua.set_function("ReadJSON", &l_ReadJSON);
 	lua.set_function("WriteJSON", &l_WriteJSON);
 	lua.set_function("Abs", &l_Abs);
@@ -440,6 +601,29 @@ void LuaCompile() {
 	lua.set_function("HTan", &l_HTan);
 	lua.set_function("Trunc", &l_Trunc);
 	lua.set_function("Modf", &l_Modf);
+	lua.set_function("HasString", &l_HasString);
+	lua.set_function("Replace", &l_Replace);
+	lua.set_function("Remove", &l_Remove);
+	lua.set_function("Charcters", &l_Charcters);
+	lua.set_function("Uppercase", &l_Uppercase);
+	lua.set_function("Lowercase", &l_Lowercase);
+	lua.set_function("Length", &l_Length);
+	lua.set_function("SubStr", &l_SubStr);
+	lua.set_function("ToNumber", &l_ToNumber);
+	lua.set_function("Cmd", &l_Cmd);
+	lua.set_function("CreateWindow", &l_CreateWindow);
+	lua.set_function("DestroyWindow", &l_DestroyWindow);
+	lua.set_function("HasWindow", &l_HasWindow);
+	lua.set_function("SetWindowMain", &l_SetWindowMain);
+	lua.set_function("MainWindow", &l_MainWindow);
+	lua.set_function("Seed", &l_Seed);
+	lua.set_function("SetSeed", &l_SetSeed);
+	lua.set_function("GetWindowX", &l_GetWindowX);
+	lua.set_function("GetWindowY", &l_GetWindowY);
+	lua.set_function("SetWindowX", &l_SetWindowX);
+	lua.set_function("SetWindowY", &l_SetWindowY);
+	lua.set_function("SetWindowTitle", &l_SetWindowTitle);
+	lua.set_function("SetWindowAutoSize", &l_SetWindowAutoSize);
 
 	P("LUA", "Lua functions and etc. are loaded!");
 	P("LUA", "Start start.lua script...");
