@@ -3,13 +3,17 @@
 #include <filesystem>
 #include <chrono>
 #include <thread>
+#include <mutex>
 #include "LuaCompile.h"
+#include "OpenGame.h"
 #include "Base.h"
 #include "Easyer.h"
 #include "Files.h"
 #include "GLFW.h"
 
 using namespace std;
+
+std::mutex mtx;
 
 sol::state lua{};
 
@@ -52,10 +56,15 @@ string l_ReadFile(string path) {
 }
 
 /*Записать данные в файл*/
-void l_WriteFile(string path, string value) {
+void l_WriteFile(string path, string value, bool Add) {
 	if (SafeMode()) { PW("Function [WriteFile('"+path+"','"+value+"')] cannot be started in SafeMode!","LW0001"); }
 	else {
-		WriteToFile(path, value);
+		if (Add) {
+			WriteToFile(path, ReadFile(path)+value);
+		}
+		else {
+			WriteToFile(path, value);
+		}
 	}
 }
 
@@ -114,25 +123,26 @@ void l_PrintClear(string text, int color) {
 
 /*Превращает функцию в цикл*/
 void l_Cycle(sol::function func, int milisec) {
-	if (func == sol::nil) { PE("Function not found or does not exist for Cycle("+to_string(milisec)+")!","L0000"); }
+	if (func == sol::nil || !func.valid()) { PE("Function not found or does not exist for Cycle("+to_string(milisec)+")!","L0000"); }
 	else {
 		if (milisec <= 0) { PE("The time in Cycle(" + to_string(milisec) + ") cannot be <= 0!","L0001"); }
 		else {
-
-			try {
 				auto cycle = [func, milisec]() {
 						while (true) {
 							std::this_thread::sleep_for(std::chrono::milliseconds(milisec));
-							func();
+							mtx.lock();
+							try {
+								func();
+							}
+							catch (const sol::error& e) { /*Получение ошибок из lua скриптов*/
+								string what = e.what();
+								PE(what, "LUA");
+							}
+							mtx.unlock();
 						}
 					};
 				std::thread thread(cycle);
 				thread.detach();
-			}
-			catch (const sol::error& e) { /*Получение ошибок из lua скриптов*/
-				string what = e.what();
-				PE(what, "LUA");
-			}
 		}
 	}
 }
@@ -496,7 +506,89 @@ void l_SetWindowAutoSize(string id, bool b) {
 	SetWindowAutosize(id, b);
 }
 
+/*Изменение масштаба у окна*/
+void l_SetWindowScale(string id, float f) {
+	SetWindowScale(id, f);
+}
+
+/*Синус ABS*/
+float l_AbsSin(float f) {
+	return abs(sin(f));
+}
+
+/*Косинус ABS*/
+float l_AbsCos(float f) {
+	return abs(cos(f));
+}
+
+/*(Синус+1)/2*/
+float l_DSin(float f) {
+	return (sin(f) + 1) / 2;
+}
+
+/*(Косинус+1)/2*/
+float l_DCos(float f) {
+	return (cos(f) + 1) / 2;
+}
+
+/*Запретить или размешить менять размер окна*/
+void l_SetWindowResizable(string id, bool b) {
+	SetWindowResizable(id, b);
+}
+
+/*Вызывает функцию когда окно закрывается*/
+void l_SetWindowEventClosed(string id, sol::function func) {
+	if (func == sol::nil || !func.valid()) { PE("Function not found or does not exist for SetWindowEventClosed(" + id + ")!", "L0013"); }
+	else {
+		SetWindowClosedEvent(id, func);
+	}
+}
+
+/*Вызывает функцию когда игра закрывается*/
+void l_SetEventClosed(sol::function func) {
+	if (func == sol::nil || !func.valid()) { PE("Function not found or does not exist for SetEventClosed()!", "L0014"); }
+	else {
+		SetGameClosedEvent(func);
+	}
+}
+
+/*Нажатие клавиши в окне*/
+void l_SetWindowEventKeyPress(string id, sol::function func) {
+	SetWindowKPEvent(id, func);
+}
+
+/*Отжатие клавиши в окне*/
+void l_SetWindowEventKeyRelease(string id, sol::function func) {
+	SetWindowKREvent(id, func);
+}
+
+/*Зажатие клавиши в окне*/
+void l_SetWindowEventKeyHold(string id, sol::function func) {
+	SetWindowKHEvent(id, func);
+}
+
+/*Таблица зажатых клавиш*/
+sol::table l_PressedKeys() {
+	sol::table tbl = lua.create_table();
+	for (const auto& p : GetPressedKeys()) {
+		tbl.add(p.first);
+	}
+	return tbl;
+}
+
 /*Зона woowzengine*/
+
+void StartFunction(sol::function func, string s) {
+	if (func != sol::nil && func.valid()) {
+		try {
+			func(s);
+		}
+		catch (const sol::error& e) { /*Получение ошибок из lua скриптов*/
+			string what = e.what();
+			PE(what, "LUA");
+		}
+	}
+}
 
 void CompileScript(string Path) {
 	try {
@@ -624,6 +716,18 @@ void LuaCompile() {
 	lua.set_function("SetWindowY", &l_SetWindowY);
 	lua.set_function("SetWindowTitle", &l_SetWindowTitle);
 	lua.set_function("SetWindowAutoSize", &l_SetWindowAutoSize);
+	lua.set_function("SetWindowScale", &l_SetWindowScale);
+	lua.set_function("AbsSin", &l_AbsSin);
+	lua.set_function("AbsCos", &l_AbsCos);
+	lua.set_function("DSin", &l_DSin);
+	lua.set_function("DCos", &l_DCos);
+	lua.set_function("SetWindowResizable", &l_SetWindowResizable);
+	lua.set_function("SetWindowEventClosed", &l_SetWindowEventClosed);
+	lua.set_function("SetEventClosed", &l_SetEventClosed);
+	lua.set_function("SetWindowEventKeyPress", &l_SetWindowEventKeyPress);
+	lua.set_function("SetWindowEventKeyRelease", &l_SetWindowEventKeyRelease);
+	lua.set_function("SetWindowEventKeyHold", &l_SetWindowEventKeyHold);
+	lua.set_function("PressedKeys", &l_PressedKeys);
 
 	P("LUA", "Lua functions and etc. are loaded!");
 	P("LUA", "Start start.lua script...");

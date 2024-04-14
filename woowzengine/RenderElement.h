@@ -8,6 +8,8 @@ public:
 	string shader;
 	Texture texture;
 	string name;
+	int ZIndex = 0;
+	bool DontScale = false; /*Для UI интерфейса*/
 
 	RenderElement(string name = "new element") : name(name) {}
 };

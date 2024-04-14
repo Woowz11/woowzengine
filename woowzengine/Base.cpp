@@ -12,6 +12,7 @@
 #include <thread>
 #include <cstdlib>
 #include <algorithm>
+#include "OpenGame.h"
 #include "GLFW.h"
 #include "time.h"
 #include "Base.h"
@@ -75,8 +76,10 @@ float Random() {
 void BaseInstall(string GamePath_) {
 	GamePath = GamePath_;
 	std::setlocale(LC_NUMERIC, "POSIX");
-	if (GetEngineInfo("LogStyle", true) != "WARN_EMPTY") {
-		LogsStyle = GetEngineInfo("LogStyle");
+	if (JSONValid(GamePath + SessionInfoPath)) {
+		if (GetEngineInfo("LogStyle", true) != "WARN_EMPTY") { /*ФИКС ОШИБКУ ЧТО ТУТ IgnoreError СБРАСЫВАЕТЬСЯ С TRUE НА FALSE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+			LogsStyle = GetEngineInfo("LogStyle");
+		}
 	}
 	if (StringEmpty(LogsStyle)) { MessageBoxFatal("LogStyle (engine.json) can't be empty!", "C0014", true); }
 }
@@ -108,7 +111,7 @@ string Lowercase(string Str) {
 /*Первращает строку в сообщение для логов*/
 string ConvertTextToConsoleLogMessage(string Text, string Module, char StartSymbol) {
 	string c(1, StartSymbol);
-	return ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(LogsStyle, "%tt", Uppercase(Module)), "%c", Text), "%t", Uppercase(FillString(Module,7,' '))), "%b", c), "%w", GetTime("w")), "%y", GetTime("y")), "%mn", GetTime("mn")), "%d", GetTime("d")), "%h", GetTime("h")), "%m", GetTime("m")), "%s", GetTime("s"));
+	return ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(LogsStyle, "%ms", GetTime("ms")), "%tt", Uppercase(Module)), "%c", Text), "%t", Uppercase(FillString(Module, 7, ' '))), "%b", c), "%w", GetTime("w")), "%y", GetTime("y")), "%mn", GetTime("mn")), "%d", GetTime("d")), "%h", GetTime("h")), "%m", GetTime("m")), "%s", GetTime("s"));
 }
 /*Отправить сообщение*/
 void P(string Module, string Text, int color) {
@@ -128,7 +131,7 @@ void PW(string Text,string Code) {
 }
 /*Отправить фатальую ошибку*/
 void PF(string Text,string Code, bool DontPrint) {
-	if (!DontPrint) { Print(ConvertTextToConsoleLogMessage(Text, "FATAL", '#'), 4); }
+	if (!DontPrint) { Print(ConvertTextToConsoleLogMessage(Text+" - "+Code, "FATAL", '#'), 4); }
 	MessageBoxFatal(Text,Code,DontPrint);
 	Exit();
 }
@@ -217,27 +220,29 @@ string GetFileName(string Path) {
 /*Получить информацию из файла game.json*/
 string GetGameInfo(string ID, bool IgnoreError) {
 	if (IgnoreError && !HasDirectory(GamePath + SessionInfoPath)) { return "WARN_EMPTY"; }
-	string p = GetSessionInfo("GameJson");
+	string p = GetSessionInfo("GameJson",IgnoreError);
 	if (!HasDirectory(p)) { if (IgnoreError) { return "WARN_EMPTY"; } PF("game.json not found!", "C0007", true); return "ERROR_C0007"; }
 	if (!JSONValid(p)) { PF("game.json corrupted!\nTry deleting the file!", "C0008", true); return "ERROR_C0008"; }
-	return ReadJson(p, ID);
+	return ReadJson(p, ID, (IgnoreError ? "WARN_EMPTY" : ""));
 }
 
 /*Получить информацию из файла engine.json*/
-string GetEngineInfo(string ID, bool IgnoreError) {
-	if (IgnoreError && !HasDirectory(GamePath + SessionInfoPath)) { return "WARN_EMPTY"; }
-	string p = GetSessionInfo("EngineJson");
+string GetEngineInfo(string ID, bool IgnoreError1) {
+	DebugPrint("GET ENGINE INFO " + ID + " AND IGNORE ERROR " + (IgnoreError1 ? "YES" : "NO"));
+	if (IgnoreError1 && !HasDirectory(GamePath + SessionInfoPath)) { return "WARN_EMPTY"; }
+	string p = GetSessionInfo("EngineJson",IgnoreError1);
 	if (p == "WARN_EMPTY") { return p; }
-	if (!HasDirectory(p)) { if (IgnoreError) { return "WARN_EMPTY"; } PF("engine.json not found!", "C0009", true); return "ERROR_C0009"; }
+	if (!HasDirectory(p)) { if (IgnoreError1) { return "WARN_EMPTY"; } PF("engine.json not found!", "C0009", true); return "ERROR_C0009"; }
 	if (!JSONValid(p)) { PF("engine.json corrupted!\nTry deleting the file!", "C0010", true); return "ERROR_C0010"; }
-	return ReadJson(p, ID);
+	return ReadJson(p, ID, (IgnoreError1 ? "WARN_EMPTY" : ""));
 }
 
 /*Получить информацию из файла sessioninfo*/
-string GetSessionInfo(string ID, bool IgnoreError) {
-	if (!HasDirectory(GamePath + SessionInfoPath)) { if (IgnoreError) { return "WARN_EMPTY"; } PF("Sessioninfo not found!","C0001", true); return "ERROR_C0001"; }
+string GetSessionInfo(string ID, bool IgnoreError2) {
+	DebugPrint("GET SESSION INFO " + ID + " AND IGNORE ERROR " + (IgnoreError2 ? "YES" : "NO"));
+	if (!HasDirectory(GamePath + SessionInfoPath)) { if (IgnoreError2) { return "WARN_EMPTY"; } PF("Sessioninfo not found!","C0001", true); return "ERROR_C0001"; }
 	if (!JSONValid(GamePath + SessionInfoPath)) { PF("Sessioninfo corrupted!","C0002", true); return "ERROR_C0002"; }
-	return ReadJson(GamePath + SessionInfoPath,ID);
+	return ReadJson(GamePath + SessionInfoPath,ID,(IgnoreError2 ? "WARN_EMPTY" : ""));
 }
 
 /*Заменить информацию в файле sessioninfo*/
@@ -259,6 +264,7 @@ void WriteToJson(string Path, string ID, string Value) {
 	data[ID] = Value;
 	ofstream output_file(Path);
 	output_file << data.dump(4);
+	output_file.close();
 }
 
 /*Записать переменную в JSON*/
@@ -266,6 +272,7 @@ string ReadJson(string Path, string ID, string IfNotFound) {
 	if (JSONValid(Path)) {
 		string JSON = ReadFile(Path);
 		json data = json::parse(JSON);
+		DebugPrint(ID+" "+IfNotFound);
 		if (data.contains(ID)) {
 			return data[ID];
 		}
@@ -280,7 +287,7 @@ string ReadJson(string Path, string ID, string IfNotFound) {
 		}
 	}
 	else {
-		PE("JSON file [" + Path + "] has an incorrect structure!", "E0002");
+		PE("JSON file [" + Path + "] has an incorrect structure! ReadJson('"+ID+"','"+IfNotFound+"')", "E0002");
 		return "ERROR_E0002";
 	}
 }
@@ -311,13 +318,15 @@ string FillString(string Str, int Width, char Symbol, bool Invert) {
    "mn" - Возвращает месяца
    "y"  - Возвращает года
    "w"  - Возвращает недели
+   "ms" - Возвращает миллисекунды
 */
-string GetTimeComponent(time_t Time, string Tag) {
-	struct tm Now;
-	struct tm* NowPtr = &Now;
+string GetTimeComponent(std::chrono::system_clock::time_point Time, string Tag) {
+	std::time_t time = std::chrono::system_clock::to_time_t(Time);
+	std::tm Now;
+	localtime_s(&Now, &time);
 	int Val = -1;
 	int AddZeros = 0;
-	localtime_s(NowPtr, &Time);
+
 	if (Tag == "s") {
 		Val = Now.tm_sec;
 		AddZeros = 2;
@@ -346,6 +355,11 @@ string GetTimeComponent(time_t Time, string Tag) {
 		Val = Now.tm_wday;
 		AddZeros = 1;
 	}
+	else if (Tag == "ms") {
+		auto duration = Time.time_since_epoch();
+		Val = static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() % 1000);
+		AddZeros = 3;
+	}
 	if (Val == -1) { PE("Tag ["+Tag+"] does not exist in the function GetTimeComponent()!","E0003"); return "ERROR_E0003"; }
 	return FillString(to_string(Val), AddZeros, '0', true);
 }
@@ -362,7 +376,7 @@ bool StringToBool(string Str) {
 
 /*Получить текущее время используя теги*/
 string GetTime(string Tag) {
-	return GetTimeComponent(time(0),Tag);
+	return GetTimeComponent(std::chrono::system_clock::now(),Tag);
 }
 
 /*Получить Value из Map используя Key*/

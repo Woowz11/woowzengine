@@ -1,8 +1,8 @@
 {
     "Console": "true",
     "LogFatal": "-FATAL",
-    "LogFormat": "%y-%mn-%d-%h-%m-%s",
-    "LogStyle": "%b[%s:%m:%h][%t] %c",
+    "LogFormat": "%y-%mn-%d-%h-%m-%s-%ms",
+    "LogStyle": "%b[%h:%m:%s:%ms][%t] %c",
     "LogType": "log",
     "SafeMode": "false"
 }

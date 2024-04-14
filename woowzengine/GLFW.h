@@ -3,6 +3,7 @@
 #include "Windows.h"
 
 #include <iostream>
+#include <sol/sol.hpp>
 #include <glad/gl.h>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
@@ -21,9 +22,19 @@ void Render();
 bool HasWindow(string id);
 Window GetWindowByID(string id);
 void SetWindowToMain(string id);
+void SetWindowScale(string id, float scale = 1);
 void PE_GLFW(int error, const char* desc);
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 Window CreateWindowGLFW(string id, int sizex = 640, int sizey = 480, string title = "New Window");
 void DestroyWindowGLFW(string id);
 int GetWindowSize(string id, bool thatY);
 void SetWindowAutosize(string id, bool b);
+void SetWindowResizable(string id, bool b);
+void SetWindowClosedEvent(string id, sol::function f);
+string GetIDByWindow(GLFWwindow* window);
+Window GetWindowByWindow(GLFWwindow* window);
+string GetKeyFromID(int i);
+void SetWindowKPEvent(string id, sol::function f);
+void SetWindowKREvent(string id, sol::function f);
+void SetWindowKHEvent(string id, sol::function f);
+map<string, int> GetPressedKeys();

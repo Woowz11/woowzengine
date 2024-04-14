@@ -14,22 +14,16 @@
 
 using namespace std;
 
-string EngineVersion = "0.0.1c";
-
-bool WINAPI StopEngine(DWORD CEvent) {
-    if (CEvent == CTRL_CLOSE_EVENT) {
-        StopGLFW();
-    }
-    return true;
-}
+string EngineVersion = "0.0.1d";
+bool DebugVersion = true;
 
 void StartEngine(string GamePath) {
-    OpenGame(GamePath, EngineVersion);
+    OpenGame(GamePath, EngineVersion, DebugVersion);
 }
 
 int main(int argc, char** argv)
 {
-    ::ShowWindow(::GetConsoleWindow(), SW_HIDE);
+    if (!DebugVersion) { ::ShowWindow(::GetConsoleWindow(), SW_HIDE); }
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 8);
     SetConsoleTitle(StringToLPCWSTR("WoowzEngine Console"));
     cout << "WoowzEngine realization..." << "\n";
@@ -40,7 +34,7 @@ int main(int argc, char** argv)
     }
     else {
         if (!HasDirectory(StringToPath(GamePath))) {
-            MessageBoxFatal("So far the engine does not support opening games through a dialog box, stick this exe file in an empty folder and run .bat file!","0",true);
+            MessageBoxFatal("So far the engine does not support opening games through a dialog box, stick this exe file in an empty folder and run .bat file!\nLook https://woowz11.github.io/woowzsite/woowzengine.html","0",true);
         }
     }
 

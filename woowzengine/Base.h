@@ -1,5 +1,6 @@
 #include <string>
 #include <map>
+#include <chrono>
 #include "time.h"
 #pragma once
 using namespace std;
@@ -26,7 +27,7 @@ void PW(string Text = "Default Warning",string Code = "W0000");
 void PF(string Text = "Default Fatal",string Code = "C0000", bool DontPrint = false);
 void Wait(int Milliseconds);
 string FillString(string Str, int Width = 10, char Symbol = '#',bool Invert = false);
-string GetTimeComponent(time_t Time, string Tag = "s");
+string GetTimeComponent(std::chrono::system_clock::time_point Time, string Tag = "s");
 string GetTime(string Tag = "s");
 bool GetOrCreateFolder(string);
 bool GetOrCreateFile(string);
