@@ -4,14 +4,20 @@
 
 #include <iostream>
 #include <map>
+#include <string>
 #define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-#include <glad/gl.h>
-#include <glad/gl.c>
+#include <glfw3.h>/*Окна*/
+#include <glfw3native.h>
+//---- Графика ----
+#include <glew.h>
+#include <wglew.h>
+//#include <glut.h>
+//-----------------
 #include "GLFW.h"
 #include "Base.h"
 #include "Easyer.h"
 #include "LuaCompile.h"
+#include "OpenGame.h"
 
 #include "Color.h"
 #include "Vector2.h"
@@ -24,16 +30,77 @@ map<string, Window> Windows;
 map<GLFWwindow*, string> Windows_2;
 string MainWindow = "";
 
+GLFWwindow* DebugWindow;
+
+string VertexDefaultShader = R"(
+   #version 330
+   in vec3 pos;
+   void main()
+   {
+       gl_Position = vec4(pos, 1);
+   }
+)";
+
+string FragmentDefaultShader = R"(
+    #version 330
+    void main() 
+    {
+        gl_FragColor = vec4(1, 0, 0, 1);
+    }
+)";
+
+GLuint DefaultShader;
+GLuint Array,Buffer;
+
 void StopGLFW() {
+	glDeleteVertexArrays(1, &Array);
+	glDeleteBuffers(1, &Buffer);
+	glDeleteProgram(DefaultShader);
 	glfwTerminate();
 }
 
+void GLEW(Window window) {
+	SetSessionInfo("GLEWwindow", "true");
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	GLenum err = glewInit();
+	if (err != GLEW_OK) {
+		const char* errString = reinterpret_cast<const char*>(glewGetErrorString(err));
+		PF(errString, "GLEW");
+	}
+	P("GLEW", "GLEW installed on ["+window.id+"]!");
+	glfwSetErrorCallback(PE_GLFW);
+
+	float vertices[] = {
+	-1.0f, -1.0f, 0.0f,
+	1.0f, -1.0f, 0.0f,
+	0.0f,  1.0f, 0.0f,
+	};
+
+	GLuint vShader = CompileShader(VertexDefaultShader, true);
+	GLuint fShader = CompileShader(FragmentDefaultShader, false);
+	DefaultShader = CompileShaderProgram(vShader, fShader);
+
+	glGenVertexArrays(1, &Array);
+	glBindVertexArray(Array);
+
+	glGenBuffers(1, &Buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, Buffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
+
+	glUseProgram(DefaultShader);
+}
+
 void GLFWInstall() {
+	int major, minor, revision;
 	if (!glfwInit()) {
 		PF("GLFW cannot be realized!","C0017");
 	}
-	glfwSetErrorCallback(PE_GLFW);
-	P("GLFW", "GLFW Installed!");
+	else {
+		glfwGetVersion(&major, &minor, &revision);
+	}
+	P("GLFW", "GLFW Installed! (minor - " + to_string(minor) + ",major-" + to_string(major) + ",revision-" + to_string(revision) + ")");
 
 	SetSessionInfo("MainWindow", "");
 }
@@ -45,50 +112,150 @@ void PE_GLFW(int error, const char* desc) {
 
 /*Рендер*/
 
+GLuint CompileShader(string shadercode, bool ThatVertex) {
+	GLuint Shader = glCreateShader(ThatVertex? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER);
+	const char* shadercode_ = StringToConstChar(shadercode);
+	glShaderSource(Shader, 1, &shadercode_, NULL);
+	glCompileShader(Shader);
+
+	GLint compileStatus;
+
+	glGetShaderiv(Shader, GL_COMPILE_STATUS, &compileStatus);
+
+	if (!compileStatus)
+	{
+		int length;
+		glGetShaderiv(Shader, GL_INFO_LOG_LENGTH, &length);
+		char* cMessage = new char[length];
+
+		glGetShaderInfoLog(Shader, length, &length, cMessage);
+		PE(cMessage, "SHADER");
+		delete[] cMessage;
+		glDeleteShader(Shader);
+	}
+
+	return Shader;
+}
+
+GLuint CompileShaderProgram(GLuint Vertex, GLuint Fragment) {
+	GLuint Shader = glCreateProgram();
+	glAttachShader(Shader, Vertex);
+	glAttachShader(Shader, Fragment);
+	glLinkProgram(Shader);
+	glDeleteShader(Vertex);
+	glDeleteShader(Fragment);
+
+	GLint linkStatus;
+
+	// Get the link status for this program
+	glGetProgramiv(Shader, GL_LINK_STATUS, &linkStatus);
+
+	if (!linkStatus)
+	{ 
+		PE("Error shader linking program!","E0012");
+	}
+
+	return Shader;
+}
+
 void RenderObjectTriangles(Vertex v1, Vertex v2, Vertex v3) {
-	glBegin(GL_TRIANGLES);
+	/*glBegin(GL_TRIANGLES);
 	glColor4f(v1.color.r/255, v1.color.g / 255, v1.color.b / 255, v1.color.a / 255);
 	glVertex2f(v1.position.x, v1.position.y);
 	glColor4f(v2.color.r / 255, v2.color.g / 255, v2.color.b / 255, v2.color.a / 255);
 	glVertex2f(v2.position.x, v2.position.y);
 	glColor4f(v3.color.r / 255, v3.color.g / 255, v3.color.b / 255, v3.color.a / 255);
 	glVertex2f(v3.position.x, v3.position.y);
-	glEnd();
+	glEnd();*/
+
+	/*
+
+	GLuint VAO, VBO;
+	glGenVertexArrays(1, &VAO);
+	glGenBuffers(1, &VBO);
+
+	glBindVertexArray(VAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);*/
 }
 
 /*Методы*/
 
-void Render() {
-	for (auto const& [id, window] : Windows) {
-		if (!glfwWindowShouldClose(window.glfw)) {
-			glfwMakeContextCurrent(window.glfw);
-			int version = gladLoadGL(glfwGetProcAddress);
-			if (version == 0) {
-				PF("OpenGL cannot be realized! Render()", "C0020");
-			}
+void RenderElement_(RenderElement e) {
+	string type = e.type;
 
-			int width, height;
-			if (window.AutoResize) {
-				glfwGetFramebufferSize(window.glfw, &width, &height);
+	if (type == "triangle") {
+		RenderObjectTriangles(GetFromList(e.Vertexs, 0), GetFromList(e.Vertexs, 1), GetFromList(e.Vertexs, 2));
+	}
+
+	glFlush();
+}
+
+void Render() {
+	if (Windows.size() > 0) {
+		for (auto const& [id, window] : Windows) {
+			if (!glfwWindowShouldClose(window.glfw)) {
+
+					glfwMakeContextCurrent(window.glfw);
+
+					int width, height;
+					if (window.AutoResize) {
+						glfwGetFramebufferSize(window.glfw, &width, &height);
+					}
+					else {
+						width = window.StartSizeX;
+						height = window.StartSizeY;
+					}
+					glViewport(0, 0, round(width * window.scale), round(height * window.scale));
+
+					/*----------------[Рисование]------------------*/
+
+					glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+					//glEnable(GL_BLEND);
+					//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+					if (window.scene.windowid != "") {
+						glClearColor(window.scene.BackgroundColor.GetR(), window.scene.BackgroundColor.GetG(), window.scene.BackgroundColor.GetB(), 1);
+					}
+					else {
+						glClearColor(0, 0, 0, 1);
+					}
+				
+					//glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+					if (window.WindowGLEW) {
+						glEnableVertexAttribArray(0);
+						glBindBuffer(GL_ARRAY_BUFFER, Buffer);
+						glVertexAttribPointer(
+							0,                
+							3,                
+							GL_FLOAT,          
+							GL_FALSE,           
+							0,                 
+							(void*)0           
+						);
+
+						glDrawArrays(GL_TRIANGLES, 0, 3);
+						glDisableVertexAttribArray(0);
+					}
+
+					glfwSwapBuffers(window.glfw);
+					/*------------[Конец рисования]----------------*/
+					glfwPollEvents();
 			}
 			else {
-				width = window.StartSizeX;
-				height = window.StartSizeY;
-			}
-			glViewport(0, 0, round(width * window.scale), round(height * window.scale));
-
-			glClear(GL_COLOR_BUFFER_BIT);
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			RenderObjectTriangles(Vertex(Vector2(-1, -1), Color(255, 0, 0)), Vertex(Vector2(-1,1), Color(0, 255, 0)), Vertex(Vector2(1,-1), Color(0, 0, 255)));
-			glfwSwapBuffers(window.glfw);
-			glfwPollEvents();
-		}
-		else {
-			if (id == MainWindow) {
-				Exit();
-			}
-			DestroyWindowGLFW(id);
+					if (id == MainWindow) {
+						Exit();
+					}
+					DestroyWindowGLFW(id);
+				}
 		}
 	}
 }
@@ -188,6 +355,15 @@ void SetWindowAutosize(string id, bool b) {
 	Windows[id] = w;
 }
 
+/*Добавить сцену*/
+void SetWindowScene(string id, Scene b, bool DontPrint) {
+	if (!DontPrint) { P("SCENE", "Scene [" + b.name + "] applied to window [" + id + "]"); }
+	Window w = GetWindowByID(id);
+	b.windowid = id;
+	w.scene = b;
+	Windows[id] = w;
+}
+
 /*Изменение маштаба*/
 void SetWindowScale(string id, float scale) {
 	if (scale <= 0) { PE("Scale cannot be <= 0! SetWindowScale('"+id+"',"+to_string(scale) + ")", "E0009"); }
@@ -240,7 +416,8 @@ map<int, string> Keys = {
 	{282,"numlock"},{331,"numslash"},{332,"asterisk"},{333,"numminus"},{327,"num7"},{328,"num8"},{329,"num9"},{334,"numplus"},{324,"num4"},{325,"num5"},{326,"num6"},{321,"num1"},{322,"num2"},{323,"num3"},{335,"numenter"},{320,"num0"},{330,"numdelete"},
 	{81,"q"},{87,"w"},{69,"e"},{82,"r"},{84,"t"},{89,"y"},{85,"u"},{73,"i"},{79,"o"},{80,"p"},{91,"leftbracket"},{93,"rightbracket"},
 	{65,"a"},{83,"s"},{68,"d"},{70,"f"},{71,"g"},{72,"h"},{74,"j"},{75,"k"},{76,"l"},{59,"colon"},{39,"apostrophe"},
-	{90,"z"},{88,"x"},{67,"c"},{86,"v"},{66,"b"},{78,"n"},{77,"m"},{44,"comma"},{46,"dot"},{47,"question"}
+	{90,"z"},{88,"x"},{67,"c"},{86,"v"},{66,"b"},{78,"n"},{77,"m"},{44,"comma"},{46,"dot"},{47,"question"},
+	{346,"alt2"},{345,"ctrl2"},{269,"end"},{281,"scrolllock"},{284,"pausebreak"},{348,"applications"}
 };
 
 map<int, bool> PressedKeys = {};
@@ -296,14 +473,22 @@ Window CreateWindowGLFW(string id, int sizex, int sizey, string title) {
 				PF("Window could not be created! CreateWindow('" + id + "'," + to_string(sizex) + "," + to_string(sizey) + ",'" + title + "')", "C0018");
 				return Window();
 			}
+			glfwMakeContextCurrent(window);
 			Window window_ = Window(id,window);
 			window_.StartSizeX = sizex;
 			window_.StartSizeY = sizey;
-			Windows[id] = window_;
-			Windows_2[window] = id;
 			glfwSetKeyCallback(window, KeyCallback);
 
 			P("WINDOW", "Window [" + id + "] created!");
+
+			if (StringToBool(GetSessionInfo("GLEWwindow")) == false) {
+				window_.WindowGLEW = true;
+				GLEW(window_);
+			}
+
+			Windows[id] = window_;
+			Windows_2[window] = id;
+
 			return window_;
 		}
 	}

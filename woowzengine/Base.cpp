@@ -77,7 +77,7 @@ void BaseInstall(string GamePath_) {
 	GamePath = GamePath_;
 	std::setlocale(LC_NUMERIC, "POSIX");
 	if (JSONValid(GamePath + SessionInfoPath)) {
-		if (GetEngineInfo("LogStyle", true) != "WARN_EMPTY") { /*ФИКС ОШИБКУ ЧТО ТУТ IgnoreError СБРАСЫВАЕТЬСЯ С TRUE НА FALSE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+		if (GetEngineInfoIE("LogStyle") != "WARN_EMPTY") { /*ФИКС ОШИБКУ ЧТО ТУТ IgnoreError СБРАСЫВАЕТЬСЯ С TRUE НА FALSE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
 			LogsStyle = GetEngineInfo("LogStyle");
 		}
 	}
@@ -192,10 +192,13 @@ string Trim(string s) {
 }
 
 /*Может называться в windows*/
-bool NameWindowsAccept(string Str, bool ThatEnd) {
-	bool result = FindChar(Str, '\\') || FindChar(Str, '/') || FindChar(Str, ':') || FindChar(Str, '*') || FindChar(Str, '?') || FindChar(Str, '"') || FindChar(Str, '<') || FindChar(Str, '>') || FindChar(Str, '|') || FindChar(Str, '+') || FindChar(Str, '.');
+bool NameWindowsAccept(string Str, bool ThatEnd, bool ThatPath) {
+	bool result = FindChar(Str, '*') || FindChar(Str, '?') || FindChar(Str, '"') || FindChar(Str, '<') || FindChar(Str, '>') || FindChar(Str, '|') || FindChar(Str, '+');
 	if (ThatEnd) {
 		result = result || FindChar(Str, ' ');
+	}
+	if (!ThatPath) {
+		result = result || FindChar(Str, '\\') || FindChar(Str, '/') || FindChar(Str, ':') || FindChar(Str, '.');
 	}
 	return !result;
 }
@@ -218,31 +221,48 @@ string GetFileName(string Path) {
 }
 
 /*Получить информацию из файла game.json*/
-string GetGameInfo(string ID, bool IgnoreError) {
-	if (IgnoreError && !HasDirectory(GamePath + SessionInfoPath)) { return "WARN_EMPTY"; }
-	string p = GetSessionInfo("GameJson",IgnoreError);
-	if (!HasDirectory(p)) { if (IgnoreError) { return "WARN_EMPTY"; } PF("game.json not found!", "C0007", true); return "ERROR_C0007"; }
+string GetGameInfo(string ID) {
+	string p = GetSessionInfo("GameJson");
+	if (!HasDirectory(p)) { PF("game.json not found!", "C0007", true); return "ERROR_C0007"; }
 	if (!JSONValid(p)) { PF("game.json corrupted!\nTry deleting the file!", "C0008", true); return "ERROR_C0008"; }
-	return ReadJson(p, ID, (IgnoreError ? "WARN_EMPTY" : ""));
+	return ReadJson(p, ID);
+}
+string GetGameInfoIE(string ID) {
+	if (!HasDirectory(GamePath + SessionInfoPath)) { return "WARN_EMPTY"; }
+	string p = GetSessionInfoIE("GameJson");
+	if (!HasDirectory(p)) { return "WARN_EMPTY"; }
+	if (!JSONValid(p)) { PF("game.json corrupted!\nTry deleting the file!", "C0008", true); return "ERROR_C0008"; }
+	return ReadJson(p, ID, "WARN_EMPTY");
 }
 
 /*Получить информацию из файла engine.json*/
-string GetEngineInfo(string ID, bool IgnoreError1) {
-	DebugPrint("GET ENGINE INFO " + ID + " AND IGNORE ERROR " + (IgnoreError1 ? "YES" : "NO"));
-	if (IgnoreError1 && !HasDirectory(GamePath + SessionInfoPath)) { return "WARN_EMPTY"; }
-	string p = GetSessionInfo("EngineJson",IgnoreError1);
+string GetEngineInfo(string ID) {
+	string p = GetSessionInfo("EngineJson");
 	if (p == "WARN_EMPTY") { return p; }
-	if (!HasDirectory(p)) { if (IgnoreError1) { return "WARN_EMPTY"; } PF("engine.json not found!", "C0009", true); return "ERROR_C0009"; }
+	if (!HasDirectory(p)) { PF("engine.json not found!", "C0009", true); return "ERROR_C0009"; }
 	if (!JSONValid(p)) { PF("engine.json corrupted!\nTry deleting the file!", "C0010", true); return "ERROR_C0010"; }
-	return ReadJson(p, ID, (IgnoreError1 ? "WARN_EMPTY" : ""));
+	return ReadJson(p, ID);
+}
+string GetEngineInfoIE(string ID) {
+	if (!HasDirectory(GamePath + SessionInfoPath)) { return "WARN_EMPTY"; }
+	string p = GetSessionInfoIE("EngineJson");
+	if (p == "WARN_EMPTY") { return p; }
+	if (!HasDirectory(p)) { return "WARN_EMPTY"; }
+	if (!JSONValid(p)) { PF("engine.json corrupted!\nTry deleting the file!", "C0010", true); return "ERROR_C0010"; }
+	return ReadJson(p, ID, "WARN_EMPTY");
 }
 
+
 /*Получить информацию из файла sessioninfo*/
-string GetSessionInfo(string ID, bool IgnoreError2) {
-	DebugPrint("GET SESSION INFO " + ID + " AND IGNORE ERROR " + (IgnoreError2 ? "YES" : "NO"));
-	if (!HasDirectory(GamePath + SessionInfoPath)) { if (IgnoreError2) { return "WARN_EMPTY"; } PF("Sessioninfo not found!","C0001", true); return "ERROR_C0001"; }
-	if (!JSONValid(GamePath + SessionInfoPath)) { PF("Sessioninfo corrupted!","C0002", true); return "ERROR_C0002"; }
-	return ReadJson(GamePath + SessionInfoPath,ID,(IgnoreError2 ? "WARN_EMPTY" : ""));
+string GetSessionInfo(string ID) {
+	if (!HasDirectory(GamePath + SessionInfoPath)) { PF("Sessioninfo not found!", "C0001", true); return "ERROR_C0001"; }
+	if (!JSONValid(GamePath + SessionInfoPath)) { PF("Sessioninfo corrupted!", "C0002", true); return "ERROR_C0002"; }
+	return ReadJson(GamePath + SessionInfoPath, ID);
+}
+string GetSessionInfoIE(string ID) {
+	if (!HasDirectory(GamePath + SessionInfoPath)) { return "WARN_EMPTY"; }
+	if (!JSONValid(GamePath + SessionInfoPath)) { PF("Sessioninfo corrupted!", "C0002", true); return "ERROR_C0002"; }
+	return ReadJson(GamePath + SessionInfoPath, ID, "WARN_EMPTY");
 }
 
 /*Заменить информацию в файле sessioninfo*/
@@ -267,12 +287,21 @@ void WriteToJson(string Path, string ID, string Value) {
 	output_file.close();
 }
 
+/*Проверить путь на запрещёные символы*/
+bool CheckPathToSymbols(string path) {
+	if (NameWindowsAccept(path,false,true)) {
+		return true;
+	}
+	else {
+		PE("Path ("+path+") contains illegal characters in windows (* ? \" < > | +)","E0010"); return false;
+	}
+}
+
 /*Записать переменную в JSON*/
 string ReadJson(string Path, string ID, string IfNotFound) {
 	if (JSONValid(Path)) {
 		string JSON = ReadFile(Path);
 		json data = json::parse(JSON);
-		DebugPrint(ID+" "+IfNotFound);
 		if (data.contains(ID)) {
 			return data[ID];
 		}
@@ -391,6 +420,23 @@ V GetFromMap(const map<K, V>& m, const K& key) {
 		return V{};
 	}
 	return V{};
+}
+
+/*Получить элемент из list по номеру*/
+template <typename T>
+T GetFromListExtra(const std::list<T>& myList, int index) {
+	if (index < 0 || index >= myList.size()) {
+		PE("Index ["+to_string(index) + "] goes beyond the list! Max ["+to_string(myList.size()) + "]", "E0011");
+		return T();
+	}
+
+	auto it = myList.begin();
+	std::advance(it, index);
+
+	return *it;
+}
+Vertex GetFromList(std::list<Vertex> list, int i) {
+	return GetFromListExtra(list, i);
 }
 
 /*Конвертирует список в JSON формат*/

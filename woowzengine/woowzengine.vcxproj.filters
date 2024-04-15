@@ -19,6 +19,9 @@
     <Filter Include="Исходные файлы\Elements">
       <UniqueIdentifier>{4eca79b7-337e-45c5-abda-aca16ac44762}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Исходные файлы\Elements\Lua">
+      <UniqueIdentifier>{892891eb-3103-48e8-bfd3-0e725094f878}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
@@ -53,6 +56,9 @@
     </ClCompile>
     <ClCompile Include="RenderElement.h">
       <Filter>Исходные файлы\Elements</Filter>
+    </ClCompile>
+    <ClCompile Include="Cycles.cpp">
+      <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -100,6 +106,27 @@
     </ClInclude>
     <ClInclude Include="Window.h">
       <Filter>Исходные файлы\Elements</Filter>
+    </ClInclude>
+    <ClInclude Include="l_Color.h">
+      <Filter>Исходные файлы\Elements\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="l_Vector2.h">
+      <Filter>Исходные файлы\Elements\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="l_Vertex.h">
+      <Filter>Исходные файлы\Elements\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="l_Element.h">
+      <Filter>Исходные файлы\Elements\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="l_Scene.h">
+      <Filter>Исходные файлы\Elements\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="Cycles.h">
+      <Filter>Исходные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="l_Sprite.h">
+      <Filter>Исходные файлы\Elements\Lua</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

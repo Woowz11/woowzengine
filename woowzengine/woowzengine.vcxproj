@@ -61,15 +61,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>F:\woowzengine\woowzengine\LIBS\JSON\include;F:\woowzengine\woowzengine\GL\GLFW\include;F:\woowzengine\woowzengine\GL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>F:\woowzengine\woowzengine\LIBS\GLUT;F:\woowzengine\woowzengine\LIBS\JSON\include;F:\woowzengine\woowzengine\LIBS\GLFW;F:\woowzengine\woowzengine\LIBS\GLEW;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile />
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>F:\woowzengine\woowzengine\GL\GLFW\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;Lua.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>F:\woowzengine\woowzengine\LIBS\GLEW;F:\woowzengine\woowzengine\LIBS\GLFW;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;Lua.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -80,7 +80,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>F:\woowzengine\woowzengine\LIBS\JSON\include;F:\woowzengine\woowzengine\GL\GLFW\include;F:\woowzengine\woowzengine\GL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>F:\woowzengine\woowzengine\LIBS\GLUT;F:\woowzengine\woowzengine\LIBS\JSON\include;F:\woowzengine\woowzengine\LIBS\GLFW;F:\woowzengine\woowzengine\LIBS\GLEW;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile />
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -89,13 +89,14 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>F:\woowzengine\woowzengine\GL\GLFW\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;Lua.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>F:\woowzengine\woowzengine\LIBS\GLEW;F:\woowzengine\woowzengine\LIBS\GLFW;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;Lua.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Base.cpp" />
     <ClCompile Include="Console.cpp" />
+    <ClCompile Include="Cycles.cpp" />
     <ClCompile Include="Easyer.cpp" />
     <ClCompile Include="Files.cpp" />
     <ClCompile Include="GLFW.cpp" />
@@ -110,11 +111,18 @@
     <ClInclude Include="Base.h" />
     <ClInclude Include="Color.h" />
     <ClInclude Include="Console.h" />
+    <ClInclude Include="Cycles.h" />
     <ClInclude Include="Easyer.h" />
     <ClInclude Include="Files.h" />
     <ClInclude Include="GLFW.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="LuaCompile.h" />
+    <ClInclude Include="l_Color.h" />
+    <ClInclude Include="l_Element.h" />
+    <ClInclude Include="l_Scene.h" />
+    <ClInclude Include="l_Sprite.h" />
+    <ClInclude Include="l_Vector2.h" />
+    <ClInclude Include="l_Vertex.h" />
     <ClInclude Include="OpenGame.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Texture.h" />

@@ -3,17 +3,27 @@
 #include <filesystem>
 #include <chrono>
 #include <thread>
-#include <mutex>
 #include "LuaCompile.h"
 #include "OpenGame.h"
 #include "Base.h"
 #include "Easyer.h"
 #include "Files.h"
 #include "GLFW.h"
+#include "Cycles.h"
+
+#include "Color.h"
+#include "Vector2.h"
+#include "Vertex.h"
+#include "RenderElement.h"
+
+#include "l_Color.h"
+#include "l_Vector2.h"
+#include "l_Vertex.h"
+//#include "l_Element.h"
+#include "l_Sprite.h"
+#include "l_Scene.h"
 
 using namespace std;
-
-std::mutex mtx;
 
 sol::state lua{};
 
@@ -30,8 +40,24 @@ void l_Exit() {
 }
 
 /*Закрывает приложение*/
-void l_Wait(int milisec) {
-	Wait(milisec);
+void l_Wait(int milisec, sol::function func) {
+	if (func.valid()) {
+		auto wainfunc = [func, milisec]() {
+				std::this_thread::sleep_for(std::chrono::milliseconds(milisec));
+				try {
+					func();
+				}
+				catch (const sol::error& e) { /*Получение ошибок из lua скриптов*/
+					string what = e.what();
+					PE(what, "LUA");
+				}
+			};
+		std::thread thread(wainfunc);
+		thread.detach();
+	}
+	else {
+		Wait(milisec);
+	}
 }
 
 /*Вернуть случайное число от 0 до 1*/
@@ -127,22 +153,7 @@ void l_Cycle(sol::function func, int milisec) {
 	else {
 		if (milisec <= 0) { PE("The time in Cycle(" + to_string(milisec) + ") cannot be <= 0!","L0001"); }
 		else {
-				auto cycle = [func, milisec]() {
-						while (true) {
-							std::this_thread::sleep_for(std::chrono::milliseconds(milisec));
-							mtx.lock();
-							try {
-								func();
-							}
-							catch (const sol::error& e) { /*Получение ошибок из lua скриптов*/
-								string what = e.what();
-								PE(what, "LUA");
-							}
-							mtx.unlock();
-						}
-					};
-				std::thread thread(cycle);
-				thread.detach();
+			SetCycleFunction(func, milisec);
 		}
 	}
 }
@@ -576,6 +587,23 @@ sol::table l_PressedKeys() {
 	return tbl;
 }
 
+/*Загрузить сцену в окно*/
+void l_SetWindowScene(string id, l_Scene& scene) {
+	scene.windowid = id;
+	SetWindowScene(id, scene.ToCPP());
+}
+
+/*Получить айди окна в котором сцена*/
+string l_GetSceneWindow(l_Scene scene) {
+	return scene.windowid;
+}
+
+/*Вернуть случайное число от 0 до 1 (Целое)*/
+int l_RRandom(int min, int max) {
+	if (min == 0 && max == 0) { return round(Random()); }
+	return round(Random(min, max));
+}
+
 /*Зона woowzengine*/
 
 void StartFunction(sol::function func, string s) {
@@ -615,6 +643,51 @@ void LuaCompile() {
 	}
 	CreateValueJson(GetSessionInfo("SessionPath"), "LuaLibs", lua["package"]["path"]);
 	P("LUA", "Lua libraries are loaded!");
+
+	/*Конструкторы*/
+	lua.new_usertype<l_Color>("Color",
+		sol::constructors<l_Color(), l_Color(int, int, int, int), l_Color(int, int, int)>(),
+		"r", &l_Color::r,
+		"g", &l_Color::g,
+		"b", &l_Color::b,
+		"a", &l_Color::a
+	);
+
+	lua.new_usertype<l_Vector2>("Vector2",
+		sol::constructors<l_Vector2(), l_Vector2(float, float)>(),
+		"x", &l_Vector2::x,
+		"y", &l_Vector2::y
+	);
+
+	lua.new_usertype<l_Vertex>("Vertex",
+		sol::constructors<l_Vertex(), l_Vertex(l_Vector2, l_Color), l_Vertex(l_Vector2)>(),
+		"Color", &l_Vertex::Color,
+		"Position", &l_Vertex::Position
+	);
+
+	/*lua.new_usertype<l_Element>("Element",
+		sol::constructors<l_Element(), l_Element(string)>(),
+		"SetType", &l_Element::SetTypeLua
+	);*/
+
+	lua.new_usertype<l_Sprite>("Sprite",
+		sol::constructors<l_Sprite(), l_Sprite(string,string,l_Vector2)>(),
+		"Position", &l_Sprite::position,
+		"Orientation", &l_Sprite::angle,
+		"Color", &l_Sprite::color,
+		"ZIndex", &l_Sprite::zindex,
+		"Scale", &l_Sprite::size,
+		"Texture", &l_Sprite::texture,
+		"Origin", &l_Sprite::origin,
+		"ThatUI", &l_Sprite::movewithcamera
+	);
+
+	lua.new_usertype<l_Scene>("Scene",
+		sol::constructors<l_Scene(), l_Scene(string)>(),
+		"AddElement", &l_Scene::AddElement,
+		"SetBackgroundColor", &l_Scene::SetBackgroundColor,
+		"GetBackgroundColor", &l_Scene::GetBackgroundColor
+	);
 
 	/*Константы*/
 	lua["Pi"] = sol::as_table(3.14159265358979323846);
@@ -728,6 +801,9 @@ void LuaCompile() {
 	lua.set_function("SetWindowEventKeyRelease", &l_SetWindowEventKeyRelease);
 	lua.set_function("SetWindowEventKeyHold", &l_SetWindowEventKeyHold);
 	lua.set_function("PressedKeys", &l_PressedKeys);
+	lua.set_function("SetWindowScene", &l_SetWindowScene);
+	lua.set_function("GetSceneWindow", &l_GetSceneWindow);
+	lua.set_function("RRandom", &l_RRandom);
 
 	P("LUA", "Lua functions and etc. are loaded!");
 	P("LUA", "Start start.lua script...");

@@ -8,6 +8,7 @@
 using namespace std;
 
 void DebugPrint(string text);
+void DebugPrint(float f);
 void SetGameClosedEvent(sol::function f);
 bool WINAPI StopEngine(DWORD CEvent);
 void CheckFiles(string);

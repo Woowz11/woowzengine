@@ -14,7 +14,7 @@
 
 using namespace std;
 
-string EngineVersion = "0.0.1d";
+string EngineVersion = "0.0.1e";
 bool DebugVersion = true;
 
 void StartEngine(string GamePath) {
@@ -27,6 +27,7 @@ int main(int argc, char** argv)
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 8);
     SetConsoleTitle(StringToLPCWSTR("WoowzEngine Console"));
     cout << "WoowzEngine realization..." << "\n";
+    if (DebugVersion) { cout << "Debug mode enabled!" << "\n"; }
 
     string GamePath = "F:\\woowzengine\\example_game\\";
     if (argv[1] != NULL) {

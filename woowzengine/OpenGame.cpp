@@ -7,6 +7,7 @@
 #include <map>
 #include <chrono>
 #include <thread>
+#include <mutex>
 #include "OpenGame.h"
 #include "Base.h"
 #include "Files.h"
@@ -14,6 +15,7 @@
 #include "Easyer.h"
 #include "LuaCompile.h"
 #include "GLFW.h"
+#include "Cycles.h"
 
 using namespace std;
 
@@ -22,7 +24,7 @@ bool SessionInfoBroken = false;
 bool JGameBroken = false;
 bool JEngineBroken = false;
 bool HasStartScript = true;
-bool DebugMode = false;
+bool DebugMode = false;/*›“Œ Õ≈ “–Œ√¿…! DebugMode (DebugVersion) ‚ÍÎ˛˜‡ÂÚ¸Òˇ ‚ Source.cpp!!!*/
 
 sol::function GameClosed = sol::nil;
 
@@ -30,6 +32,9 @@ void DebugPrint(string text) {
 	if (DebugMode) {
 		cout << text << "\n";
 	}
+}
+void DebugPrint(float f) {
+	DebugPrint(to_string(f));
 }
 
 void SetGameClosedEvent(sol::function f) {
@@ -46,39 +51,25 @@ bool WINAPI StopEngine(DWORD CEvent) {
 }
 
 void CheckFiles(string ev) {
-	DebugPrint("CheckFiles 1");
-
 	GetOrCreateFolder(SGamePath + "woowzengine");
 	GetOrCreateFolder(SGamePath + "woowzengine/log");
 	GetOrCreateFolder(SGamePath + "woowzengine/temporary");
-
-	DebugPrint("CheckFiles 2");
 
 	string SessionInfoPath = SGamePath + "woowzengine/temporary/sessioninfo";
 	string OurGamePath = SGamePath + "game";
 	string JEngine = OurGamePath + "/engine.json";
 	string JGame = OurGamePath + "/game.json";
 
-	DebugPrint("CheckFiles 3");
-
 	int Seed = (int)std::time(nullptr);
 
-	DebugPrint("CheckFiles 4");
-
 	GetOrCreateFile(SessionInfoPath);
-
-	DebugPrint("CheckFiles 5");
 
 	if (!JSONValid(SessionInfoPath)) {
 		SessionInfoBroken = true;
 	}
 
-	DebugPrint("CheckFiles 6");
-
-	map<string, string> SessionInfoInfo = { {"Seed",to_string(Seed)},{"GamePath",SGamePath},{"Version",ev},{"SourcePath",SGamePath + "game/"},{"EngineJson",JEngine},{"GameJson",JGame},{"SessionPath",SGamePath + "woowzengine/temporary/sessioninfo"} };
+	map<string, string> SessionInfoInfo = { {"GLEWwindow","false"},{"Debug",(DebugMode ? "true" : "false")},{"Seed",to_string(Seed)},{"GamePath",SGamePath},{"Version",ev},{"SourcePath",SGamePath + "game/"},{"EngineJson",JEngine},{"GameJson",JGame},{"SessionPath",SGamePath + "woowzengine/temporary/sessioninfo"}};
 	WriteToFile(SessionInfoPath, ConvertToJSON(SessionInfoInfo));
-
-	DebugPrint("CheckFiles 7");
 
 	GetOrCreateFolder(OurGamePath);
 	GetOrCreateFolder(OurGamePath+"/engine");
@@ -93,8 +84,6 @@ void CheckFiles(string ev) {
 	CreateValueJson(JEngine, "LogStyle", "%b[%h:%m:%s:%ms][%t] %c");
 	CreateValueJson(JEngine, "LogFatal", "-FATAL");
 
-	DebugPrint("CheckFiles 8");
-
 	GetOrCreateFile(JGame);
 	if (!JSONValid(JGame)) {
 		WriteToFile(JGame, "{}");
@@ -103,8 +92,6 @@ void CheckFiles(string ev) {
 	CreateValueJson(JGame, "Version", "0.0.0");
 	CreateValueJson(JGame, "Author",  "Unknown");
 
-	DebugPrint("CheckFiles 9");
-
 	if (!HasDirectory(OurGamePath + "/start.lua")) {
 		HasStartScript = false;
 	}
@@ -112,8 +99,6 @@ void CheckFiles(string ev) {
 	if (!HasStartScript) {
 		WriteToFile(OurGamePath + "/start.lua","--[[Example script start.lua\nRuns when the game starts.]]\n\nCheckLua()");
 	}
-
-	DebugPrint("CheckFiles 10");
 
 	SetRandomSeed(Seed);
 }
@@ -127,13 +112,9 @@ void GameInstall() {
 }
 
 void Install(string ev) {
-	DebugPrint("Install 1");
 	BaseInstall(SGamePath);
-	DebugPrint("Install 2");
 	CheckFiles(ev);
-	DebugPrint("Install 3");
 	LoggerInstall();
-	DebugPrint("Install 4");
 
 	P("ENGINE", "WoowzEngine ["+GetSessionInfo("Version") + "] started!");
 	P("ENGINE", "Start game ["+GetGameInfo("Name") + " ("+GetGameInfo("Version") + ")] by [" + GetGameInfo("Author") + "] ");
@@ -157,7 +138,6 @@ void Install(string ev) {
 	}
 
 	GLFWInstall();
-	GameInstall();
 }
 
 void OpenGame(string GamePath_,string EngineVersion_, bool DebugVersion) {
@@ -171,8 +151,7 @@ void OpenGame(string GamePath_,string EngineVersion_, bool DebugVersion) {
 
 	/*=====================================*/
 
-	while (true) {
-		std::this_thread::sleep_for(std::chrono::milliseconds(1));
-		Cycle();
-	}
+	GameInstall();
+	P("ENGINE", "Cycles started!");
+	SetCycleEngine();
 }
