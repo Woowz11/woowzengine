@@ -14,7 +14,6 @@
 #pragma once
 using namespace std; 
 
-void RenderObjectTriangles(Vertex v1, Vertex v2, Vertex v3);
 void SetWindowTitle(string id, string title);
 void SetWindowSize(string id, bool thatY, int size);
 int GetWindowSize(string id, bool thatY);
@@ -45,3 +44,5 @@ void SetWindowScene(string id, Scene b, bool = false);
 map<string, int> GetPressedKeys();
 GLuint CompileShader(string shadercode, bool ThatVertex);
 GLuint CompileShaderProgram(GLuint Vertex, GLuint Fragment);
+unsigned char* LoadTexture(string path, int* x, int* y, int* numchannel);
+GLuint LoadSprite(string path);

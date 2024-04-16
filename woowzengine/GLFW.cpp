@@ -11,8 +11,11 @@
 //---- Графика ----
 #include <glew.h>
 #include <wglew.h>
-//#include <glut.h>
+#include <glm.hpp>
 //-----------------
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 #include "GLFW.h"
 #include "Base.h"
 #include "Easyer.h"
@@ -33,37 +36,74 @@ string MainWindow = "";
 GLFWwindow* DebugWindow;
 
 string VertexDefaultShader = R"(
-   #version 330
-   in vec3 pos;
-   void main()
-   {
-       gl_Position = vec4(pos, 1);
-   }
-)";
-
-string FragmentDefaultShader = R"(
     #version 330
-    void main() 
+    in vec3 pos;
+    in vec2 texCoord;
+
+    out vec2 TexCoord;
+
+    void main()
     {
-        gl_FragColor = vec4(1, 0, 0, 1);
+        gl_Position = vec4(pos, 1.0);
+        TexCoord = texCoord;
     }
 )";
 
+string FragmentDefaultShader = R"(
+    #version 330 core
+	out vec4 FragColor;
+  
+	in vec3 ourColor;
+	in vec2 TexCoord;
+
+	uniform sampler2D ourTexture;
+
+	void main()
+	{
+	    FragColor = texture(ourTexture, TexCoord);
+	}
+)";
+
 GLuint DefaultShader;
-GLuint Array,Buffer;
 
 void StopGLFW() {
-	glDeleteVertexArrays(1, &Array);
-	glDeleteBuffers(1, &Buffer);
 	glDeleteProgram(DefaultShader);
 	glfwTerminate();
 }
 
+/*Загрузка текстуры через stb_image*/
+unsigned char* LoadTexture(string path, int* x, int* y, int* numchannel) {
+	stbi_set_flip_vertically_on_load(true);
+	unsigned char* texture = stbi_load(StringToConstChar(path), x, y, numchannel, 0);
+	if (!texture) {
+		PE("ERROR TEXTURE", "");
+	}
+	return texture;
+}
+
+GLuint LoadSprite(string path) {
+	int x, y, numchan;
+	unsigned char* imagedata = LoadTexture(path, &x, &y, &numchan);
+	GLuint sprite;
+	glGenTextures(1, &sprite);
+	glBindTexture(GL_TEXTURE_2D, sprite);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, x, y, 0, GL_RGB, GL_UNSIGNED_BYTE, imagedata);
+
+	stbi_image_free(imagedata);
+
+	return sprite;
+}
+
+GLuint testsprite;
+GLuint textureLocation;
 void GLEW(Window window) {
 	SetSessionInfo("GLEWwindow", "true");
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glewExperimental = GL_TRUE;
 	GLenum err = glewInit();
 	if (err != GLEW_OK) {
 		const char* errString = reinterpret_cast<const char*>(glewGetErrorString(err));
@@ -72,24 +112,12 @@ void GLEW(Window window) {
 	P("GLEW", "GLEW installed on ["+window.id+"]!");
 	glfwSetErrorCallback(PE_GLFW);
 
-	float vertices[] = {
-	-1.0f, -1.0f, 0.0f,
-	1.0f, -1.0f, 0.0f,
-	0.0f,  1.0f, 0.0f,
-	};
-
 	GLuint vShader = CompileShader(VertexDefaultShader, true);
 	GLuint fShader = CompileShader(FragmentDefaultShader, false);
 	DefaultShader = CompileShaderProgram(vShader, fShader);
+	textureLocation = glGetUniformLocation(DefaultShader, "ourTexture");
 
-	glGenVertexArrays(1, &Array);
-	glBindVertexArray(Array);
-
-	glGenBuffers(1, &Buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, Buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
-
-	glUseProgram(DefaultShader);
+	testsprite = LoadSprite("F:/woowzengine/example_game/game/engine/error.png");
 }
 
 void GLFWInstall() {
@@ -147,7 +175,6 @@ GLuint CompileShaderProgram(GLuint Vertex, GLuint Fragment) {
 
 	GLint linkStatus;
 
-	// Get the link status for this program
 	glGetProgramiv(Shader, GL_LINK_STATUS, &linkStatus);
 
 	if (!linkStatus)
@@ -158,43 +185,14 @@ GLuint CompileShaderProgram(GLuint Vertex, GLuint Fragment) {
 	return Shader;
 }
 
-void RenderObjectTriangles(Vertex v1, Vertex v2, Vertex v3) {
-	/*glBegin(GL_TRIANGLES);
-	glColor4f(v1.color.r/255, v1.color.g / 255, v1.color.b / 255, v1.color.a / 255);
-	glVertex2f(v1.position.x, v1.position.y);
-	glColor4f(v2.color.r / 255, v2.color.g / 255, v2.color.b / 255, v2.color.a / 255);
-	glVertex2f(v2.position.x, v2.position.y);
-	glColor4f(v3.color.r / 255, v3.color.g / 255, v3.color.b / 255, v3.color.a / 255);
-	glVertex2f(v3.position.x, v3.position.y);
-	glEnd();*/
-
-	/*
-
-	GLuint VAO, VBO;
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-
-	glBindVertexArray(VAO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);*/
-}
-
 /*Методы*/
 
 void RenderElement_(RenderElement e) {
 	string type = e.type;
 
-	if (type == "triangle") {
-		RenderObjectTriangles(GetFromList(e.Vertexs, 0), GetFromList(e.Vertexs, 1), GetFromList(e.Vertexs, 2));
-	}
+	//if (type == "triangle") {
+	//	RenderObjectTriangles(GetFromList(e.Vertexs, 0), GetFromList(e.Vertexs, 1), GetFromList(e.Vertexs, 2));
+	//}
 
 	glFlush();
 }
@@ -218,9 +216,11 @@ void Render() {
 
 					/*----------------[Рисование]------------------*/
 
+					glUseProgram(DefaultShader);
+
 					glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-					//glEnable(GL_BLEND);
-					//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+					glEnable(GL_BLEND);
+					glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 					if (window.scene.windowid != "") {
 						glClearColor(window.scene.BackgroundColor.GetR(), window.scene.BackgroundColor.GetG(), window.scene.BackgroundColor.GetB(), 1);
@@ -229,22 +229,33 @@ void Render() {
 						glClearColor(0, 0, 0, 1);
 					}
 				
-					//glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 					if (window.WindowGLEW) {
-						glEnableVertexAttribArray(0);
-						glBindBuffer(GL_ARRAY_BUFFER, Buffer);
-						glVertexAttribPointer(
-							0,                
-							3,                
-							GL_FLOAT,          
-							GL_FALSE,           
-							0,                 
-							(void*)0           
-						);
 
-						glDrawArrays(GL_TRIANGLES, 0, 3);
-						glDisableVertexAttribArray(0);
 					}
+
+					//glActiveTexture(GL_TEXTURE0);
+					//glBindTexture(GL_TEXTURE_2D, testsprite);
+					//glUniform1i(glGetUniformLocation(testsprite, "myTexture"), 0);
+
+					/*glColor3f(1.0f, 1.0f, 1.0f);
+					glBegin(GL_QUADS);
+					glTexCoord2f(0.0f, 0.0f); glVertex2f(centerX - halfSquareWidth, centerY - halfSquareHeight);
+					glTexCoord2f(1.0f, 0.0f); glVertex2f(centerX + halfSquareWidth, centerY - halfSquareHeight);
+					glTexCoord2f(1.0f, 1.0f); glVertex2f(centerX + halfSquareWidth, centerY + halfSquareHeight);
+					glTexCoord2f(0.0f, 1.0f); glVertex2f(centerX - halfSquareWidth, centerY + halfSquareHeight);
+					glEnd();*/
+					
+					glActiveTexture(GL_TEXTURE0);
+					glBindTexture(GL_TEXTURE_2D, testsprite);
+					glUniform1i(textureLocation, 0);
+
+					glBegin(GL_QUADS);
+					glTexCoord2f(0.0f, 0.0f); glVertex2f(-1,-1);
+					glTexCoord2f(1.0f, 0.0f); glVertex2f(-1,1);
+					glTexCoord2f(1.0f, 1.0f); glVertex2f(1,1);
+					glTexCoord2f(0.0f, 1.0f); glVertex2f(1,-0.5);
+					glEnd();
+
 
 					glfwSwapBuffers(window.glfw);
 					/*------------[Конец рисования]----------------*/

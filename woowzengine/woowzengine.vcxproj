@@ -61,7 +61,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>F:\woowzengine\woowzengine\LIBS\GLUT;F:\woowzengine\woowzengine\LIBS\JSON\include;F:\woowzengine\woowzengine\LIBS\GLFW;F:\woowzengine\woowzengine\LIBS\GLEW;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>F:\woowzengine\woowzengine\LIBS;F:\woowzengine\woowzengine\LIBS\GLM;F:\woowzengine\woowzengine\LIBS\JSON\include;F:\woowzengine\woowzengine\LIBS\GLFW;F:\woowzengine\woowzengine\LIBS\GLEW;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile />
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -80,7 +80,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>F:\woowzengine\woowzengine\LIBS\GLUT;F:\woowzengine\woowzengine\LIBS\JSON\include;F:\woowzengine\woowzengine\LIBS\GLFW;F:\woowzengine\woowzengine\LIBS\GLEW;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>F:\woowzengine\woowzengine\LIBS;F:\woowzengine\woowzengine\LIBS\GLM;F:\woowzengine\woowzengine\LIBS\JSON\include;F:\woowzengine\woowzengine\LIBS\GLFW;F:\woowzengine\woowzengine\LIBS\GLEW;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile />
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -124,12 +124,20 @@
     <ClInclude Include="l_Vector2.h" />
     <ClInclude Include="l_Vertex.h" />
     <ClInclude Include="OpenGame.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Vector2.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="Window.h" />
     <ClInclude Include="WindowsElements.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="woowzengine.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\resources\icon.ico" />
+    <Image Include="..\resources\icon.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

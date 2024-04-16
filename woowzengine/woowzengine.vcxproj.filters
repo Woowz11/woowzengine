@@ -128,5 +128,21 @@
     <ClInclude Include="l_Sprite.h">
       <Filter>Исходные файлы\Elements\Lua</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="woowzengine.rc">
+      <Filter>Файлы ресурсов</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\resources\icon.png">
+      <Filter>Файлы ресурсов</Filter>
+    </Image>
+    <Image Include="..\resources\icon.ico">
+      <Filter>Файлы ресурсов</Filter>
+    </Image>
   </ItemGroup>
 </Project>

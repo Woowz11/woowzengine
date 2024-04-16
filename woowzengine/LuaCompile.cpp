@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <chrono>
 #include <thread>
+#include <limits>
 #include "LuaCompile.h"
 #include "OpenGame.h"
 #include "Base.h"
@@ -684,7 +685,7 @@ void LuaCompile() {
 
 	lua.new_usertype<l_Scene>("Scene",
 		sol::constructors<l_Scene(), l_Scene(string)>(),
-		"AddElement", &l_Scene::AddElement,
+		//"AddElement", &l_Scene::AddElement,
 		"SetBackgroundColor", &l_Scene::SetBackgroundColor,
 		"GetBackgroundColor", &l_Scene::GetBackgroundColor
 	);
@@ -709,6 +710,23 @@ void LuaCompile() {
 	lua["Author"] = sol::as_table(GetGameInfo("Author"));
 	lua["SafeMode"] = sol::as_table(StringToBool(GetEngineInfo("SafeMode")));
 	lua["ConsoleEnabled"] = sol::as_table(StringToBool(GetEngineInfo("Console")));
+	lua["DebugMode"] = sol::as_table(StringToBool(GetSessionInfo("Debug")));
+	lua["Infinity"] = sol::as_table(std::numeric_limits<int>::max());
+	lua["Red"] = sol::as_table(l_Color(255, 0, 0, 255));
+	lua["Green"] = sol::as_table(l_Color(0, 255, 0, 255));
+	lua["Blue"] = sol::as_table(l_Color(0, 0, 255, 255));
+	lua["Yellow"] = sol::as_table(l_Color(255, 255, 0, 255));
+	lua["White"] = sol::as_table(l_Color(255, 255, 255, 255));
+	lua["Black"] = sol::as_table(l_Color(0, 0, 0, 255));
+	lua["Gray"] = sol::as_table(l_Color(125, 125, 125, 255));
+	lua["Orange"] = sol::as_table(l_Color(255, 125, 0, 255));
+	lua["Purple"] = sol::as_table(l_Color(0, 125, 255, 255));
+	lua["Cyan"] = sol::as_table(l_Color(125, 125, 255, 255));
+	lua["Transparent"] = sol::as_table(l_Color(0, 0, 0, 0));
+	lua["Up"] = sol::as_table(l_Vector2(0, 1));
+	lua["Down"] = sol::as_table(l_Vector2(0, -1));
+	lua["Right"] = sol::as_table(l_Vector2(1, 0));
+	lua["Left"] = sol::as_table(l_Vector2(-1, 0));
 
 	/*Функции*/
 	lua.set_function("CheckLua", &l_CheckLua);
