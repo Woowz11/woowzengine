@@ -7,7 +7,6 @@ using namespace std;
 
 struct Window {
 public:
-	bool WindowGLEW = false;
 	string id = "new window";
 	GLFWwindow* glfw = nullptr;
 	Scene scene;

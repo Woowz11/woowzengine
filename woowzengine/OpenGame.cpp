@@ -68,7 +68,7 @@ void CheckFiles(string ev) {
 		SessionInfoBroken = true;
 	}
 
-	map<string, string> SessionInfoInfo = { {"GLEWwindow","false"},{"Debug",(DebugMode ? "true" : "false")},{"Seed",to_string(Seed)},{"GamePath",SGamePath},{"Version",ev},{"SourcePath",SGamePath + "game/"},{"EngineJson",JEngine},{"GameJson",JGame},{"SessionPath",SGamePath + "woowzengine/temporary/sessioninfo"}};
+	map<string, string> SessionInfoInfo = { {"Debug",(DebugMode ? "true" : "false")},{"Seed",to_string(Seed)},{"GamePath",SGamePath},{"Version",ev},{"SourcePath",SGamePath + "game/"},{"EngineJson",JEngine},{"GameJson",JGame},{"SessionPath",SGamePath + "woowzengine/temporary/sessioninfo"}};
 	WriteToFile(SessionInfoPath, ConvertToJSON(SessionInfoInfo));
 
 	GetOrCreateFolder(OurGamePath);

@@ -61,15 +61,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>F:\woowzengine\woowzengine\LIBS;F:\woowzengine\woowzengine\LIBS\GLM;F:\woowzengine\woowzengine\LIBS\JSON\include;F:\woowzengine\woowzengine\LIBS\GLFW;F:\woowzengine\woowzengine\LIBS\GLEW;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>F:\woowzengine\woowzengine\LIBS\glad;F:\woowzengine\woowzengine\LIBS\KHR;F:\woowzengine\woowzengine\LIBS;F:\woowzengine\woowzengine\LIBS\GLM;F:\woowzengine\woowzengine\LIBS\JSON\include;F:\woowzengine\woowzengine\LIBS\GLFW;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile />
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>F:\woowzengine\woowzengine\LIBS\GLEW;F:\woowzengine\woowzengine\LIBS\GLFW;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;Lua.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>F:\woowzengine\woowzengine\LIBS\GLAD;F:\woowzengine\woowzengine\LIBS\GLEW;F:\woowzengine\woowzengine\LIBS\GLFW;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;Lua.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -80,7 +80,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>F:\woowzengine\woowzengine\LIBS;F:\woowzengine\woowzengine\LIBS\GLM;F:\woowzengine\woowzengine\LIBS\JSON\include;F:\woowzengine\woowzengine\LIBS\GLFW;F:\woowzengine\woowzengine\LIBS\GLEW;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>F:\woowzengine\woowzengine\LIBS\glad;F:\woowzengine\woowzengine\LIBS\KHR;F:\woowzengine\woowzengine\LIBS;F:\woowzengine\woowzengine\LIBS\GLM;F:\woowzengine\woowzengine\LIBS\JSON\include;F:\woowzengine\woowzengine\LIBS\GLFW;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile />
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -89,8 +89,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>F:\woowzengine\woowzengine\LIBS\GLEW;F:\woowzengine\woowzengine\LIBS\GLFW;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;Lua.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>F:\woowzengine\woowzengine\LIBS\GLAD;F:\woowzengine\woowzengine\LIBS\GLEW;F:\woowzengine\woowzengine\LIBS\GLFW;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;Lua.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

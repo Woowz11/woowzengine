@@ -14,6 +14,11 @@
 
 using namespace std;
 
+/*Превращает const unsigned char в строку*/
+string ConstUnsignedCharToString(const unsigned char* chr) {
+	return std::string(reinterpret_cast<const char*>(chr));
+}
+
 /*Превращает символ в строку*/
 string CharToString(char c) {
 	string s(1, c);

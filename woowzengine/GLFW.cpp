@@ -1,123 +1,73 @@
 #define NOMINMAX 1
 #define byte win_byte_override
-#include "Windows.h"
+#include <Windows.h>
 
 #include <iostream>
 #include <map>
 #include <string>
-#define GLFW_INCLUDE_NONE
-#include <glfw3.h>/*Окна*/
-#include <glfw3native.h>
 //---- Графика ----
-#include <glew.h>
-#include <wglew.h>
+#include "glad/gl.h"
+#define GLFW_INCLUDE_NONE
+#include <glfw3.h>
+#include <glfw3native.h>
 #include <glm.hpp>
-//-----------------
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+//-----------------
 
 #include "GLFW.h"
 #include "Base.h"
 #include "Easyer.h"
 #include "LuaCompile.h"
 #include "OpenGame.h"
+#include "Files.h"
 
 #include "Color.h"
 #include "Vector2.h"
 #include "Vertex.h"
 #include "Window.h"
 
+#include "l_Sprite.h"
+
 using namespace std;
 
 map<string, Window> Windows;
 map<GLFWwindow*, string> Windows_2;
+map<string, map<string, GLuint>> Textures;
 string MainWindow = "";
 
-GLFWwindow* DebugWindow;
-
-string VertexDefaultShader = R"(
-    #version 330
-    in vec3 pos;
-    in vec2 texCoord;
-
-    out vec2 TexCoord;
-
-    void main()
-    {
-        gl_Position = vec4(pos, 1.0);
-        TexCoord = texCoord;
-    }
-)";
-
-string FragmentDefaultShader = R"(
-    #version 330 core
-	out vec4 FragColor;
-  
-	in vec3 ourColor;
-	in vec2 TexCoord;
-
-	uniform sampler2D ourTexture;
-
-	void main()
-	{
-	    FragColor = texture(ourTexture, TexCoord);
-	}
-)";
-
-GLuint DefaultShader;
-
 void StopGLFW() {
-	glDeleteProgram(DefaultShader);
 	glfwTerminate();
 }
 
 /*Загрузка текстуры через stb_image*/
 unsigned char* LoadTexture(string path, int* x, int* y, int* numchannel) {
+	bool error = false;
 	stbi_set_flip_vertically_on_load(true);
+	if (!HasDirectory(path)) { PE("Texture ["+path+"] not found!", "E0013"); error = true;}
 	unsigned char* texture = stbi_load(StringToConstChar(path), x, y, numchannel, 0);
 	if (!texture) {
-		PE("ERROR TEXTURE", "");
+		PE("Texture [" + path + "] corrupted or doesn't fit", "E0014"); error = true;
+	}
+	if (error) {
+		texture = stbi_load(StringToConstChar(GetSessionInfo("SourcePath") + "engine/error.png"), x, y, numchannel, 0);
 	}
 	return texture;
 }
 
-GLuint LoadSprite(string path) {
+GLuint LoadSprite(string path, l_Sprite spritedata) {
 	int x, y, numchan;
 	unsigned char* imagedata = LoadTexture(path, &x, &y, &numchan);
 	GLuint sprite;
 	glGenTextures(1, &sprite);
 	glBindTexture(GL_TEXTURE_2D, sprite);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, x, y, 0, GL_RGB, GL_UNSIGNED_BYTE, imagedata);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (spritedata.Linear? GL_LINEAR : GL_NEAREST));
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (spritedata.Linear ? GL_LINEAR : GL_NEAREST));
+	glTexImage2D(GL_TEXTURE_2D, 0, (numchan==3? GL_RGB : GL_RGBA), x, y, 0, (numchan == 3 ? GL_RGB : GL_RGBA), GL_UNSIGNED_BYTE, imagedata);
 
 	stbi_image_free(imagedata);
 
 	return sprite;
-}
-
-GLuint testsprite;
-GLuint textureLocation;
-void GLEW(Window window) {
-	SetSessionInfo("GLEWwindow", "true");
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glewExperimental = GL_TRUE;
-	GLenum err = glewInit();
-	if (err != GLEW_OK) {
-		const char* errString = reinterpret_cast<const char*>(glewGetErrorString(err));
-		PF(errString, "GLEW");
-	}
-	P("GLEW", "GLEW installed on ["+window.id+"]!");
-	glfwSetErrorCallback(PE_GLFW);
-
-	GLuint vShader = CompileShader(VertexDefaultShader, true);
-	GLuint fShader = CompileShader(FragmentDefaultShader, false);
-	DefaultShader = CompileShaderProgram(vShader, fShader);
-	textureLocation = glGetUniformLocation(DefaultShader, "ourTexture");
-
-	testsprite = LoadSprite("F:/woowzengine/example_game/game/engine/error.png");
 }
 
 void GLFWInstall() {
@@ -128,7 +78,7 @@ void GLFWInstall() {
 	else {
 		glfwGetVersion(&major, &minor, &revision);
 	}
-	P("GLFW", "GLFW Installed! (minor - " + to_string(minor) + ",major-" + to_string(major) + ",revision-" + to_string(revision) + ")");
+	P("GLFW", "GLFW Installed! (minor-" + to_string(minor) + ",major-" + to_string(major) + ",revision-" + to_string(revision) + ")");
 
 	SetSessionInfo("MainWindow", "");
 }
@@ -141,7 +91,7 @@ void PE_GLFW(int error, const char* desc) {
 /*Рендер*/
 
 GLuint CompileShader(string shadercode, bool ThatVertex) {
-	GLuint Shader = glCreateShader(ThatVertex? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER);
+	GLuint Shader = glCreateShader(ThatVertex ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER);
 	const char* shadercode_ = StringToConstChar(shadercode);
 	glShaderSource(Shader, 1, &shadercode_, NULL);
 	glCompileShader(Shader);
@@ -166,7 +116,7 @@ GLuint CompileShader(string shadercode, bool ThatVertex) {
 }
 
 GLuint CompileShaderProgram(GLuint Vertex, GLuint Fragment) {
-	GLuint Shader = glCreateProgram();
+	/*GLuint Shader = glCreateProgram();
 	glAttachShader(Shader, Vertex);
 	glAttachShader(Shader, Fragment);
 	glLinkProgram(Shader);
@@ -182,17 +132,47 @@ GLuint CompileShaderProgram(GLuint Vertex, GLuint Fragment) {
 		PE("Error shader linking program!","E0012");
 	}
 
-	return Shader;
+	return Shader;*/
+	return 0;
 }
 
 /*Методы*/
 
-void RenderElement_(RenderElement e) {
-	string type = e.type;
+GLuint GetTexture(string window,l_Sprite sprite) {
+	map<string, GLuint> Textures_;
+	if (Textures.find(window) != Textures.end()) {
+		Textures_ = Textures[window];
+	}
+	else {
+		Textures_ = {};
+	}
 
-	//if (type == "triangle") {
-	//	RenderObjectTriangles(GetFromList(e.Vertexs, 0), GetFromList(e.Vertexs, 1), GetFromList(e.Vertexs, 2));
-	//}
+	GLuint result;
+	if (Textures_.find(sprite.id) != Textures_.end()) {
+		result = Textures_[sprite.id];
+	}
+	else {
+		GLuint texture = LoadSprite(sprite.texture,sprite);
+		Textures_[sprite.id] = texture;
+		result = texture;
+	}
+
+	Textures[window] = Textures_;
+
+	return result;
+}
+
+void RenderSprite(Window window, string id, l_Sprite sprite) {
+
+	GLuint texture = GetTexture(window.id, sprite);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	glBegin(GL_QUADS);
+	glTexCoord2f(0.0f, 0.0f); glVertex2f(-0.5, -0.5);
+	glTexCoord2f(1.0f, 0.0f); glVertex2f(0.5, -0.5);
+	glTexCoord2f(1.0f, 1.0f); glVertex2f(0.5, 0.5);
+	glTexCoord2f(0.0f, 1.0f); glVertex2f(-0.5, 0.5);
+	glEnd();
 
 	glFlush();
 }
@@ -216,8 +196,6 @@ void Render() {
 
 					/*----------------[Рисование]------------------*/
 
-					glUseProgram(DefaultShader);
-
 					glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 					glEnable(GL_BLEND);
 					glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -228,34 +206,13 @@ void Render() {
 					else {
 						glClearColor(0, 0, 0, 1);
 					}
-				
-					if (window.WindowGLEW) {
 
+					glEnable(GL_TEXTURE_2D);
+					if (window.scene.sprites.size() > 0) {
+						for (auto const& [sid, sprite] : window.scene.sprites) {
+							RenderSprite(window,sid,sprite);
+						}
 					}
-
-					//glActiveTexture(GL_TEXTURE0);
-					//glBindTexture(GL_TEXTURE_2D, testsprite);
-					//glUniform1i(glGetUniformLocation(testsprite, "myTexture"), 0);
-
-					/*glColor3f(1.0f, 1.0f, 1.0f);
-					glBegin(GL_QUADS);
-					glTexCoord2f(0.0f, 0.0f); glVertex2f(centerX - halfSquareWidth, centerY - halfSquareHeight);
-					glTexCoord2f(1.0f, 0.0f); glVertex2f(centerX + halfSquareWidth, centerY - halfSquareHeight);
-					glTexCoord2f(1.0f, 1.0f); glVertex2f(centerX + halfSquareWidth, centerY + halfSquareHeight);
-					glTexCoord2f(0.0f, 1.0f); glVertex2f(centerX - halfSquareWidth, centerY + halfSquareHeight);
-					glEnd();*/
-					
-					glActiveTexture(GL_TEXTURE0);
-					glBindTexture(GL_TEXTURE_2D, testsprite);
-					glUniform1i(textureLocation, 0);
-
-					glBegin(GL_QUADS);
-					glTexCoord2f(0.0f, 0.0f); glVertex2f(-1,-1);
-					glTexCoord2f(1.0f, 0.0f); glVertex2f(-1,1);
-					glTexCoord2f(1.0f, 1.0f); glVertex2f(1,1);
-					glTexCoord2f(0.0f, 1.0f); glVertex2f(1,-0.5);
-					glEnd();
-
 
 					glfwSwapBuffers(window.glfw);
 					/*------------[Конец рисования]----------------*/
@@ -474,6 +431,7 @@ void KeyCallback(GLFWwindow* window_, int key_, int scancode, int action, int mo
 	}
 }
 
+bool OpenGLVersionShowed = false;
 Window CreateWindowGLFW(string id, int sizex, int sizey, string title) {
 	if (HasWindow(id)) { PF("Window with this id already exists! CreateWindow('" + id + "'," + to_string(sizex) + "," + to_string(sizey) + ",'" + title + "')","C0021"); return Window(); }
 	else {
@@ -490,15 +448,22 @@ Window CreateWindowGLFW(string id, int sizex, int sizey, string title) {
 			window_.StartSizeY = sizey;
 			glfwSetKeyCallback(window, KeyCallback);
 
-			P("WINDOW", "Window [" + id + "] created!");
-
-			if (StringToBool(GetSessionInfo("GLEWwindow")) == false) {
-				window_.WindowGLEW = true;
-				GLEW(window_);
-			}
-
 			Windows[id] = window_;
 			Windows_2[window] = id;
+
+			P("WINDOW", "Window [" + id + "] created!");
+
+			if (!OpenGLVersionShowed) {
+				OpenGLVersionShowed = true;
+				const unsigned char* version = glGetString(GL_VERSION);
+				if (version) {
+					P("OPENGL", "OpenGL " + ConstUnsignedCharToString(version));
+				}
+				else {
+					PF("OpenGL cannot be realized!", "C0020");
+				}
+
+			}
 
 			return window_;
 		}

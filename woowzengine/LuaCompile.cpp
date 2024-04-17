@@ -514,8 +514,13 @@ void l_SetWindowTitle(string id, string title) {
 }
 
 /*Изменение авторазмера у окна*/
-void l_SetWindowAutoSize(string id, bool b) {
-	SetWindowAutosize(id, b);
+void l_SetWindowAutoScale(string id, sol::optional<bool> b) {
+	if (b) {
+		SetWindowAutosize(id, b.value());
+	}
+	else {
+		SetWindowAutosize(id, true);
+	}
 }
 
 /*Изменение масштаба у окна*/
@@ -672,7 +677,7 @@ void LuaCompile() {
 	);*/
 
 	lua.new_usertype<l_Sprite>("Sprite",
-		sol::constructors<l_Sprite(), l_Sprite(string,string,l_Vector2)>(),
+		sol::constructors<l_Sprite(), l_Sprite(string),l_Sprite(string,string,l_Vector2)>(),
 		"Position", &l_Sprite::position,
 		"Orientation", &l_Sprite::angle,
 		"Color", &l_Sprite::color,
@@ -680,12 +685,13 @@ void LuaCompile() {
 		"Scale", &l_Sprite::size,
 		"Texture", &l_Sprite::texture,
 		"Origin", &l_Sprite::origin,
-		"ThatUI", &l_Sprite::movewithcamera
+		"ThatUI", &l_Sprite::movewithcamera,
+		"Blur", &l_Sprite::Linear
 	);
 
 	lua.new_usertype<l_Scene>("Scene",
 		sol::constructors<l_Scene(), l_Scene(string)>(),
-		//"AddElement", &l_Scene::AddElement,
+		"AddSprite", &l_Scene::AddSprite,
 		"SetBackgroundColor", &l_Scene::SetBackgroundColor,
 		"GetBackgroundColor", &l_Scene::GetBackgroundColor
 	);
@@ -806,7 +812,7 @@ void LuaCompile() {
 	lua.set_function("SetWindowX", &l_SetWindowX);
 	lua.set_function("SetWindowY", &l_SetWindowY);
 	lua.set_function("SetWindowTitle", &l_SetWindowTitle);
-	lua.set_function("SetWindowAutoSize", &l_SetWindowAutoSize);
+	lua.set_function("SetWindowAutoScale", &l_SetWindowAutoScale);
 	lua.set_function("SetWindowScale", &l_SetWindowScale);
 	lua.set_function("AbsSin", &l_AbsSin);
 	lua.set_function("AbsCos", &l_AbsCos);
