@@ -416,19 +416,25 @@ sol::table l_Charcters(string Str) {
 
 /*Делает строку заглавной*/
 string l_Uppercase(string Str) {
-	if (Str == "") { PW("String cannot be empty! Uppercase('')", "LW0012"); return ""; }
+	if (Str == "") { PW("String cannot be empty! Uppercase('"+Str+"')", "LW0012"); return ""; }
 	return Uppercase(Str);
 }
 
 /*Делает строку не заглавной*/
 string l_Lowercase(string Str) {
-	if (Str == "") { PW("String cannot be empty! Lowercase('')", "LW0013"); return ""; }
+	if (Str == "") { PW("String cannot be empty! Lowercase('"+Str+"')", "LW0013"); return ""; }
 	return Lowercase(Str);
 }
 
-/*Получает размер строки*/
-int l_Length(string Str) {
-	return Str.length();
+/*Получает размер строки или таблицы*/
+int l_Length(sol::object obj) {
+	if (obj.get_type() == sol::type::string) {
+		return obj.as<std::string>().length();
+	}else if(obj.get_type() == sol::type::table) {
+		return obj.as<sol::table>().size();
+	}
+	PE("This type of variable is not supported! Length()", "L0018");
+	return -1;
 }
 
 /*Удаление части строки*/
@@ -588,7 +594,7 @@ void l_SetWindowEventKeyHold(string id, sol::function func) {
 sol::table l_PressedKeys() {
 	sol::table tbl = lua.create_table();
 	for (const auto& p : GetPressedKeys()) {
-		tbl.add(p.first);
+		tbl.set(p.first,true);
 	}
 	return tbl;
 }
@@ -608,6 +614,26 @@ string l_GetSceneWindow(l_Scene scene) {
 int l_RRandom(int min, int max) {
 	if (min == 0 && max == 0) { return round(Random()); }
 	return round(Random(min, max));
+}
+
+/*Установить позицию окна по X*/
+void l_SetWindowXPosition(string id, int i) {
+	SetWindowPosition(id, i, true);
+}
+
+/*Установить позицию окна по Y*/
+void l_SetWindowYPosition(string id, int i) {
+	SetWindowPosition(id, i, false);
+}
+
+/*Получить позицию окна по X*/
+int l_GetWindowXPosition(string id) {
+	return GetWindowPosition(id, true);
+}
+
+/*Получить позицию окна по Y*/
+int l_GetWindowYPosition(string id) {
+	return GetWindowPosition(id, false);
 }
 
 /*Зона woowzengine*/
@@ -807,10 +833,10 @@ void LuaCompile() {
 	lua.set_function("MainWindow", &l_MainWindow);
 	lua.set_function("Seed", &l_Seed);
 	lua.set_function("SetSeed", &l_SetSeed);
-	lua.set_function("GetWindowX", &l_GetWindowX);
-	lua.set_function("GetWindowY", &l_GetWindowY);
-	lua.set_function("SetWindowX", &l_SetWindowX);
-	lua.set_function("SetWindowY", &l_SetWindowY);
+	lua.set_function("GetWindowSizeX", &l_GetWindowX);
+	lua.set_function("GetWindowSizeY", &l_GetWindowY);
+	lua.set_function("SetWindowSizeX", &l_SetWindowX);
+	lua.set_function("SetWindowSizeY", &l_SetWindowY);
 	lua.set_function("SetWindowTitle", &l_SetWindowTitle);
 	lua.set_function("SetWindowAutoScale", &l_SetWindowAutoScale);
 	lua.set_function("SetWindowScale", &l_SetWindowScale);
@@ -828,6 +854,10 @@ void LuaCompile() {
 	lua.set_function("SetWindowScene", &l_SetWindowScene);
 	lua.set_function("GetSceneWindow", &l_GetSceneWindow);
 	lua.set_function("RRandom", &l_RRandom);
+	lua.set_function("GetWindowX", &l_GetWindowXPosition);
+	lua.set_function("GetWindowY", &l_GetWindowYPosition);
+	lua.set_function("SetWindowX", &l_SetWindowXPosition);
+	lua.set_function("SetWindowY", &l_SetWindowYPosition);
 
 	P("LUA", "Lua functions and etc. are loaded!");
 	P("LUA", "Start start.lua script...");

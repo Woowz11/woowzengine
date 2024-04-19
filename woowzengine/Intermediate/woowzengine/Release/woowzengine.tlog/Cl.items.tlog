@@ -4,6 +4,7 @@ F:\woowzengine\WoowzEngine\Cycles.cpp;F:\woowzengine\WoowzEngine\Intermediate\wo
 F:\woowzengine\WoowzEngine\Easyer.cpp;F:\woowzengine\WoowzEngine\Intermediate\woowzengine\Release\Easyer.obj
 F:\woowzengine\WoowzEngine\Files.cpp;F:\woowzengine\WoowzEngine\Intermediate\woowzengine\Release\Files.obj
 F:\woowzengine\WoowzEngine\GLFW.cpp;F:\woowzengine\WoowzEngine\Intermediate\woowzengine\Release\GLFW.obj
+F:\woowzengine\WoowzEngine\LIBS\glad\gl.c;F:\woowzengine\WoowzEngine\Intermediate\woowzengine\Release\gl.obj
 F:\woowzengine\WoowzEngine\Logger.cpp;F:\woowzengine\WoowzEngine\Intermediate\woowzengine\Release\Logger.obj
 F:\woowzengine\WoowzEngine\LuaCompile.cpp;F:\woowzengine\WoowzEngine\Intermediate\woowzengine\Release\LuaCompile.obj
 F:\woowzengine\WoowzEngine\OpenGame.cpp;F:\woowzengine\WoowzEngine\Intermediate\woowzengine\Release\OpenGame.obj

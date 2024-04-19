@@ -6,7 +6,7 @@
 #include <sol/sol.hpp>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
-#include <gl/GL.h>
+#include <glad/gl.h>
 #include "Vertex.h"
 #include "Window.h"
 #include "Scene.h"
@@ -43,8 +43,12 @@ void SetWindowKREvent(string id, sol::function f);
 void SetWindowKHEvent(string id, sol::function f);
 void SetWindowScene(string id, Scene b, bool = false);
 map<string, int> GetPressedKeys();
-//GLuint CompileShader(string shadercode, bool ThatVertex);
-//GLuint CompileShaderProgram(GLuint Vertex, GLuint Fragment);
+GLuint CompileShader(string shadercode, bool ThatVertex);
+GLuint CompileShaderProgram(GLuint Vertex, GLuint Fragment);
 GLuint GetTexture(string window, l_Sprite sprite);
 unsigned char* LoadTexture(string path, int* x, int* y, int* numchannel);
 GLuint LoadSprite(string path, l_Sprite spritedata);
+void CreateBuffers();
+void GLAPIENTRY PE_OPENGL(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
+int GetWindowPosition(string id, bool ThatX);
+void SetWindowPosition(string id, int pos, bool ThatX);

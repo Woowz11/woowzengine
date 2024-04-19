@@ -1,17 +1,37 @@
-CreateWindow("glew","GLEW")
-local scene = Scene.new("glew")
-scene:SetBackgroundColor(Color.new(0,125,125))
-SetWindowScene("glew",scene)
-local sprite = Sprite.new("sprite1")
+CreateWindow("window","Двигающеся окно")
+SetWindowMain("window")
 
-scene:AddSprite(sprite)
+Cycle(function()
 
-CreateWindow("test","NO GLEW")
-local scene2 = Scene.new("test")
-scene2:SetBackgroundColor(Color.new(0,0,0))
-SetWindowScene("test",scene2)
-local sprite2 = Sprite.new("sprite2")
-sprite2.Blur = true
-sprite2.Texture = "F:/woowzengine/example_game/game/engine/test.png"
+if(HasWindow("window"))then
 
-scene2:AddSprite(sprite2)
+local Keys = PressedKeys()
+local newx = 0 local newy = 0
+local speed = 5
+
+local test_ = Length(Keys)
+
+if(Keys["s"])then
+	newy = speed
+end
+if(Keys["w"])then
+	newy = newy - speed
+end
+if(Keys["d"])then
+	newx = speed
+end
+if(Keys["a"])then
+	newx = newx - speed
+end
+
+if(Keys["shift"])then
+	newx = newx*2.5
+	newy = newy*2.5
+end
+
+if(newx~=0)then SetWindowX("window",Round(GetWindowX("window")+newx)) end
+if(newy~=0)then SetWindowY("window",Round(GetWindowY("window")+newy)) end
+
+end
+
+ end,1)

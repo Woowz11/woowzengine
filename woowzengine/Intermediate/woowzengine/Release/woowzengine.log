@@ -1,13 +1,9 @@
 ﻿  GLFW.cpp
-F:\woowzengine\WoowzEngine\GLFW.cpp(170,2): error C3861: glBegin: идентификатор не найден
-F:\woowzengine\WoowzEngine\GLFW.cpp(171,2): error C3861: glTexCoord2f: идентификатор не найден
-F:\woowzengine\WoowzEngine\GLFW.cpp(171,28): error C3861: glVertex2f: идентификатор не найден
-F:\woowzengine\WoowzEngine\GLFW.cpp(172,2): error C3861: glTexCoord2f: идентификатор не найден
-F:\woowzengine\WoowzEngine\GLFW.cpp(172,28): error C3861: glVertex2f: идентификатор не найден
-F:\woowzengine\WoowzEngine\GLFW.cpp(173,2): error C3861: glTexCoord2f: идентификатор не найден
-F:\woowzengine\WoowzEngine\GLFW.cpp(173,28): error C3861: glVertex2f: идентификатор не найден
-F:\woowzengine\WoowzEngine\GLFW.cpp(174,2): error C3861: glTexCoord2f: идентификатор не найден
-F:\woowzengine\WoowzEngine\GLFW.cpp(174,28): error C3861: glVertex2f: идентификатор не найден
-F:\woowzengine\WoowzEngine\GLFW.cpp(175,2): error C3861: glEnd: идентификатор не найден
-F:\woowzengine\WoowzEngine\GLFW.cpp(195,57): warning C4244: аргумент: преобразование "float" в "GLsizei", возможна потеря данных
-F:\woowzengine\WoowzEngine\GLFW.cpp(195,28): warning C4244: аргумент: преобразование "float" в "GLsizei", возможна потеря данных
+F:\woowzengine\WoowzEngine\GLFW.cpp(258,57): warning C4244: аргумент: преобразование "float" в "GLsizei", возможна потеря данных
+F:\woowzengine\WoowzEngine\GLFW.cpp(258,28): warning C4244: аргумент: преобразование "float" в "GLsizei", возможна потеря данных
+  Создание кода
+  2 of 11384 functions (<0.1%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    25 functions had inline decision re-evaluated but remain unchanged
+  Создание кода завершено
+  woowzengine.vcxproj -> F:\woowzengine\WoowzEngine\Build\woowzengine\Release\woowzengine.exe

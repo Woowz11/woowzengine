@@ -22,6 +22,9 @@
     <Filter Include="Исходные файлы\Elements\Lua">
       <UniqueIdentifier>{892891eb-3103-48e8-bfd3-0e725094f878}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Исходные файлы\Other">
+      <UniqueIdentifier>{674acadd-c5a7-4731-a91e-dcc1614f9b60}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
@@ -59,6 +62,9 @@
     </ClCompile>
     <ClCompile Include="Cycles.cpp">
       <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="LIBS\glad\gl.c">
+      <Filter>Исходные файлы\Other</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
