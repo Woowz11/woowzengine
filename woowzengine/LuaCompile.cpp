@@ -4,6 +4,7 @@
 #include <chrono>
 #include <thread>
 #include <limits>
+#include <any>
 #include "LuaCompile.h"
 #include "OpenGame.h"
 #include "Base.h"
@@ -96,55 +97,57 @@ void l_WriteFile(string path, string value, bool Add) {
 }
 
 /*Отправляет кастомное сообщение в консоль*/
-void l_PrintCustom(string module,string text, string firstsymbol, int color) {
-		if (StringEmpty(module)) { PE("Provided module in PrintCustom('"+text+"') cannot be empty!", "L0003"); }
+void l_PrintCustom(sol::object module, sol::object text, sol::object firstsymbol, int color) {
+		if (module == sol::nil) { PE("Provided module in PrintCustom('"+ToString(text)+"') cannot be empty!", "L0003"); }
 		else {
-			if (color < 0 || color>255) { PE("The color must match 0<color<255 in PrintCustom('" + Uppercase(module) + "','" + text + "')!", "L0004"); }
+			if (color < 0 || color>255) { PE("The color must match 0<color<255 in PrintCustom('" + Uppercase(ToString(module)) + "','" + ToString(text) + "')!", "L0004"); }
 			int color_ = color;
 			if (color == 0) { color_ = 8; }
 			if (color == 8) { color_ = 0; }
 			else {
 				char chr = ' ';
-				if (!StringEmpty(firstsymbol)) {
-					if (firstsymbol.size() > 1) {
-						PW("Length of the first character '" + firstsymbol + "' is >1 in PrintCustom('" + Uppercase(module) + "','" + text + "')!", "LW0000");
+				if (firstsymbol!=sol::nil) {
+					if (!StringEmpty(ToString(firstsymbol))) {
+						if (ToString(firstsymbol).size() > 1) {
+							PW("Length of the first character '" + ToString(firstsymbol) + "' is >1 in PrintCustom('" + Uppercase(ToString(module)) + "','" + ToString(text) + "')!", "LW0000");
+						}
+						chr = ToString(firstsymbol).at(0);
 					}
-					chr = firstsymbol.at(0);
 				}
-				Print(ConvertTextToConsoleLogMessage(text, module, chr), color_);
+				Print(ConvertTextToConsoleLogMessage(ToString(text), ToString(module), chr), color_);
 			}
 		}
 }
 
 /*Отправляет сообщение в консоль*/
-void l_Print(string text) {
-	PP(text);
+void l_Print(sol::object text) {
+	PP(ToString(text));
 }
 
 /*Отправляет предупреждение в консоль*/
-void l_Warn(string text,int code) {
+void l_Warn(sol::object text,int code) {
 	
-	PW(text,"GW"+FillString(to_string(code),4,'0',true));
+	PW(ToString(text),"GW"+FillString(to_string(code),4,'0',true));
 }
 
 /*Отправляет ошибку в консоль*/
-void l_Error(string text,int code) {
-	PE(text, "GE" + FillString(to_string(code), 4, '0', true));
+void l_Error(sol::object text,int code) {
+	PE(ToString(text), "GE" + FillString(to_string(code), 4, '0', true));
 }
 
 /*Отправляет фатальную ошибку в консоль*/
-void l_Fatal(string text, int code) {
-	PF(text, "GF" + FillString(to_string(code), 4, '0', true));
+void l_Fatal(sol::object text, int code) {
+	PF(ToString(text), "GF" + FillString(to_string(code), 4, '0', true));
 }
 
 /*Отправляет сообщение в консоль (без формата лога)*/
-void l_PrintClear(string text, int color) {
-	if (color < 0 || color>255) { PE("The color must match 0<color<255 in PrintClear('"+text+"')!","L0002"); }
+void l_PrintClear(sol::object text, int color) {
+	if (color < 0 || color>255) { PE("The color must match 0<color<255 in PrintClear('"+ToString(text)+"')!","L0002"); }
 	else {
 		int color_ = color;
 		if (color == 0) { color_ = 8; }
 		if (color == 8) { color_ = 0; }
-		Print(text, color_);
+		Print(ToString(text), color_);
 	}
 }
 
@@ -171,8 +174,9 @@ void l_CreateDirectory(string path) {
 void l_CreateFile(string pathandname, string source) {
 	if (SafeMode()) { PW("Function [CreateFile('" + pathandname + "','" + source + "')] cannot be started in SafeMode!", "LW0003"); }
 	else {
+		bool has = HasDirectory(pathandname);
 		GetOrCreateFile(pathandname);
-		if (!StringEmpty(source)) {
+		if (!StringEmpty(source)&&!has) {
 			WriteToFile(pathandname, source);
 		}
 	}
@@ -190,17 +194,17 @@ void l_RenameFile(string path, string newname) {
 }
 
 /*Запись переменных в JSON*/
-void l_WriteJSON(string path, string id, string val) {
-	if (SafeMode()) { PW("Function [WriteJSON('" + path + "','" + id + "','"+val+"')] cannot be started in SafeMode!", "LW0004"); }
+void l_WriteJSON(string path, string id, sol::object val) {
+	if (SafeMode()) { PW("Function [WriteJSON('" + path + "','" + id + "','"+ToString(val)+"')] cannot be started in SafeMode!", "LW0004"); }
 	else {
-		WriteToJson(path, id, val);
+		WriteToJson(path, id, ToString(val));
 	}
 }
 
 /*Получить данные из json файла*/
 string l_ReadJSON(string path, string id) {
-	if (HasDirectory(path)) { PE("Json file not found! ReadJSON('"+path+"','"+id+"')", "L0006"); return "ERROR"; }
-	if(!JSONValid(path)){ PE("Json file corrupted! ReadJSON('" + path + "','" + id + "')","L0005"); return "ERROR"; }
+	if (!HasDirectory(path)) { PE("Json file not found! ReadJSON('"+path+"','"+id+"')", "L0006"); return "ERROR_L0006"; }
+	if(!JSONValid(path)){ PE("Json file corrupted! ReadJSON('" + path + "','" + id + "')","L0005"); return "ERROR_L0005"; }
 	return ReadJson(path,id);
 }
 
@@ -373,8 +377,8 @@ float l_HTan(float f) {
 }
 
 /*Удаление дробной части*/
-float l_Trunc(float f) {
-	return trunc(f);
+int l_Trunc(float f) {
+	return round(f-GetFractionalPart(f));
 }
 
 /*Разбивает значение с плавающей запятой на дробную и целую части*/
@@ -431,7 +435,11 @@ int l_Length(sol::object obj) {
 	if (obj.get_type() == sol::type::string) {
 		return obj.as<std::string>().length();
 	}else if(obj.get_type() == sol::type::table) {
-		return obj.as<sol::table>().size();
+		int size = 0;
+		for (auto& kv : obj.as<sol::table>()) {
+			size = size + 1;
+		}
+		return size;
 	}
 	PE("This type of variable is not supported! Length()", "L0018");
 	return -1;
@@ -594,7 +602,7 @@ void l_SetWindowEventKeyHold(string id, sol::function func) {
 sol::table l_PressedKeys() {
 	sol::table tbl = lua.create_table();
 	for (const auto& p : GetPressedKeys()) {
-		tbl.set(p.first,true);
+		tbl.set(p.first,p.second);
 	}
 	return tbl;
 }
@@ -636,12 +644,151 @@ int l_GetWindowYPosition(string id) {
 	return GetWindowPosition(id, false);
 }
 
+/*Получает дробное число из числа*/
+float l_Frac(float f) {
+	return GetFractionalPart(f);
+}
+
+/*Получить весь JSON файл в виде таблицы*/
+sol::table l_JSONTable(string path) {
+	map<string, string> data = ReadAllJson(path);
+	sol::table tbl = lua.create_table();
+	for (const auto& p : data) {
+		tbl.set(p.first, p.second);
+	}
+	return tbl;
+}
+
+/*Получить ключ и переменную из таблицы*/
+void l_Pairs(sol::table table, sol::function func) {
+	for (auto& v : table) {
+		StartFunction(func, {v.first,v.second});
+	}
+}
+
+/*Получить строку из объекта*/
+string l_ToString(sol::object obj) {
+	return ToString(obj);
+}
+
+/*Получить тип переменной*/
+string l_GetType(sol::object obj) {
+	return sol::type_name(lua, obj.get_type());
+}
+
+/*Открыть ссылку*/
+void l_OpenLink(string html) {
+	if (SafeMode()) { PW("Function [OpenLink('" + html + "')] cannot be started in SafeMode!", "LW0019"); }
+	else {
+		system(StringToConstChar("start \"\" " + html));
+	}
+}
+
+/*Получить время сколько уже активен движок*/
+int l_ActiveTime() {
+	return GetActiveTime();
+}
+
 /*Зона woowzengine*/
 
-void StartFunction(sol::function func, string s) {
+string ToString(sol::object obj) {
+	sol::type type = obj.get_type();
+
+	switch (type) {
+	case sol::type::string:
+		return obj.as<std::string>();
+		break;
+	case sol::type::number:
+		return DoubleToString(obj.as<double>());
+		break;
+	case sol::type::nil:
+		return "nil";
+		break;
+	case sol::type::boolean:
+		if (obj.as<bool>()) {
+			return "true";
+		}
+		else {
+			return "false";
+		}
+		break;
+	}
+
+	if (type == sol::type::userdata) {
+		sol::userdata u = obj.as<sol::userdata>();
+		if (u.is<l_Vector2>()) {
+			l_Vector2 v2 = u.as<l_Vector2>();
+			return "Vector2("+ DoubleToString(v2.x) + "," + DoubleToString(v2.y) + ")";
+		}
+		else if (u.is<l_Color>()) {
+			l_Color c = u.as<l_Color>();
+			return "Color(" + DoubleToString(c.r) + "," + DoubleToString(c.g) + "," + DoubleToString(c.b) + "," + DoubleToString(c.a) + ")";
+		}
+	}
+
+	return "Value type [" + sol::type_name(lua, obj.get_type()) + "]";
+}
+
+sol::object AnyToObject(any obj) {
+	if (obj.type() == typeid(sol::object)) {
+		return any_cast<const sol::object&>(obj);
+	}
+	else if (obj.type() == typeid(std::string)) {
+		return sol::make_object(lua, std::any_cast<std::string>(obj));
+	}
+	return sol::nil;
+}
+
+void StartFunction(sol::function func, list<any> params) {
 	if (func != sol::nil && func.valid()) {
 		try {
-			func(s);
+			sol::object s0 = sol::nil;
+			sol::object s1 = sol::nil;
+			sol::object s2 = sol::nil;
+			sol::object s3 = sol::nil;
+			sol::object s4 = sol::nil;
+			sol::object s5 = sol::nil;
+			sol::object s6 = sol::nil;
+			sol::object s7 = sol::nil;
+			sol::object s8 = sol::nil;
+			sol::object s9 = sol::nil;
+			for (auto it = params.begin(); it != params.end(); ++it) {
+				int index = std::distance(params.begin(), it);
+				switch (index) {
+				case 0:
+					s0 = AnyToObject(*it);
+					break;
+				case 1:
+					s1 = AnyToObject(*it);
+					break;
+				case 2:
+					s2 = AnyToObject(*it);
+					break;
+				case 3:
+					s3 = AnyToObject(*it);
+					break;
+				case 4:
+					s4 = AnyToObject(*it);
+					break;
+				case 5:
+					s5 = AnyToObject(*it);
+					break;
+				case 6:
+					s6 = AnyToObject(*it);
+					break;
+				case 7:
+					s7 = AnyToObject(*it);
+					break;
+				case 8:
+					s8 = AnyToObject(*it);
+					break;
+				case 9:
+					s9 = AnyToObject(*it);
+					break;
+					break;
+				};
+			}
+			func(s0,s1,s2,s3,s4,s5,s6,s7,s8,s9);
 		}
 		catch (const sol::error& e) { /*Получение ошибок из lua скриптов*/
 			string what = e.what();
@@ -858,6 +1005,13 @@ void LuaCompile() {
 	lua.set_function("GetWindowY", &l_GetWindowYPosition);
 	lua.set_function("SetWindowX", &l_SetWindowXPosition);
 	lua.set_function("SetWindowY", &l_SetWindowYPosition);
+	lua.set_function("Frac", &l_Frac);
+	lua.set_function("JSONTable", &l_JSONTable);
+	lua.set_function("Pairs", &l_Pairs);
+	lua.set_function("ToString", &l_ToString);
+	lua.set_function("GetType", &l_GetType);
+	lua.set_function("OpenLink", &l_OpenLink);
+	lua.set_function("ActiveTime", &l_ActiveTime);
 
 	P("LUA", "Lua functions and etc. are loaded!");
 	P("LUA", "Start start.lua script...");

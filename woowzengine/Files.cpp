@@ -10,6 +10,7 @@
 #include "Files.h"
 #include "Easyer.h"
 #include "Base.h"
+#include "OpenGame.h"
 
 using namespace std;
 

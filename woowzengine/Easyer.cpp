@@ -37,9 +37,9 @@ int StringToInt(string Str) {
 
 /*Превращает строку в дробное число*/
 float StringToFloat(string Str) {
+	float f = -1;
 	try {
-		float f = stof(Str);
-		return f;
+		f = stof(Str);
 	}
 	catch (const std::invalid_argument& e) {
 		PE("It is not possible to convert a string to a number! StringToFloat('"+Str+"')", "E0005");
@@ -49,7 +49,7 @@ float StringToFloat(string Str) {
 		PE("Can't convert a string to a number because it's huge! StringToFloat('"+Str+"')", "E0006");
 		return -1;
 	}
-	return -1;
+	return f;
 }
 
 /*Превращает число в DWORD*/

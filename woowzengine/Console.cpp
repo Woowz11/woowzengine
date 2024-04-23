@@ -4,7 +4,10 @@
 
 #include <iostream>
 #include <string>
+#include <locale>
+#include <codecvt>
 #include "Console.h"
+#include "Easyer.h"
 
 using namespace std;
 
@@ -12,15 +15,19 @@ int DefaultConsoleColor = 8;
 
 /*Отправка сообщения в консоль*/
 int PrintToConsole(string Text, int Color) {
+	setlocale(LC_ALL, "");
 	HANDLE  hConsole;
 	hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
+	/*Установка цвета в консоли*/
 	if (Color != -1) {
 		SetConsoleTextAttribute(hConsole, Color);
 	}
 	else {
 		SetConsoleTextAttribute(hConsole, DefaultConsoleColor);
 	}
-	cout << Text << "\n";
+
+	wcout << StringToWString(Text) << "\n";
 	SetConsoleTextAttribute(hConsole, DefaultConsoleColor);
 	return 0;
 }

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <functional>
 //---- Графика ----
 #include <glad/gl.h>
 #define GLFW_INCLUDE_NONE
@@ -21,6 +22,7 @@
 #include "LuaCompile.h"
 #include "OpenGame.h"
 #include "Files.h"
+#include "Cycles.h"
 
 #include "Color.h"
 #include "Vector2.h"
@@ -40,9 +42,12 @@ string DefaultShaderVertex = R"(
 #version 330 core
 layout (location = 0) in vec3 aPos;
 
+uniform vec2 scale;
+
 void main()
 {
-    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+	vec2 NewPosition = aPos.xy * scale;
+	gl_Position = vec4(NewPosition, 0, 1);
 }
 )";
 
@@ -52,7 +57,7 @@ out vec4 FragColor;
 
 void main()
 {
-    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
+    FragColor = vec4(1.0, 0.5, 0.2, 1);
 } 
 )";
 
@@ -90,20 +95,21 @@ GLuint LoadSprite(string path, l_Sprite spritedata) {
 	return sprite;
 }
 
-GLuint TestShader;
-GLuint Buffer;
-void CreateBuffers() {
+void CreateBuffers(Window& window) {
+	if (window.id!="") { P("OPENGL", "Create buffers for [" + window.id + "]!"); }
 
-	GLfloat vertices[] = {
-	-0.5, -0.5, 0.0,
-	0.5, -0.5, 0.0,
-	0.5, 0.5, 0.0,
-	-0.5, 0.5, 0.0
+	float vertices[] = {
+	   -0.5f, -0.5f, 0.0f,
+		0.5f, -0.5f, 0.0f,
+		0.0f,  0.5f, 0.0f
 	};
 
-	glGenBuffers(1,&Buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, Buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
+	glGenVertexArrays(1, &window.Arrays);
+	glGenBuffers(1, &window.Buffer);
+
+	glBindVertexArray(window.Arrays);
+	glBindBuffer(GL_ARRAY_BUFFER, window.Buffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
@@ -111,9 +117,15 @@ void CreateBuffers() {
 	GLuint VertexShader = CompileShader(DefaultShaderVertex, true);
 	GLuint FragmentShader = CompileShader(DefaultShaderFragment, false);
 
-	TestShader = CompileShaderProgram(VertexShader, FragmentShader);
+	GLuint Shader = CompileShaderProgram(VertexShader, FragmentShader);
+	string ShaderID = "default";
+	map<string, map<string, int>> Uniforms = {};
+	Uniforms[ShaderID]["time"] = glGetUniformLocation(Shader, "time");
+	Uniforms[ShaderID]["random"] = glGetUniformLocation(Shader, "random");
+	Uniforms[ShaderID]["scale"] = glGetUniformLocation(Shader, "scale");
 
-	P("OPENGL", "Buffers created!");
+	window.Shaders[ShaderID] = Shader;
+	window.Uniforms = Uniforms;
 }
 
 void GLAPIENTRY PE_OPENGL(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
@@ -127,23 +139,22 @@ void GLFWInstall() {
 	}
 	else {
 		glfwGetVersion(&major, &minor, &revision);
+		P("GLFW", "GLFW Installed! (minor-" + to_string(minor) + ",major-" + to_string(major) + ",revision-" + to_string(revision) + ")");
 	}
-	P("GLFW", "GLFW Installed! (minor-" + to_string(minor) + ",major-" + to_string(major) + ",revision-" + to_string(revision) + ")");
 
 	if (!StringToBool(GetSessionInfo("Debug"))) { glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); }
 	GLFWwindow* window = glfwCreateWindow(300,300, StringToConstChar("Debug window"), NULL, NULL);
+
+	glfwMakeContextCurrent(window);
+	int version = gladLoadGL((GLADloadfunc)glfwGetProcAddress);
+	P("OpenGL", "OpenGL Loaded! (minor-" + to_string(GLAD_VERSION_MINOR(version)) + ",major-" + to_string(GLAD_VERSION_MAJOR(version)) + ")");
+	glDebugMessageCallback(PE_OPENGL, nullptr);
+
 	Window window_ = Window("",window);
+	CreateBuffers(window_);
 	Windows[""] = window_;
 	Windows_2[window_.glfw] = "";
 	if (!StringToBool(GetSessionInfo("Debug"))) { glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE); }
-	glfwMakeContextCurrent(window);
-
-	int version = gladLoadGL((GLADloadfunc)glfwGetProcAddress);
-	P("OpenGL", "OpenGL Loaded! (minor-"+to_string(GLAD_VERSION_MINOR(version)) + ",major-" + to_string(GLAD_VERSION_MAJOR(version))+")");
-
-	glDebugMessageCallback(PE_OPENGL,nullptr);
-
-	CreateBuffers();
 
 	SetSessionInfo("MainWindow", "");
 }
@@ -198,7 +209,6 @@ GLuint CompileShaderProgram(GLuint Vertex, GLuint Fragment) {
 	}
 
 	return Shader;
-	return 0;
 }
 
 /*Методы*/
@@ -248,19 +258,15 @@ void Render() {
 			if (!glfwWindowShouldClose(window.glfw)) {
 					glfwMakeContextCurrent(window.glfw);
 					int width, height;
-					if (window.AutoResize) {
-						glfwGetFramebufferSize(window.glfw, &width, &height);
-					}
-					else {
-						width = window.StartSizeX;
-						height = window.StartSizeY;
-					}
+					glfwGetFramebufferSize(window.glfw, &width, &height);
 					glViewport(0, 0, round(width * window.scale), round(height * window.scale));
 					/*----------------[Рисование]------------------*/
-
-					glUseProgram(TestShader);
-					glBindVertexArray(Buffer);
-					glDrawArrays(GL_TRIANGLES, 0, 3);
+					GLuint Shader = GetFromMap(window.Shaders, "default");
+					glUseProgram(Shader);
+					glUniform1f(GetFromMap(GetFromMap(window.Uniforms, "default"), "time"), GetActiveTime());
+					glUniform2f(GetFromMap(GetFromMap(window.Uniforms, "default"), "scale"), (window.AutoResize ? (float)1 : (float)window.StartSizeX / (float)width), (window.AutoResize ? (float)1 : (float)window.StartSizeY / (float)height));
+					hash<std::string> hasher;
+					glUniform1f(GetFromMap(GetFromMap(window.Uniforms, "default"), "random"), abs(sin(GetActiveTime() * hasher(window.id) / ((521673-GetActiveTime())+0.5) )));
 
 					glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 					glEnable(GL_BLEND);
@@ -278,6 +284,9 @@ void Render() {
 							//RenderSprite(window,sid,sprite);
 						}
 					}
+
+					glBindVertexArray(window.Arrays);
+					glDrawArrays(GL_TRIANGLES, 0, 3);
 
 					glfwSwapBuffers(window.glfw);
 					/*------------[Конец рисования]----------------*/
@@ -468,7 +477,7 @@ map<int, string> Keys = {
 	{346,"alt2"},{345,"ctrl2"},{269,"end"},{281,"scrolllock"},{284,"pausebreak"},{348,"applications"}
 };
 
-map<int, bool> PressedKeys = {};
+map<int, int> PressedKeys = {};
 
 /*Получить клавишу по айди*/
 string GetKeyFromID(int i) {
@@ -482,10 +491,15 @@ string GetKeyFromID(int i) {
 /*Получить в данный момент зажатые клавиши*/
 map<string, int> GetPressedKeys() {
 	map<string, int> k = {};
-	for (const auto& p : PressedKeys) {
-		if (p.second == true) {
-			k[GetKeyFromID(p.first)] = p.first;
+	if (Windows.size() > 1) {
+		for (const auto& p : PressedKeys) {
+			if (p.second > 0) {
+				k[GetKeyFromID(p.first)] = p.second;
+			}
 		}
+	}
+	else {
+		PE("Can't get pressed keys! There's no window for that!","E0016");
 	}
 	return k;
 }
@@ -494,20 +508,21 @@ void KeyCallback(GLFWwindow* window_, int key_, int scancode, int action, int mo
 	Window window = GetWindowByWindow(window_);
 	if (action == GLFW_PRESS) {
 		if (window.WindowKeyPress.valid()) {
-			StartFunction(window.WindowKeyPress, GetKeyFromID(key_));
+			StartFunction(window.WindowKeyPress, { GetKeyFromID(key_) });
 		}
-		PressedKeys[key_] = true;
+		PressedKeys[key_] = 1;
 	}
 	if (action == GLFW_RELEASE) {
 		if (window.WindowKeyRelease.valid()) {
-			StartFunction(window.WindowKeyRelease, GetKeyFromID(key_));
+			StartFunction(window.WindowKeyRelease, { GetKeyFromID(key_) });
 		}
-		PressedKeys[key_] = false;
+		PressedKeys[key_] = 0;
 	}
 	if (action == GLFW_REPEAT) {
 		if (window.WindowKeyRepeat.valid()) {
-			StartFunction(window.WindowKeyRepeat, GetKeyFromID(key_));
+			StartFunction(window.WindowKeyRepeat, { GetKeyFromID(key_) });
 		}
+		PressedKeys[key_] = PressedKeys[key_] + 1;
 	}
 }
 
@@ -524,6 +539,7 @@ Window CreateWindowGLFW(string id, int sizex, int sizey, string title) {
 			}
 			glfwMakeContextCurrent(window);
 			Window window_ = Window(id,window);
+			CreateBuffers(window_);
 			window_.StartSizeX = sizex;
 			window_.StartSizeY = sizey;
 			glfwSetKeyCallback(window, KeyCallback);
@@ -546,8 +562,14 @@ void DestroyWindowGLFW(string id) {
 		}
 		Window window = GetWindowByID(id);
 		if (window.WindowClosed.valid()) {
-			StartFunction(window.WindowClosed);
+			StartFunction(window.WindowClosed, {});
 		}
+		glfwMakeContextCurrent(window.glfw);
+		for (auto it = window.Shaders.begin(); it != window.Shaders.end(); ++it) {
+			glDeleteProgram(it->second);
+		}
+		glDeleteVertexArrays(1, &window.Arrays);
+		glDeleteBuffers(1, &window.Buffer);
 		glfwDestroyWindow(window.glfw);
 		P("WINDOW", "Window [" + id + "] destroyed!");
 		Windows_2.erase(window.glfw);

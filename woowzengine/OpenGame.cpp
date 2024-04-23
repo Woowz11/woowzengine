@@ -2,12 +2,14 @@
 #define byte win_byte_override
 #include "Windows.h"
 
+#include <filesystem>
 #include <iostream>
 #include <string>
 #include <map>
 #include <chrono>
 #include <thread>
 #include <mutex>
+#include "WindowsElements.h"
 #include "OpenGame.h"
 #include "Base.h"
 #include "Files.h"
@@ -42,7 +44,7 @@ void SetGameClosedEvent(sol::function f) {
 }
 
 bool WINAPI StopEngine(DWORD CEvent) {
-	StartFunction(GameClosed);
+	StartFunction(GameClosed, {});
 	if (CEvent == CTRL_CLOSE_EVENT) {
 		StopGLFW();
 		P("ENGINE", "WoowzEngine stopping...");
@@ -61,14 +63,14 @@ void CheckFiles(string ev) {
 	string JGame = OurGamePath + "/game.json";
 
 	int Seed = (int)std::time(nullptr);
-
+	
 	GetOrCreateFile(SessionInfoPath);
 
 	if (!JSONValid(SessionInfoPath)) {
 		SessionInfoBroken = true;
 	}
 
-	map<string, string> SessionInfoInfo = { {"Debug",(DebugMode ? "true" : "false")},{"Seed",to_string(Seed)},{"GamePath",SGamePath},{"Version",ev},{"SourcePath",SGamePath + "game/"},{"EngineJson",JEngine},{"GameJson",JGame},{"SessionPath",SGamePath + "woowzengine/temporary/sessioninfo"}};
+	map<string, string> SessionInfoInfo = { {"Debug",(DebugMode ? "true" : "false")},{"Seed",to_string(Seed)},{"GamePath",SGamePath},{"Version",ev},{"SourcePath",SGamePath + "game/"},{"EngineJson",JEngine},{"GameJson",JGame},{"SessionPath",SessionInfoPath}};
 	WriteToFile(SessionInfoPath, ConvertToJSON(SessionInfoInfo));
 
 	GetOrCreateFolder(OurGamePath);
@@ -113,6 +115,13 @@ void GameInstall() {
 
 void Install(string ev) {
 	BaseInstall(SGamePath);
+
+	for (auto& p : std::filesystem::recursive_directory_iterator(GetSessionInfo("SourcePath"))) {
+		if (!OnlyASCII(p.path().filename().string())) {
+			MessageBoxFatal("Files and folders accept only ASCII characters! [" + p.path().string() + "]", "C0024",true);
+		}
+	}
+
 	CheckFiles(ev);
 	LoggerInstall();
 

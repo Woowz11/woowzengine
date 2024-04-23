@@ -14,8 +14,15 @@ using namespace std;
 
 std::mutex mtx;
 
+int Time = 0;
+
+int GetActiveTime() {
+	return Time;
+}
+
 void SetCycleEngine() {
 	while (true) {
+		Time = Time + 1;
 		Cycle();
 	}
 }

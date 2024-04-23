@@ -2,11 +2,14 @@
 #include <map>
 #include <chrono>
 #include <list>
+#include <glad/gl.h>
 #include "Vertex.h"
 #include "time.h"
 #pragma once
 using namespace std;
 
+string DoubleToString(double value);
+float GetFractionalPart(int i);
 string GetPathWithoutFileName(string path);
 string FileName(string path);
 bool SafeMode();
@@ -36,13 +39,18 @@ bool GetOrCreateFile(string);
 bool StringToBool(string Str);
 bool JSONValid(string Path);
 string ReadFile(string Path);
+bool OnlyASCII(const std::string& str);
 void CreateValueJson(string Path, string ID, string Value);
 bool StringEmpty(string Str);
 string ReadJson(string Path, string ID, string IfNotFound = "");
+map<string, string> ReadAllJson(string Path);
 string Trim(string s);
 string GetFileName(string Path);
 template <typename K, typename V>
-V GetFromMap(const map<K, V>& m, const K& key);
+V GetFromMapExtra(const map<K, V>& m, const K& key);
+GLuint GetFromMap(map<string, GLuint> map, string id);
+int GetFromMap(map<string, int> map, string id);
+map<string, int> GetFromMap(map<string, map<string, int>> map, string id);
 template <typename T>
 T GetFromListExtra(const std::list<T>& myList, int index);
 Vertex GetFromList(std::list<Vertex> list, int i);

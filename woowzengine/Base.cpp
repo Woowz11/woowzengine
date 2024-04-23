@@ -12,6 +12,8 @@
 #include <thread>
 #include <cstdlib>
 #include <algorithm>
+#include <iomanip>
+#include <glad/gl.h>
 #include "OpenGame.h"
 #include "GLFW.h"
 #include "time.h"
@@ -31,6 +33,18 @@ using json = nlohmann::json;
 string GamePath = "";
 string SessionInfoPath = "woowzengine/temporary/sessioninfo";
 string LogsStyle = "%b[%s:%m:%h][%t] %c";
+
+/*Тоже самое что to_string() только без нулей в конце*/
+string DoubleToString(double value) {
+	std::ostringstream stream;
+	stream << std::fixed << std::setprecision(15) << value;
+	std::string str = stream.str();
+	str.erase(str.find_last_not_of('0') + 1, std::string::npos);
+	if (str.back() == '.') {
+		str.pop_back();
+	}
+	return str;
+}
 
 /*Получить путь без файла*/
 string GetPathWithoutFileName(string path) {
@@ -53,6 +67,11 @@ void Exit() {
 	exit(EXIT_SUCCESS);
 }
 
+/*Получить дробную часть*/
+float GetFractionalPart(int i) {
+	return i - round(i);
+}
+
 /*Установить сид*/
 void SetRandomSeed(int seed) {
 	srand(seed);
@@ -67,7 +86,7 @@ float Random(float min,float max) {
 	}
 }
 float Random() {
-	int seed = StringToInt(GetSessionInfo("Seed")) + 100000000000;
+	int seed = StringToInt(GetSessionInfo("Seed")) + 6278312124078 + StringToInt(GetSessionInfo("Seed"))*53;
 	SetRandomSeed(seed);
 	return (float)static_cast<double>(rand()) / RAND_MAX;
 }
@@ -77,7 +96,7 @@ void BaseInstall(string GamePath_) {
 	GamePath = GamePath_;
 	std::setlocale(LC_NUMERIC, "POSIX");
 	if (JSONValid(GamePath + SessionInfoPath)) {
-		if (GetEngineInfoIE("LogStyle") != "WARN_EMPTY") { /*ФИКС ОШИБКУ ЧТО ТУТ IgnoreError СБРАСЫВАЕТЬСЯ С TRUE НА FALSE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+		if (GetEngineInfoIE("LogStyle") != "WARN_EMPTY") {
 			LogsStyle = GetEngineInfo("LogStyle");
 		}
 	}
@@ -191,6 +210,16 @@ string Trim(string s) {
 	return s;
 }
 
+/*Есть кириллица или нет*/
+bool OnlyASCII(const std::string& str) {
+	for (char c : str) {
+		if (static_cast<unsigned char>(c) > 127) {
+			return false;
+		}
+	}
+	return true;
+}
+
 /*Может называться в windows*/
 bool NameWindowsAccept(string Str, bool ThatEnd, bool ThatPath) {
 	bool result = FindChar(Str, '*') || FindChar(Str, '?') || FindChar(Str, '"') || FindChar(Str, '<') || FindChar(Str, '>') || FindChar(Str, '|') || FindChar(Str, '+');
@@ -297,7 +326,7 @@ bool CheckPathToSymbols(string path) {
 	}
 }
 
-/*Записать переменную в JSON*/
+/*Прочитать переменную в JSON*/
 string ReadJson(string Path, string ID, string IfNotFound) {
 	if (JSONValid(Path)) {
 		string JSON = ReadFile(Path);
@@ -318,6 +347,23 @@ string ReadJson(string Path, string ID, string IfNotFound) {
 	else {
 		PE("JSON file [" + Path + "] has an incorrect structure! ReadJson('"+ID+"','"+IfNotFound+"')", "E0002");
 		return "ERROR_E0002";
+	}
+}
+
+/*Получить переменные из JSON*/
+map<string,string> ReadAllJson(string Path) {
+	if (JSONValid(Path)) {
+		string JSON = ReadFile(Path);
+		json data = json::parse(JSON);
+		map<string, string> result = {};
+		for (json::iterator it = data.begin(); it != data.end(); ++it) {
+			result[it.key()] = it.value().get<std::string>();
+		}
+		return result;
+	}
+	else {
+		PE("JSON file [" + Path + "] has an incorrect structure! ReadAllJson()", "E0015");
+		return map<string,string>();
 	}
 }
 
@@ -410,7 +456,7 @@ string GetTime(string Tag) {
 
 /*Получить Value из Map используя Key*/
 template <typename K, typename V>
-V GetFromMap(const map<K, V>& m, const K& key) {
+V GetFromMapExtra(const map<K, V>& m, const K& key) {
 	auto it = m.find(key);
 	if (it != m.end()) {
 		return it->second;
@@ -421,6 +467,16 @@ V GetFromMap(const map<K, V>& m, const K& key) {
 	}
 	return V{};
 }
+GLuint GetFromMap(map<string, GLuint> map, string id) {
+	return GetFromMapExtra(map, id);
+}
+int GetFromMap(map<string, int> map, string id) {
+	return GetFromMapExtra(map, id);
+}
+map<string,int> GetFromMap(map<string, map<string, int>> map, string id) {
+	return GetFromMapExtra(map, id);
+}
+
 
 /*Получить элемент из list по номеру*/
 template <typename T>
@@ -444,7 +500,7 @@ string ConvertToJSON(map<string, string> KeysValues) {
 	string result = "{";
 	for (auto Key_ = KeysValues.begin(); Key_ != KeysValues.end(); ++Key_) {
 		string Key = Key_->first;
-		string Val = GetFromMap(KeysValues, Key);
+		string Val = GetFromMapExtra(KeysValues, Key);
 		result = result + "\"" + Key + "\": \""+Val+"\"";
 		if (next(Key_) != KeysValues.end()) {
 			result = result + ",";
@@ -457,6 +513,7 @@ string ConvertToJSON(map<string, string> KeysValues) {
 
 /*Проверяет содержит ли JSON ошибки*/
 bool JSONValid(string Path) {
+	if (!HasDirectory(Path)) { return false; }
 	return json::accept(ReadFile(Path));
 }
 
