@@ -3,6 +3,7 @@
 #include "Windows.h"
 
 #include <iostream>
+#include <list>
 #pragma once
 using namespace std;
 

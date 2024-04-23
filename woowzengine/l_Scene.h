@@ -5,6 +5,8 @@
 #include "RenderElement.h"
 #include "GLFW.h"
 #include "l_Color.h"
+#include "l_Vector2.h"
+#include "l_Sprite.h"
 
 #pragma once
 using namespace std;
@@ -18,6 +20,7 @@ public:
 	map<string, l_Sprite> Sprites = {};
 	string windowid = "";
 	l_Color BackgroundColor = l_Color(0, 0, 0, 255);
+	l_Vector2 CameraPosition = l_Vector2(0, 0);
 
 	l_Color GetBackgroundColor() {
 		return BackgroundColor;
@@ -34,34 +37,41 @@ public:
 		}
 	}
 	
-	void AddElement(l_Element e) {
-		/*if (Elements.find(e.ID) != Elements.end()) { PE("Such an element [" + e.ID + "] is already on the scene [" + ID + "]!", "L0017"); }
+	void SetCameraPosition(float f, bool thatx) {
+		if (thatx) {
+			CameraPosition = l_Vector2(f,CameraPosition.y);
+		}
 		else {
-			P("SCENE", "Element [" + e.ID + "] added to scene[" + ID + "]");
-			Elements[e.ID] = e;
-			Update();
-		}*/
+			CameraPosition = l_Vector2(CameraPosition.x, f);
+		}
+		Update();
 	}
 
-	void AddSprite(l_Sprite e) {
+	l_Sprite GetSprite(string id) {
+		return Sprites[id];
+	}
+
+	void AddSprite(l_Sprite& e) {
 		if (Elements.find(e.id) != Elements.end()) { PE("Such an sprite [" + e.id + "] is already on the scene [" + ID + "]!", "L0017"); }
 		else {
 			P("SCENE", "Sprite [" + e.id + "] added to scene[" + ID + "]");
 			Sprites[e.id] = e;
+			e.sceneid = ID;
 			Update();
 		}
 	}
 
+	void UpdateSprite(l_Sprite e) {
+		Sprites[e.id] = e;
+		Update();
+	}
+
 	Scene ToCPP() {
 		Scene s = Scene(ID);
-		/*map<string, RenderElement> Elements_ = {};
-		for (const auto& pair : Elements) {
-			Elements_[pair.first] = static_cast<l_Element>(pair.second).ToCPP();
-		}
-		s.elements = Elements_;*/
 		s.sprites = Sprites;
 		s.windowid = windowid;
 		s.BackgroundColor = BackgroundColor.ToCPP();
+		s.CameraPosition = CameraPosition.ToCPP();
 		return s;
 	}
 };

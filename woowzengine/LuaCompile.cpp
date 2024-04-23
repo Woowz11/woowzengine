@@ -689,6 +689,31 @@ int l_ActiveTime() {
 	return GetActiveTime();
 }
 
+/*Установить позицию камеры по X*/
+void l_SetCameraX(l_Scene& scene, float f) {
+	scene.SetCameraPosition(f, true);
+}
+
+/*Установить позицию камеры по Y*/
+void l_SetCameraY(l_Scene& scene, float f) {
+	scene.SetCameraPosition(f, false);
+}
+
+/*Получить позицию камеры по X*/
+float l_GetCameraX(l_Scene scene) {
+	return scene.CameraPosition.x;
+}
+
+/*Получить позицию камеры по Y*/
+float l_GetCameraY(l_Scene scene) {
+	return scene.CameraPosition.y;
+}
+
+/*Обновить спрайт*/
+void l_UpdateSprite(l_Scene scene, l_Sprite sprite) {
+	scene.UpdateSprite(sprite);
+}
+
 /*Зона woowzengine*/
 
 string ToString(sol::object obj) {
@@ -855,11 +880,13 @@ void LuaCompile() {
 		"Orientation", &l_Sprite::angle,
 		"Color", &l_Sprite::color,
 		"ZIndex", &l_Sprite::zindex,
-		"Scale", &l_Sprite::size,
+		"Size", &l_Sprite::size,
 		"Texture", &l_Sprite::texture,
 		"Origin", &l_Sprite::origin,
 		"ThatUI", &l_Sprite::movewithcamera,
-		"Blur", &l_Sprite::Linear
+		"Blur", &l_Sprite::Linear,
+		"Shader", &l_Sprite::shader,
+		"AutoSize", &l_Sprite::autoresize
 	);
 
 	lua.new_usertype<l_Scene>("Scene",
@@ -1012,6 +1039,11 @@ void LuaCompile() {
 	lua.set_function("GetType", &l_GetType);
 	lua.set_function("OpenLink", &l_OpenLink);
 	lua.set_function("ActiveTime", &l_ActiveTime);
+	lua.set_function("SetCameraX", &l_SetCameraX);
+	lua.set_function("SetCameraY", &l_SetCameraY);
+	lua.set_function("GetCameraX", &l_GetCameraX);
+	lua.set_function("GetCameraY", &l_GetCameraY);
+	lua.set_function("UpdateSprite", &l_UpdateSprite);
 
 	P("LUA", "Lua functions and etc. are loaded!");
 	P("LUA", "Start start.lua script...");

@@ -3,6 +3,7 @@
 #include <glad/gl.h>
 #include <sol/sol.hpp>
 #include <map>
+#include <list>
 #include "Scene.h"
 #pragma once
 using namespace std;

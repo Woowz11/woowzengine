@@ -7,20 +7,24 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 #include <glad/gl.h>
+#include <list>
 #include "Vertex.h"
 #include "Window.h"
 #include "Scene.h"
+#include "Color.h"
 #include "RenderElement.h"
 #include "l_Sprite.h"
 #pragma once
 using namespace std; 
 
+void UpdateShader(Window window,Color color,int width, int height, bool autosize = false);
+void RenderQuad(Window window, list<float> v);
 void SetWindowTitle(string id, string title);
 void SetWindowSize(string id, bool thatY, int size);
 int GetWindowSize(string id, bool thatY);
 void StopGLFW();
 void GLFWInstall();
-void RenderSprite(Window window, string id, l_Sprite sprite);
+void RenderSprite(Window window, string id, l_Sprite sprite, int width, int height);
 void Render();
 bool HasWindow(string id);
 Window GetWindowByID(string id);

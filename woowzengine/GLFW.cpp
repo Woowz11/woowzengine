@@ -30,6 +30,7 @@
 #include "Window.h"
 
 #include "l_Sprite.h"
+#include "l_Scene.h"
 
 using namespace std;
 
@@ -55,9 +56,11 @@ string DefaultShaderFragment = R"(
 #version 330 core
 out vec4 FragColor;
 
+uniform vec4 color;
+
 void main()
 {
-    FragColor = vec4(1.0, 0.5, 0.2, 1);
+    FragColor = color;
 } 
 )";
 
@@ -98,21 +101,11 @@ GLuint LoadSprite(string path, l_Sprite spritedata) {
 void CreateBuffers(Window& window) {
 	if (window.id!="") { P("OPENGL", "Create buffers for [" + window.id + "]!"); }
 
-	float vertices[] = {
-	   -0.5f, -0.5f, 0.0f,
-		0.5f, -0.5f, 0.0f,
-		0.0f,  0.5f, 0.0f
-	};
-
 	glGenVertexArrays(1, &window.Arrays);
 	glGenBuffers(1, &window.Buffer);
 
 	glBindVertexArray(window.Arrays);
 	glBindBuffer(GL_ARRAY_BUFFER, window.Buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
 
 	GLuint VertexShader = CompileShader(DefaultShaderVertex, true);
 	GLuint FragmentShader = CompileShader(DefaultShaderFragment, false);
@@ -123,6 +116,7 @@ void CreateBuffers(Window& window) {
 	Uniforms[ShaderID]["time"] = glGetUniformLocation(Shader, "time");
 	Uniforms[ShaderID]["random"] = glGetUniformLocation(Shader, "random");
 	Uniforms[ShaderID]["scale"] = glGetUniformLocation(Shader, "scale");
+	Uniforms[ShaderID]["color"] = glGetUniformLocation(Shader, "color");
 
 	window.Shaders[ShaderID] = Shader;
 	window.Uniforms = Uniforms;
@@ -227,7 +221,7 @@ GLuint GetTexture(string window,l_Sprite sprite) {
 		result = Textures_[sprite.id];
 	}
 	else {
-		GLuint texture = LoadSprite(sprite.texture,sprite);
+		GLuint texture = LoadSprite(sprite.texture, sprite);
 		Textures_[sprite.id] = texture;
 		result = texture;
 	}
@@ -237,19 +231,50 @@ GLuint GetTexture(string window,l_Sprite sprite) {
 	return result;
 }
 
-void RenderSprite(Window window, string id, l_Sprite sprite) {
+void RenderQuad(Window window, list<float> v) {
+	float vert[12];
+	int i = 0;
+	for (float element : v) {
+		vert[i] = element;
+		i++;
+	}
+	glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(float), vert, GL_DYNAMIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	glDrawArrays(GL_QUADS, 0, 4);
+}
 
-	GLuint texture = GetTexture(window.id, sprite);
-	glBindTexture(GL_TEXTURE_2D, texture);
+void UpdateShader(Window window,Color color, int width, int height, bool autosize) {
+	GLuint Shader = GetFromMap(window.Shaders, "default");
+	glUseProgram(Shader);
+	glUniform1f(GetFromMap(GetFromMap(window.Uniforms, "default"), "time"), GetActiveTime());
+	glUniform2f(GetFromMap(GetFromMap(window.Uniforms, "default"), "scale"), (window.AutoResize||autosize ? (float)1 : (float)window.StartSizeX / (float)width), (window.AutoResize||autosize ? (float)1 : (float)window.StartSizeY / (float)height));
+	hash<std::string> hasher;
+	glUniform1f(GetFromMap(GetFromMap(window.Uniforms, "default"), "random"), abs(sin(GetActiveTime() * hasher(window.id) / ((521673 - GetActiveTime()) + 0.5))));
+	glUniform4f(GetFromMap(GetFromMap(window.Uniforms, "default"), "color"), (float)color.r / 255, (float)color.g / 255, (float)color.b / 255, (float)color.a / 255);
+}
 
-	/*glBegin(GL_QUADS);
-	glTexCoord2f(0.0f, 0.0f); glVertex2f(-0.5, -0.5);
-	glTexCoord2f(1.0f, 0.0f); glVertex2f(0.5, -0.5);
-	glTexCoord2f(1.0f, 1.0f); glVertex2f(0.5, 0.5);
-	glTexCoord2f(0.0f, 1.0f); glVertex2f(-0.5, 0.5);
-	glEnd();*/
+void RenderSprite(Window window, string id, l_Sprite sprite, int width, int height) {
+	if (sprite.id != "") {
+		UpdateShader(window, sprite.color.ToCPP(), width, height, sprite.autoresize);
+		GLuint texture = GetTexture(window.id, sprite);
+		glBindTexture(GL_TEXTURE_2D, texture);
 
-	glFlush();
+		Scene scene = window.scene;
+		float SizeMult = (float)window.StartSizeY / (float)window.StartSizeX;
+		float SizeX = sprite.size.x * SizeMult;
+		float SizeY = sprite.size.y;
+		float CamPosX = (sprite.movewithcamera ? 0 : scene.CameraPosition.x);
+		float CamPosY = (sprite.movewithcamera ? 0 : scene.CameraPosition.y);
+		RenderQuad(window, {
+			-SizeX + sprite.position.x + CamPosX,-SizeY + sprite.position.y + CamPosY, 0.0f, /*Нижний  левый  */
+			-SizeX + sprite.position.x + CamPosX, SizeY + sprite.position.y + CamPosY, 0.0f, /*Верхний левый  */
+			 SizeX + sprite.position.x + CamPosX, SizeY + sprite.position.y + CamPosY, 0.0f, /*Верхний правый */
+			 SizeX + sprite.position.x + CamPosX,-SizeY + sprite.position.y + CamPosY, 0.0f  /*Нижний  правый */
+			});
+
+		glFlush();
+	}
 }
 
 void Render() {
@@ -257,17 +282,10 @@ void Render() {
 		for (auto const& [id, window] : Windows) {
 			if (!glfwWindowShouldClose(window.glfw)) {
 					glfwMakeContextCurrent(window.glfw);
-					int width, height;
+					int width = 1, height = 1;
 					glfwGetFramebufferSize(window.glfw, &width, &height);
 					glViewport(0, 0, round(width * window.scale), round(height * window.scale));
 					/*----------------[Рисование]------------------*/
-					GLuint Shader = GetFromMap(window.Shaders, "default");
-					glUseProgram(Shader);
-					glUniform1f(GetFromMap(GetFromMap(window.Uniforms, "default"), "time"), GetActiveTime());
-					glUniform2f(GetFromMap(GetFromMap(window.Uniforms, "default"), "scale"), (window.AutoResize ? (float)1 : (float)window.StartSizeX / (float)width), (window.AutoResize ? (float)1 : (float)window.StartSizeY / (float)height));
-					hash<std::string> hasher;
-					glUniform1f(GetFromMap(GetFromMap(window.Uniforms, "default"), "random"), abs(sin(GetActiveTime() * hasher(window.id) / ((521673-GetActiveTime())+0.5) )));
-
 					glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 					glEnable(GL_BLEND);
 					glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -281,12 +299,9 @@ void Render() {
 					glEnable(GL_TEXTURE_2D);
 					if (window.scene.sprites.size() > 0) {
 						for (auto const& [sid, sprite] : window.scene.sprites) {
-							//RenderSprite(window,sid,sprite);
+							RenderSprite(window,sid,sprite,width,height);
 						}
 					}
-
-					glBindVertexArray(window.Arrays);
-					glDrawArrays(GL_TRIANGLES, 0, 3);
 
 					glfwSwapBuffers(window.glfw);
 					/*------------[Конец рисования]----------------*/

@@ -9,8 +9,7 @@ struct l_Sprite {
 public:
 	string id = "";
 	string texture = GetSessionInfo("SourcePath") + "engine/default.png";
-	string shader = "";
-	string posshader = "";
+	string shader = "default";
 	l_Vector2 position = l_Vector2(0,0);
 	float angle = 0;
 	l_Vector2 origin = l_Vector2(0.5, 0.5);
@@ -18,9 +17,12 @@ public:
 	float zindex = 0;
 	l_Vector2 size = l_Vector2(1,1);
 	bool movewithcamera = false;
+	bool autoresize = false;
 	bool Linear = false;
 	bool FlipX = false;
 	bool FlipY = false;
+
+	string sceneid = "";
 
 	l_Sprite() {}
 	l_Sprite(string id) : id(id) {}

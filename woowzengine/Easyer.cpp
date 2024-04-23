@@ -9,6 +9,7 @@
 #include <codecvt>
 #include <locale>
 #include <vector>
+#include <list>
 #include "Easyer.h"
 #include "Base.h"
 

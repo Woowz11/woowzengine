@@ -462,7 +462,7 @@ V GetFromMapExtra(const map<K, V>& m, const K& key) {
 		return it->second;
 	}
 	else {
-		PE("Element not found! GetFromMap()", "E0007");
+		PE("Element not found! GetFromMap('" + string(typeid(K).name()) + "','"+ string(typeid(V).name()) +"')", "E0007");
 		return V{};
 	}
 	return V{};
@@ -476,7 +476,6 @@ int GetFromMap(map<string, int> map, string id) {
 map<string,int> GetFromMap(map<string, map<string, int>> map, string id) {
 	return GetFromMapExtra(map, id);
 }
-
 
 /*Получить элемент из list по номеру*/
 template <typename T>
