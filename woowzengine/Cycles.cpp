@@ -2,6 +2,7 @@
 #include <chrono>
 #include <thread>
 #include <mutex>
+#include <condition_variable>
 
 #include <lua/lua.hpp>
 #include <sol/sol.hpp>
@@ -22,8 +23,12 @@ int GetActiveTime() {
 
 void SetCycleEngine() {
 	while (true) {
+		auto start = std::chrono::high_resolution_clock::now();
 		Time = Time + 1;
 		Cycle();
+		auto end = std::chrono::high_resolution_clock::now();
+		auto needwait = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+		std::this_thread::sleep_for(std::chrono::milliseconds(16) - needwait);
 	}
 }
 

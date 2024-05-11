@@ -30,7 +30,7 @@
 #include "Window.h"
 
 #include "l_Sprite.h"
-#include "l_Scene.h"
+#include "Scene.h"
 
 using namespace std;
 
@@ -38,6 +38,8 @@ map<string, Window> Windows;
 map<GLFWwindow*, string> Windows_2;
 map<string, map<string, GLuint>> Textures;
 string MainWindow = "";
+
+map<string, Scene> Scenes;
 
 string DefaultShaderVertex = R"(
 #version 330 core
@@ -153,9 +155,13 @@ void GLFWInstall() {
 	SetSessionInfo("MainWindow", "");
 }
 
-void PE_GLFW(int error, const char* desc) {
-	string desc_ = desc;
-	PE(desc_,"S"+to_string(error));
+void PE_GLFW() {
+	int error;
+	const char* description;
+	error = glfwGetError(&description);
+	if (error != GLFW_NO_ERROR) {
+		PE(description, "S" + to_string(error));
+	}
 }
 
 /*Рендер*/
@@ -271,7 +277,7 @@ void RenderSprite(Window window, string id, l_Sprite sprite, int width, int heig
 			-SizeX + sprite.position.x + CamPosX, SizeY + sprite.position.y + CamPosY, 0.0f, /*Верхний левый  */
 			 SizeX + sprite.position.x + CamPosX, SizeY + sprite.position.y + CamPosY, 0.0f, /*Верхний правый */
 			 SizeX + sprite.position.x + CamPosX,-SizeY + sprite.position.y + CamPosY, 0.0f  /*Нижний  правый */
-			});
+		});
 
 		glFlush();
 	}
@@ -282,6 +288,7 @@ void Render() {
 		for (auto const& [id, window] : Windows) {
 			if (!glfwWindowShouldClose(window.glfw)) {
 					glfwMakeContextCurrent(window.glfw);
+					glfwPollEvents();
 					int width = 1, height = 1;
 					glfwGetFramebufferSize(window.glfw, &width, &height);
 					glViewport(0, 0, round(width * window.scale), round(height * window.scale));
@@ -290,22 +297,23 @@ void Render() {
 					glEnable(GL_BLEND);
 					glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-					if (window.scene.windowid != "") {
-						glClearColor(window.scene.BackgroundColor.GetR(), window.scene.BackgroundColor.GetG(), window.scene.BackgroundColor.GetB(), 1);
+					Scene scene = GetScene(window.scene);
+					if (scene.windowid != "") {
+						glClearColor(scene.BackgroundColor.GetR(), scene.BackgroundColor.GetG(), scene.BackgroundColor.GetB(), 1);
 					}
 					else {
 						glClearColor(0, 0, 0, 1);
 					}
 					glEnable(GL_TEXTURE_2D);
-					if (window.scene.sprites.size() > 0) {
-						for (auto const& [sid, sprite] : window.scene.sprites) {
+					if (scene.sprites.size() > 0) {
+						for (auto const& [sid, sprite] : scene.sprites) {
 							RenderSprite(window,sid,sprite,width,height);
 						}
 					}
 
 					glfwSwapBuffers(window.glfw);
 					/*------------[Конец рисования]----------------*/
-					glfwPollEvents();
+					PE_GLFW();
 			}
 			else {
 					if (id == MainWindow) {
@@ -316,6 +324,54 @@ void Render() {
 		}
 	}
 }
+
+/*---------------------------*/
+
+l_Sprite GetSprite(string sceneid, string id) {
+	return Scenes[sceneid].sprites[id];
+}
+
+Scene GetScene(string id) {
+	return Scenes[id];
+}
+
+void SetSprite(l_Sprite sprite) {
+	Scene scene = GetScene(sprite.sceneid);
+	scene.SetSprite(sprite);
+	Scenes[sprite.sceneid] = scene;
+}
+
+void CreateScene(string id) {
+	P("SCENE", "Scene ["+id+"] created!");
+	Scene scene(id);
+	Scenes[id] = scene;
+}
+
+void SetSceneBackgroundColor(string id, Color color) {
+	Scene scene = GetScene(id);
+	scene.BackgroundColor = color;
+	Scenes[id] = scene;
+}
+
+void RemoveScene(string id) {
+
+}
+
+void CreateSprite(string id, string sceneid) {
+	l_Sprite sprite(id,sceneid);
+	Scene scene = GetScene(sceneid);
+	scene.sprites[id] = sprite;
+	Scenes[sceneid] = scene;
+}
+
+void SetSpritePosition(string sceneid, string id, l_Vector2 pos) {
+	PP(to_string(pos.y));
+	l_Sprite sprite = GetSprite(sceneid, id);
+	sprite.position = pos;
+	SetSprite(sprite);
+}
+
+/*---------------------------*/
 
 /*Проверяет есть окно в данных или нет*/
 bool HasWindow(string id) {
@@ -428,10 +484,12 @@ void SetWindowAutosize(string id, bool b) {
 }
 
 /*Добавить сцену*/
-void SetWindowScene(string id, Scene b, bool DontPrint) {
-	if (!DontPrint) { P("SCENE", "Scene [" + b.name + "] applied to window [" + id + "]"); }
+void SetWindowScene(string id, string b, bool DontPrint) {
+	if (!DontPrint) { P("SCENE", "Scene [" + b + "] applied to window [" + id + "]"); }
 	Window w = GetWindowByID(id);
-	b.windowid = id;
+	Scene scene = GetScene(b);
+	scene.windowid = id;
+	Scenes[b] = scene;
 	w.scene = b;
 	Windows[id] = w;
 }
@@ -541,7 +599,6 @@ void KeyCallback(GLFWwindow* window_, int key_, int scancode, int action, int mo
 	}
 }
 
-bool OpenGLVersionShowed = false;
 Window CreateWindowGLFW(string id, int sizex, int sizey, string title) {
 	if (HasWindow(id)) { PF("Window with this id already exists! CreateWindow('" + id + "'," + to_string(sizex) + "," + to_string(sizey) + ",'" + title + "')","C0021"); return Window(); }
 	else {

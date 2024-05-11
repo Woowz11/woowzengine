@@ -120,7 +120,6 @@
     <ClInclude Include="LuaCompile.h" />
     <ClInclude Include="l_Color.h" />
     <ClInclude Include="l_Element.h" />
-    <ClInclude Include="l_Scene.h" />
     <ClInclude Include="l_Sprite.h" />
     <ClInclude Include="l_Vector2.h" />
     <ClInclude Include="l_Vertex.h" />

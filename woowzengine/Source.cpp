@@ -15,7 +15,7 @@
 using namespace std;
 
 string EngineVersion = "0.0.1f";
-bool DebugVersion = true;
+bool DebugVersion = false;
 
 void StartEngine(string GamePath) {
     OpenGame(GamePath, EngineVersion, DebugVersion);

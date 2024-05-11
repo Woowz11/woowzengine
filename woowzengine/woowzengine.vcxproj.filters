@@ -125,9 +125,6 @@
     <ClInclude Include="l_Element.h">
       <Filter>Исходные файлы\Elements\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="l_Scene.h">
-      <Filter>Исходные файлы\Elements\Lua</Filter>
-    </ClInclude>
     <ClInclude Include="Cycles.h">
       <Filter>Исходные файлы</Filter>
     </ClInclude>

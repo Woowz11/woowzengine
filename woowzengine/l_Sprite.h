@@ -26,5 +26,5 @@ public:
 
 	l_Sprite() {}
 	l_Sprite(string id) : id(id) {}
-	l_Sprite(string id, string texture, l_Vector2 pos) : id(id),texture(texture),position(pos) {}
+	l_Sprite(string id, string sceneid) : id(id),sceneid(sceneid) {}
 };

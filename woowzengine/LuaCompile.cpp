@@ -23,7 +23,6 @@
 #include "l_Vertex.h"
 //#include "l_Element.h"
 #include "l_Sprite.h"
-#include "l_Scene.h"
 
 using namespace std;
 
@@ -608,15 +607,15 @@ sol::table l_PressedKeys() {
 }
 
 /*Загрузить сцену в окно*/
-void l_SetWindowScene(string id, l_Scene& scene) {
+/*void l_SetWindowScene(string id, l_Scene& scene) {
 	scene.windowid = id;
 	SetWindowScene(id, scene.ToCPP());
-}
+}*/
 
 /*Получить айди окна в котором сцена*/
-string l_GetSceneWindow(l_Scene scene) {
+/*string l_GetSceneWindow(l_Scene scene) {
 	return scene.windowid;
-}
+}*/
 
 /*Вернуть случайное число от 0 до 1 (Целое)*/
 int l_RRandom(int min, int max) {
@@ -690,29 +689,52 @@ int l_ActiveTime() {
 }
 
 /*Установить позицию камеры по X*/
-void l_SetCameraX(l_Scene& scene, float f) {
+/*void l_SetCameraX(l_Scene& scene, float f) {
 	scene.SetCameraPosition(f, true);
-}
+}*/
 
 /*Установить позицию камеры по Y*/
-void l_SetCameraY(l_Scene& scene, float f) {
+/*void l_SetCameraY(l_Scene& scene, float f) {
 	scene.SetCameraPosition(f, false);
-}
+}*/
 
 /*Получить позицию камеры по X*/
-float l_GetCameraX(l_Scene scene) {
+/*float l_GetCameraX(l_Scene scene) {
 	return scene.CameraPosition.x;
-}
+}*/
 
 /*Получить позицию камеры по Y*/
-float l_GetCameraY(l_Scene scene) {
+/*float l_GetCameraY(l_Scene scene) {
 	return scene.CameraPosition.y;
-}
+}*/
 
 /*Обновить спрайт*/
-void l_UpdateSprite(l_Scene scene, l_Sprite sprite) {
+/*void l_UpdateSprite(l_Scene scene, l_Sprite sprite) {
 	scene.UpdateSprite(sprite);
+}*/
+
+
+
+void l_CreateScene(string id) {
+	CreateScene(id);
 }
+
+void l_SetSceneBackgroundColor(string id, l_Color color) {
+	SetSceneBackgroundColor(id, color.ToCPP());
+}
+
+void l_SetSceneWindow(string id, string window) {
+	SetWindowScene(window, id);
+}
+
+void l_CreateSprite(string id, string sceneid) {
+	CreateSprite(id, sceneid);
+}
+
+void l_SetSpritePosition(string sceneid, string id, l_Vector2 position) {
+	SetSpritePosition(sceneid, id, position);
+}
+
 
 /*Зона woowzengine*/
 
@@ -874,7 +896,7 @@ void LuaCompile() {
 		"SetType", &l_Element::SetTypeLua
 	);*/
 
-	lua.new_usertype<l_Sprite>("Sprite",
+	/*lua.new_usertype<l_Sprite>("Sprite",
 		sol::constructors<l_Sprite(), l_Sprite(string),l_Sprite(string,string,l_Vector2)>(),
 		"Position", &l_Sprite::position,
 		"Orientation", &l_Sprite::angle,
@@ -887,14 +909,14 @@ void LuaCompile() {
 		"Blur", &l_Sprite::Linear,
 		"Shader", &l_Sprite::shader,
 		"AutoSize", &l_Sprite::autoresize
-	);
+	);*/
 
-	lua.new_usertype<l_Scene>("Scene",
+	/*lua.new_usertype<l_Scene>("Scene",
 		sol::constructors<l_Scene(), l_Scene(string)>(),
 		"AddSprite", &l_Scene::AddSprite,
 		"SetBackgroundColor", &l_Scene::SetBackgroundColor,
 		"GetBackgroundColor", &l_Scene::GetBackgroundColor
-	);
+	);*/
 
 	/*Константы*/
 	lua["Pi"] = sol::as_table(3.14159265358979323846);
@@ -1025,8 +1047,8 @@ void LuaCompile() {
 	lua.set_function("SetWindowEventKeyRelease", &l_SetWindowEventKeyRelease);
 	lua.set_function("SetWindowEventKeyHold", &l_SetWindowEventKeyHold);
 	lua.set_function("PressedKeys", &l_PressedKeys);
-	lua.set_function("SetWindowScene", &l_SetWindowScene);
-	lua.set_function("GetSceneWindow", &l_GetSceneWindow);
+	//lua.set_function("SetWindowScene", &l_SetWindowScene);
+	//lua.set_function("GetSceneWindow", &l_GetSceneWindow);
 	lua.set_function("RRandom", &l_RRandom);
 	lua.set_function("GetWindowX", &l_GetWindowXPosition);
 	lua.set_function("GetWindowY", &l_GetWindowYPosition);
@@ -1039,11 +1061,17 @@ void LuaCompile() {
 	lua.set_function("GetType", &l_GetType);
 	lua.set_function("OpenLink", &l_OpenLink);
 	lua.set_function("ActiveTime", &l_ActiveTime);
-	lua.set_function("SetCameraX", &l_SetCameraX);
-	lua.set_function("SetCameraY", &l_SetCameraY);
-	lua.set_function("GetCameraX", &l_GetCameraX);
-	lua.set_function("GetCameraY", &l_GetCameraY);
-	lua.set_function("UpdateSprite", &l_UpdateSprite);
+	//lua.set_function("SetCameraX", &l_SetCameraX);
+	//lua.set_function("SetCameraY", &l_SetCameraY);
+	//lua.set_function("GetCameraX", &l_GetCameraX);
+	//lua.set_function("GetCameraY", &l_GetCameraY);
+	//lua.set_function("UpdateSprite", &l_UpdateSprite);
+
+	lua.set_function("SetSpritePosition", &l_SetSpritePosition);
+	lua.set_function("CreateScene", &l_CreateScene);
+	lua.set_function("SetSceneBackgroundColor", &l_SetSceneBackgroundColor);
+	lua.set_function("SetWindowScene", &l_SetSceneWindow);
+	lua.set_function("CreateSprite", &l_CreateSprite);
 
 	P("LUA", "Lua functions and etc. are loaded!");
 	P("LUA", "Start start.lua script...");

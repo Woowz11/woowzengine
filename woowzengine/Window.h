@@ -4,7 +4,6 @@
 #include <sol/sol.hpp>
 #include <map>
 #include <list>
-#include "Scene.h"
 #pragma once
 using namespace std;
 
@@ -12,7 +11,7 @@ struct Window {
 public:
 	string id = "new window";
 	GLFWwindow* glfw = nullptr;
-	Scene scene;
+	string scene = "";
 	float scale = 1;
 	int StartSizeX = -1; int StartSizeY = -1;
 	bool AutoResize = false;
