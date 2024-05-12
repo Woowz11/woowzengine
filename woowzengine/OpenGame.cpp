@@ -162,5 +162,6 @@ void OpenGame(string GamePath_,string EngineVersion_, bool DebugVersion) {
 
 	GameInstall();
 	P("ENGINE", "Cycles started!");
+	CyclePerSecond();
 	SetCycleEngine();
 }

@@ -23,6 +23,9 @@ public:
 	sol::function WindowKeyPress = sol::nil;
 	sol::function WindowKeyRelease = sol::nil;
 	sol::function WindowKeyRepeat = sol::nil;
+	sol::function WindowMousePress = sol::nil;
+	sol::function WindowMouseRelease = sol::nil;
+	sol::function WindowMouseRepeat = sol::nil;
 
 	Window(string id = "new window", GLFWwindow* glfw = nullptr) : id(id), glfw(glfw) {}
 };

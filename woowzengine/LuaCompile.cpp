@@ -606,17 +606,6 @@ sol::table l_PressedKeys() {
 	return tbl;
 }
 
-/*Загрузить сцену в окно*/
-/*void l_SetWindowScene(string id, l_Scene& scene) {
-	scene.windowid = id;
-	SetWindowScene(id, scene.ToCPP());
-}*/
-
-/*Получить айди окна в котором сцена*/
-/*string l_GetSceneWindow(l_Scene scene) {
-	return scene.windowid;
-}*/
-
 /*Вернуть случайное число от 0 до 1 (Целое)*/
 int l_RRandom(int min, int max) {
 	if (min == 0 && max == 0) { return round(Random()); }
@@ -689,24 +678,24 @@ int l_ActiveTime() {
 }
 
 /*Установить позицию камеры по X*/
-/*void l_SetCameraX(l_Scene& scene, float f) {
-	scene.SetCameraPosition(f, true);
-}*/
+void l_SetCameraX(string scene, float f) {
+	SetCameraPosition(scene, f, true);
+}
 
 /*Установить позицию камеры по Y*/
-/*void l_SetCameraY(l_Scene& scene, float f) {
-	scene.SetCameraPosition(f, false);
-}*/
+void l_SetCameraY(string scene, float f) {
+	SetCameraPosition(scene, f, false);
+}
 
 /*Получить позицию камеры по X*/
-/*float l_GetCameraX(l_Scene scene) {
-	return scene.CameraPosition.x;
-}*/
+float l_GetCameraX(string scene) {
+	return GetCameraPosition(scene, true);
+}
 
 /*Получить позицию камеры по Y*/
-/*float l_GetCameraY(l_Scene scene) {
-	return scene.CameraPosition.y;
-}*/
+float l_GetCameraY(string scene) {
+	return GetCameraPosition(scene, false);
+}
 
 /*Обновить спрайт*/
 /*void l_UpdateSprite(l_Scene scene, l_Sprite sprite) {
@@ -714,6 +703,26 @@ int l_ActiveTime() {
 }*/
 
 
+
+/*Нажатие клавиши на мышке в окне*/
+void l_SetWindowEventMousePress(string id, sol::function func) {
+	SetWindowMPEvent(id, func);
+}
+
+/*Отжатие клавиши на мышке в окне*/
+void l_SetWindowEventMouseRelease(string id, sol::function func) {
+	SetWindowMREvent(id, func);
+}
+
+/*Зажатие клавиши на мышке в окне*/
+void l_SetWindowEventMouseHold(string id, sol::function func) {
+	SetWindowMHEvent(id, func);
+}
+
+
+int l_GetFPS() {
+	return GetFPS();
+}
 
 void l_CreateScene(string id) {
 	CreateScene(id);
@@ -735,6 +744,32 @@ void l_SetSpritePosition(string sceneid, string id, l_Vector2 position) {
 	SetSpritePosition(sceneid, id, position);
 }
 
+void l_CycleRender(sol::function f) {
+	SetDTFunction(f);
+}
+
+void l_SetCameraZoom(string sceneid, float f) {
+	SetCameraZoom(sceneid, f);
+}
+
+float l_GetCameraZoom(string sceneid) {
+	return GetCameraZoom(sceneid);
+}
+
+l_Vector2 l_GetMousePosition(string windowid) {
+	Vector2 v = GetMousePosition(windowid);
+	return l_Vector2(v.x, v.y);
+}
+
+l_Vector2 l_ScreenToWorld(string windowid, l_Vector2 screencord) {
+	Vector2 v = ScreenToWorld(GetWindowByID(windowid), Vector2(screencord.x, screencord.y));
+	return l_Vector2(v.x, v.y);
+}
+
+l_Vector2 l_GetMouseWPosition(string windowid) {
+	Vector2 v = ScreenToWorld(GetWindowByID(windowid), GetMousePosition(windowid));
+	return l_Vector2(v.x, v.y);
+}
 
 /*Зона woowzengine*/
 
@@ -782,6 +817,12 @@ sol::object AnyToObject(any obj) {
 	}
 	else if (obj.type() == typeid(std::string)) {
 		return sol::make_object(lua, std::any_cast<std::string>(obj));
+	}
+	else if (obj.type() == typeid(int)) {
+		return sol::make_object(lua, std::any_cast<int>(obj));
+	}
+	else if (obj.type() == typeid(double)) {
+		return sol::make_object(lua, std::any_cast<double>(obj));
 	}
 	return sol::nil;
 }
@@ -831,7 +872,6 @@ void StartFunction(sol::function func, list<any> params) {
 					break;
 				case 9:
 					s9 = AnyToObject(*it);
-					break;
 					break;
 				};
 			}
@@ -1047,8 +1087,6 @@ void LuaCompile() {
 	lua.set_function("SetWindowEventKeyRelease", &l_SetWindowEventKeyRelease);
 	lua.set_function("SetWindowEventKeyHold", &l_SetWindowEventKeyHold);
 	lua.set_function("PressedKeys", &l_PressedKeys);
-	//lua.set_function("SetWindowScene", &l_SetWindowScene);
-	//lua.set_function("GetSceneWindow", &l_GetSceneWindow);
 	lua.set_function("RRandom", &l_RRandom);
 	lua.set_function("GetWindowX", &l_GetWindowXPosition);
 	lua.set_function("GetWindowY", &l_GetWindowYPosition);
@@ -1061,17 +1099,26 @@ void LuaCompile() {
 	lua.set_function("GetType", &l_GetType);
 	lua.set_function("OpenLink", &l_OpenLink);
 	lua.set_function("ActiveTime", &l_ActiveTime);
-	//lua.set_function("SetCameraX", &l_SetCameraX);
-	//lua.set_function("SetCameraY", &l_SetCameraY);
-	//lua.set_function("GetCameraX", &l_GetCameraX);
-	//lua.set_function("GetCameraY", &l_GetCameraY);
-	//lua.set_function("UpdateSprite", &l_UpdateSprite);
+	lua.set_function("SetCameraX", &l_SetCameraX);
+	lua.set_function("SetCameraY", &l_SetCameraY);
+	lua.set_function("GetCameraX", &l_GetCameraX);
+	lua.set_function("GetCameraY", &l_GetCameraY);
 
 	lua.set_function("SetSpritePosition", &l_SetSpritePosition);
 	lua.set_function("CreateScene", &l_CreateScene);
 	lua.set_function("SetSceneBackgroundColor", &l_SetSceneBackgroundColor);
 	lua.set_function("SetWindowScene", &l_SetSceneWindow);
 	lua.set_function("CreateSprite", &l_CreateSprite);
+	lua.set_function("GetFPS", &l_GetFPS);
+	lua.set_function("CycleRender", &l_CycleRender);
+	lua.set_function("SetCameraZoom", &l_SetCameraZoom);
+	lua.set_function("GetCameraZoom", &l_GetCameraZoom);
+	lua.set_function("GetMousePosition", &l_GetMousePosition);
+	lua.set_function("GetMouseWPosition", &l_GetMouseWPosition);
+	lua.set_function("ScreenToWorld", &l_ScreenToWorld);
+	lua.set_function("SetWindowEventMousePress", &l_SetWindowEventMousePress);
+	lua.set_function("SetWindowEventMouseRelease", &l_SetWindowEventMouseRelease);
+	lua.set_function("SetWindowEventMouseHold", &l_SetWindowEventMouseHold);
 
 	P("LUA", "Lua functions and etc. are loaded!");
 	P("LUA", "Start start.lua script...");

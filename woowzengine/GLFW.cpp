@@ -260,26 +260,126 @@ void UpdateShader(Window window,Color color, int width, int height, bool autosiz
 	glUniform4f(GetFromMap(GetFromMap(window.Uniforms, "default"), "color"), (float)color.r / 255, (float)color.g / 255, (float)color.b / 255, (float)color.a / 255);
 }
 
+Vector2 ScreenToWorld(Window window ,int cordx, int cordy) {
+	float x,y;
+	int WSX, WSY;
+	glfwGetWindowSize(window.glfw, &WSX, &WSY);
+
+	x = (2.0f * static_cast<float>(cordx) / static_cast<float>(WSX)) - 1.0f;
+	y = 1.0f - (2.0f * static_cast<float>(cordy) / static_cast<float>(WSY));
+
+	if (window.scene != "") {
+		Scene scene = GetScene(window.scene);
+		x = x + scene.CameraPosition.x;
+		y = y + scene.CameraPosition.y;
+	}
+
+	return Vector2(x,y);
+}
+
+Vector2 ScreenToWorld(Window window,Vector2 sc) {
+	if (window.scene == "") {
+		PW("Window doesn't have a scene! ScreenToWorld("+window.id+",Vector2("+to_string(sc.x) + ","+to_string(sc.y) + "))", "W0006");
+		return Vector2(0, 0);
+	}
+	int WSX, WSY;
+	glfwGetWindowSize(window.glfw, &WSX, &WSY);
+	float xw = static_cast<float>(WSX), yw = static_cast<float>(WSY);
+	Scene scene = GetScene(window.scene);
+	float x =  ((sc.x-xw)/xw+0.5) * 2 * (xw / 500);
+	float y = -((sc.y-yw)/yw+0.5) * 2 * (yw / 500);
+
+	x /= scene.CameraZoom;
+	y /= scene.CameraZoom;
+	x -= scene.CameraPosition.x;
+	y -= scene.CameraPosition.y;
+	return Vector2(x, y);
+}
+
+Vector2 WorldToScreen(Window window, Vector2 world) {
+	if (window.scene == "") {
+		PW("Window doesn't have a scene! WorldToScreen(" + window.id + ", Vector2(" + to_string(world.x) + "," + to_string(world.y) + "))", "?");
+		return Vector2(0, 0);
+	}
+
+	int WSX, WSY;
+	glfwGetWindowSize(window.glfw, &WSX, &WSY);
+	float xw = static_cast<float>(WSX), yw = static_cast<float>(WSY);
+	Scene scene = GetScene(window.scene);
+
+	world.x += scene.CameraPosition.x;
+	world.y += scene.CameraPosition.y;
+	world.x *= scene.CameraZoom;
+	world.y *= scene.CameraZoom;
+
+	float x = 250*world.x + 0.5*xw;
+	float y = -(250 * world.y + 0.5 * yw);
+
+	//float SizeMult = (float)window.StartSizeY / (float)window.StartSizeX;
+	//PP(to_string(SizeMult));
+	//x *= SizeMult;
+
+	return Vector2(round(x), round(y));
+}
+bool PointOutside(Window window, Vector2 world) {
+	Vector2 screen = WorldToScreen(window, world);
+	int WSX, WSY;
+	glfwGetWindowSize(window.glfw, &WSX, &WSY);
+	float xw = static_cast<float>(WSX), yw = static_cast<float>(WSY);
+	Scene scene = GetScene(window.scene);
+	bool result = true;
+	float f = ((xw + (xw / 2))); //БЕЗ ПОНЯТНИЯ КУДА СОВАТЬ
+	PP(to_string(screen.x) + " < " + to_string(f));
+	if (screen.x > (-xw / 2 * scene.CameraZoom) && screen.x < f) {
+		result = false;
+	}
+	else {
+		PP("OUT");
+	}
+	return result;
+}
+
 void RenderSprite(Window window, string id, l_Sprite sprite, int width, int height) {
 	if (sprite.id != "") {
-		UpdateShader(window, sprite.color.ToCPP(), width, height, sprite.autoresize);
-		GLuint texture = GetTexture(window.id, sprite);
-		glBindTexture(GL_TEXTURE_2D, texture);
-
-		Scene scene = window.scene;
+		Scene scene = GetScene(window.scene);
+		float Zoom = scene.CameraZoom;
 		float SizeMult = (float)window.StartSizeY / (float)window.StartSizeX;
-		float SizeX = sprite.size.x * SizeMult;
-		float SizeY = sprite.size.y;
-		float CamPosX = (sprite.movewithcamera ? 0 : scene.CameraPosition.x);
-		float CamPosY = (sprite.movewithcamera ? 0 : scene.CameraPosition.y);
-		RenderQuad(window, {
-			-SizeX + sprite.position.x + CamPosX,-SizeY + sprite.position.y + CamPosY, 0.0f, /*Нижний  левый  */
-			-SizeX + sprite.position.x + CamPosX, SizeY + sprite.position.y + CamPosY, 0.0f, /*Верхний левый  */
-			 SizeX + sprite.position.x + CamPosX, SizeY + sprite.position.y + CamPosY, 0.0f, /*Верхний правый */
-			 SizeX + sprite.position.x + CamPosX,-SizeY + sprite.position.y + CamPosY, 0.0f  /*Нижний  правый */
-		});
+		float SizeX = sprite.size.x * SizeMult * Zoom;
+		float SizeY = sprite.size.y * Zoom;
+		float CamPosX = (sprite.movewithcamera ? 0 : scene.CameraPosition.x) * Zoom;
+		float CamPosY = (sprite.movewithcamera ? 0 : scene.CameraPosition.y) * Zoom;
+		float PosX = sprite.position.x * Zoom;
+		float PosY = sprite.position.y * Zoom;
 
-		glFlush();
+		float BLX = -SizeX + PosX + CamPosX;
+		float BLY = -SizeY + PosY + CamPosY;
+		float TLX = -SizeX + PosX + CamPosX;
+		float TLY =  SizeY + PosY + CamPosY;
+		float TRX =  SizeX + PosX + CamPosX;
+		float TRY =  SizeY + PosY + CamPosY;
+		float BRX =  SizeX + PosX + CamPosX;
+		float BRY = -SizeY + PosY + CamPosY;
+
+		bool t = PointOutside(window, Vector2(BLX, BLY));
+		//PP(to_string(WorldToScreen(window,Vector2(BLX,BLY)).x));
+		//PP(PointOutside(window, Vector2(BLX, BLY))?"true":"false");
+		if (true){//!(PointOutside(window, Vector2(BLX, BLY))&&PointOutside(window, Vector2(TLX, TLY))&&PointOutside(window, Vector2(TRX, TRY))&&PointOutside(window, Vector2(BRX, BRY)))) {
+			UpdateShader(window, sprite.color.ToCPP(), width, height, sprite.autoresize);
+			GLuint texture = GetTexture(window.id, sprite);
+			glBindTexture(GL_TEXTURE_2D, texture);
+
+			RenderQuad(window, {
+				BLX,BLY, 0.0f, /*Нижний  левый  */
+				TLX,TLY, 0.0f, /*Верхний левый  */
+				TRX,TRY, 0.0f, /*Верхний правый */
+				BRX,BRY, 0.0f  /*Нижний  правый */
+			});
+			
+			glFlush();
+		}
+		else {
+			PP("HIDE");
+		}
 	}
 }
 
@@ -291,27 +391,30 @@ void Render() {
 					glfwPollEvents();
 					int width = 1, height = 1;
 					glfwGetFramebufferSize(window.glfw, &width, &height);
-					glViewport(0, 0, round(width * window.scale), round(height * window.scale));
+					float scale = window.scale;
+					glViewport(0, 0, round(width * scale), round(height * scale));
 					/*----------------[Рисование]------------------*/
-					glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-					glEnable(GL_BLEND);
-					glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+					if (window.scene != "") {
+						glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+						glEnable(GL_BLEND);
+						glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-					Scene scene = GetScene(window.scene);
-					if (scene.windowid != "") {
-						glClearColor(scene.BackgroundColor.GetR(), scene.BackgroundColor.GetG(), scene.BackgroundColor.GetB(), 1);
-					}
-					else {
-						glClearColor(0, 0, 0, 1);
-					}
-					glEnable(GL_TEXTURE_2D);
-					if (scene.sprites.size() > 0) {
-						for (auto const& [sid, sprite] : scene.sprites) {
-							RenderSprite(window,sid,sprite,width,height);
+						Scene scene = GetScene(window.scene);
+						if (scene.windowid != "") {
+							glClearColor(scene.BackgroundColor.GetR(), scene.BackgroundColor.GetG(), scene.BackgroundColor.GetB(), 1);
 						}
-					}
+						else {
+							glClearColor(0, 0, 0, 1);
+						}
+						glEnable(GL_TEXTURE_2D);
+						if (scene.sprites.size() > 0) {
+							for (auto const& [sid, sprite] : scene.sprites) {
+								RenderSprite(window, sid, sprite, width, height);
+							}
+						}
 
-					glfwSwapBuffers(window.glfw);
+						glfwSwapBuffers(window.glfw);
+					}
 					/*------------[Конец рисования]----------------*/
 					PE_GLFW();
 			}
@@ -357,6 +460,16 @@ void RemoveScene(string id) {
 
 }
 
+void SetCameraZoom(string id, float f) {
+	Scene scene = GetScene(id);
+	scene.CameraZoom = f;
+	Scenes[id] = scene;
+}
+
+float GetCameraZoom(string id) {
+	return GetScene(id).CameraZoom;
+}
+
 void CreateSprite(string id, string sceneid) {
 	l_Sprite sprite(id,sceneid);
 	Scene scene = GetScene(sceneid);
@@ -365,10 +478,37 @@ void CreateSprite(string id, string sceneid) {
 }
 
 void SetSpritePosition(string sceneid, string id, l_Vector2 pos) {
-	PP(to_string(pos.y));
 	l_Sprite sprite = GetSprite(sceneid, id);
 	sprite.position = pos;
 	SetSprite(sprite);
+}
+
+void SetCameraPosition(string id, float pos, bool thatX) {
+	Scene scene = GetScene(id);
+	if (thatX) {
+		scene.CameraPosition = Vector2(pos, scene.CameraPosition.y);
+	}
+	else {
+		scene.CameraPosition = Vector2(scene.CameraPosition.x, pos);
+	}
+	Scenes[id] = scene;
+}
+
+float GetCameraPosition(string id, bool thatX) {
+	Scene scene = GetScene(id);
+	if (thatX) {
+		return scene.CameraPosition.x;
+	}
+	else {
+		return scene.CameraPosition.y;
+	}
+}
+
+Vector2 GetMousePosition(string id) {
+	Window window = GetWindowByID(id);
+	double x, y;
+	glfwGetCursorPos(window.glfw, &x, &y);
+	return Vector2(x,y);
 }
 
 /*---------------------------*/
@@ -537,6 +677,27 @@ void SetWindowKHEvent(string id, sol::function f) {
 	Windows[id] = w;
 }
 
+/*Нажатие клавиши в мышке в окне*/
+void SetWindowMPEvent(string id, sol::function f) {
+	Window w = GetWindowByID(id);
+	w.WindowMousePress = f;
+	Windows[id] = w;
+}
+
+/*Отжатие клавиши в мышке в окне*/
+void SetWindowMREvent(string id, sol::function f) {
+	Window w = GetWindowByID(id);
+	w.WindowMouseRelease = f;
+	Windows[id] = w;
+}
+
+/*Зажатие клавиши в мышке в окне*/
+void SetWindowMHEvent(string id, sol::function f) {
+	Window w = GetWindowByID(id);
+	w.WindowMouseRepeat = f;
+	Windows[id] = w;
+}
+
 map<int, string> Keys = {
 	{49,"1"},{50,"2"},{51,"3"},{52,"4"},{53,"5"},{54,"6"},{55,"7"},{56,"8"},{57,"9"},{48,"0"},
 	{341,"ctrl"},{340,"shift"},{280,"caps"},{258,"tab"},{96,"tilda"},{256,"esc"},{343,"win"},{342,"alt"},{32,"space"},
@@ -551,6 +712,7 @@ map<int, string> Keys = {
 };
 
 map<int, int> PressedKeys = {};
+map<int, int> PressedMouse = {};
 
 /*Получить клавишу по айди*/
 string GetKeyFromID(int i) {
@@ -577,23 +739,45 @@ map<string, int> GetPressedKeys() {
 	return k;
 }
 
+void MouseCallback(GLFWwindow* window_, int key_, int action, int mods) {
+	Window window = GetWindowByWindow(window_);
+	if (action == GLFW_PRESS) {
+		if (window.WindowMousePress.valid()) {
+			StartFunction(window.WindowMousePress, { key_ + 1 });
+		}
+		PressedMouse[key_] = 1;
+	}
+	if (action == GLFW_RELEASE) {
+		if (window.WindowMouseRelease.valid()) {
+			StartFunction(window.WindowMouseRelease, { key_ + 1 });
+		}
+		PressedMouse[key_] = 0;
+	}
+	if (action == GLFW_REPEAT) {
+		if (window.WindowMouseRepeat.valid()) {
+			StartFunction(window.WindowMouseRepeat, { key_ + 1 });
+		}
+		PressedMouse[key_] = PressedMouse[key_] + 1;
+	}
+}
+
 void KeyCallback(GLFWwindow* window_, int key_, int scancode, int action, int mods) {
 	Window window = GetWindowByWindow(window_);
 	if (action == GLFW_PRESS) {
 		if (window.WindowKeyPress.valid()) {
-			StartFunction(window.WindowKeyPress, { GetKeyFromID(key_) });
+			StartFunction(window.WindowKeyPress, { GetKeyFromID(key_), key_ });
 		}
 		PressedKeys[key_] = 1;
 	}
 	if (action == GLFW_RELEASE) {
 		if (window.WindowKeyRelease.valid()) {
-			StartFunction(window.WindowKeyRelease, { GetKeyFromID(key_) });
+			StartFunction(window.WindowKeyRelease, { GetKeyFromID(key_), key_ });
 		}
 		PressedKeys[key_] = 0;
 	}
 	if (action == GLFW_REPEAT) {
 		if (window.WindowKeyRepeat.valid()) {
-			StartFunction(window.WindowKeyRepeat, { GetKeyFromID(key_) });
+			StartFunction(window.WindowKeyRepeat, { GetKeyFromID(key_), key_ });
 		}
 		PressedKeys[key_] = PressedKeys[key_] + 1;
 	}
@@ -615,6 +799,7 @@ Window CreateWindowGLFW(string id, int sizex, int sizey, string title) {
 			window_.StartSizeX = sizex;
 			window_.StartSizeY = sizey;
 			glfwSetKeyCallback(window, KeyCallback);
+			glfwSetMouseButtonCallback(window, MouseCallback);
 
 			Windows[id] = window_;
 			Windows_2[window] = id;

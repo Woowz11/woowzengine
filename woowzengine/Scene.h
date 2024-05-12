@@ -14,6 +14,7 @@ public:
 	Color BackgroundColor = Color(0,0,0,255);
 	string windowid = "";
 	Vector2 CameraPosition = Vector2(0, 0);
+	float CameraZoom = 1;
 
 	void SetSprite(l_Sprite sprite) {
 		sprites[sprite.id] = sprite;
