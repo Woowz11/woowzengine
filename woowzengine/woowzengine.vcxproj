@@ -103,6 +103,7 @@
     <ClCompile Include="LIBS\glad\gl.c" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="LuaCompile.cpp" />
+    <ClCompile Include="l_Vector3.h" />
     <ClCompile Include="OpenGame.cpp" />
     <ClCompile Include="RenderElement.h" />
     <ClCompile Include="Source.cpp" />
@@ -121,7 +122,9 @@
     <ClInclude Include="l_Color.h" />
     <ClInclude Include="l_Element.h" />
     <ClInclude Include="l_Sprite.h" />
+    <ClInclude Include="l_Texture.h" />
     <ClInclude Include="l_Vector2.h" />
+    <ClInclude Include="l_Vector4.h" />
     <ClInclude Include="l_Vertex.h" />
     <ClInclude Include="OpenGame.h" />
     <ClInclude Include="resource.h" />
@@ -138,6 +141,9 @@
   <ItemGroup>
     <Image Include="..\resources\icon.ico" />
     <Image Include="..\resources\icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="l_Sound.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

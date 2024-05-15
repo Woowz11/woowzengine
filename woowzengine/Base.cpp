@@ -34,6 +34,15 @@ string GamePath = "";
 string SessionInfoPath = "woowzengine/temporary/sessioninfo";
 string LogsStyle = "%b[%s:%m:%h][%t] %c";
 
+/*ѕолучить знак числа, минус или плюс*/
+int GetNumberZnak(float num) {
+	int result = 1;
+	if (num < 0) {
+		result = -1;
+	}
+	return result;
+}
+
 /*“оже самое что to_string() только без нулей в конце*/
 string DoubleToString(double value) {
 	std::ostringstream stream;

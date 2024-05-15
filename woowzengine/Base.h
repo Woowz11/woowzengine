@@ -8,6 +8,7 @@
 #pragma once
 using namespace std;
 
+int GetNumberZnak(float num);
 string DoubleToString(double value);
 float GetFractionalPart(int i);
 string GetPathWithoutFileName(string path);

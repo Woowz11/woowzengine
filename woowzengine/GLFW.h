@@ -19,14 +19,15 @@
 using namespace std; 
 
 void UpdateShader(Window window,Color color,int width, int height, bool autosize = false);
-void RenderQuad(Window window, list<float> v);
+void RenderQuad(list<float> v);
 void SetWindowTitle(string id, string title);
 void SetWindowSize(string id, bool thatY, int size);
 int GetWindowSize(string id, bool thatY);
 void StopGLFW();
+void ErrorScene(string text);
 void GLFWInstall();
 Vector2 ScreenToWorld(Window window, int cordx, int cordy);
-void RenderSprite(Window window, string id, l_Sprite sprite, int width, int height);
+void RenderSprite(Window window, string id, l_Sprite sprite, int width, int height, Scene scene);
 void Render();
 bool HasWindow(string id);
 Window GetWindowByID(string id);
@@ -77,5 +78,5 @@ void SetCameraPosition(string id, float pos, bool thatX);
 float GetCameraPosition(string id, bool thatX);
 Vector2 GetMousePosition(string id);
 Vector2 ScreenToWorld(Window window,Vector2 sc);
-Vector2 WorldToScreen(Window window, Vector2 world);
-bool PointOutside(Window window, Vector2 world);
+Vector2 WorldToScreen(Window window, Vector2 world, Scene scene = Scene(""), float xw = -1, float yw = -1);
+bool PointOutside(Window window, Vector2 world, Scene scene = Scene(""), float xw = -1, float yw = -1);

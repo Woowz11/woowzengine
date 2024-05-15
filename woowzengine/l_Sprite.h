@@ -21,6 +21,7 @@ public:
 	bool Linear = false;
 	bool FlipX = false;
 	bool FlipY = false;
+	bool DontHide = false;
 
 	string sceneid = "";
 

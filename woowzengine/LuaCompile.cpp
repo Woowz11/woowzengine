@@ -20,8 +20,11 @@
 
 #include "l_Color.h"
 #include "l_Vector2.h"
+#include "l_Vector3.h"
+#include "l_Vector4.h"
+#include "l_Texture.h"
+#include "l_Sound.h"
 #include "l_Vertex.h"
-//#include "l_Element.h"
 #include "l_Sprite.h"
 
 using namespace std;
@@ -536,11 +539,6 @@ void l_SetWindowAutoScale(string id, sol::optional<bool> b) {
 	}
 }
 
-/*Изменение масштаба у окна*/
-void l_SetWindowScale(string id, float f) {
-	SetWindowScale(id, f);
-}
-
 /*Синус ABS*/
 float l_AbsSin(float f) {
 	return abs(sin(f));
@@ -697,13 +695,6 @@ float l_GetCameraY(string scene) {
 	return GetCameraPosition(scene, false);
 }
 
-/*Обновить спрайт*/
-/*void l_UpdateSprite(l_Scene scene, l_Sprite sprite) {
-	scene.UpdateSprite(sprite);
-}*/
-
-
-
 /*Нажатие клавиши на мышке в окне*/
 void l_SetWindowEventMousePress(string id, sol::function func) {
 	SetWindowMPEvent(id, func);
@@ -719,56 +710,82 @@ void l_SetWindowEventMouseHold(string id, sol::function func) {
 	SetWindowMHEvent(id, func);
 }
 
-
+/*Получить FPS*/
 int l_GetFPS() {
 	return GetFPS();
 }
 
+/*Создать сцену*/
 void l_CreateScene(string id) {
 	CreateScene(id);
 }
 
+/*Установить цвет заднего фона у сцены*/
 void l_SetSceneBackgroundColor(string id, l_Color color) {
 	SetSceneBackgroundColor(id, color.ToCPP());
 }
 
+/*Установить сцену на окно*/
 void l_SetSceneWindow(string id, string window) {
 	SetWindowScene(window, id);
 }
 
+/*Создать спрайт*/
 void l_CreateSprite(string id, string sceneid) {
 	CreateSprite(id, sceneid);
 }
 
+/*Установить позицию спрайта*/
 void l_SetSpritePosition(string sceneid, string id, l_Vector2 position) {
 	SetSpritePosition(sceneid, id, position);
 }
 
+/*Установить цикл на рендер*/
 void l_CycleRender(sol::function f) {
 	SetDTFunction(f);
 }
 
+/*Установить масштаб для камеры*/
 void l_SetCameraZoom(string sceneid, float f) {
 	SetCameraZoom(sceneid, f);
 }
 
+/*Получить маштаб камеры*/
 float l_GetCameraZoom(string sceneid) {
 	return GetCameraZoom(sceneid);
 }
 
+/*Получить позицию курсора*/
 l_Vector2 l_GetMousePosition(string windowid) {
 	Vector2 v = GetMousePosition(windowid);
 	return l_Vector2(v.x, v.y);
 }
 
+/*Экранные координаты в мировые*/
 l_Vector2 l_ScreenToWorld(string windowid, l_Vector2 screencord) {
 	Vector2 v = ScreenToWorld(GetWindowByID(windowid), Vector2(screencord.x, screencord.y));
 	return l_Vector2(v.x, v.y);
 }
 
+/*Получить мировую позицию курсора*/
 l_Vector2 l_GetMouseWPosition(string windowid) {
 	Vector2 v = ScreenToWorld(GetWindowByID(windowid), GetMousePosition(windowid));
 	return l_Vector2(v.x, v.y);
+}
+
+/*Мировые координаты в экранные*/
+l_Vector2 l_WorldToScreen(string windowid, l_Vector2 worldcord) {
+	Vector2 v = WorldToScreen(GetWindowByID(windowid), Vector2(round(worldcord.x), round(worldcord.y)));
+	return l_Vector2(v.x, v.y);
+}
+
+/*Получить знак числа, + или -*/
+float l_Sign(float f) {
+	float result = 1;
+	if (f < 0) {
+		result = -1;
+	}
+	return result;
 }
 
 /*Зона woowzengine*/
@@ -800,11 +817,23 @@ string ToString(sol::object obj) {
 		sol::userdata u = obj.as<sol::userdata>();
 		if (u.is<l_Vector2>()) {
 			l_Vector2 v2 = u.as<l_Vector2>();
-			return "Vector2("+ DoubleToString(v2.x) + "," + DoubleToString(v2.y) + ")";
+			return "Vector2(" + DoubleToString(v2.x) + "," + DoubleToString(v2.y) + ")";
+		}
+		else if (u.is<l_Vector3>()) {
+			l_Vector3 v3 = u.as<l_Vector3>();
+			return "Vector3(" + DoubleToString(v3.x) + "," + DoubleToString(v3.y) + "," + DoubleToString(v3.z) + ")";
+		}
+		else if (u.is<l_Vector4>()) {
+			l_Vector4 v4 = u.as<l_Vector4>();
+			return "Vector4(" + DoubleToString(v4.x) + "," + DoubleToString(v4.y) + "," + DoubleToString(v4.z) + "," + DoubleToString(v4.w) + ")";
 		}
 		else if (u.is<l_Color>()) {
 			l_Color c = u.as<l_Color>();
 			return "Color(" + DoubleToString(c.r) + "," + DoubleToString(c.g) + "," + DoubleToString(c.b) + "," + DoubleToString(c.a) + ")";
+		}
+		else if (u.is<l_Vertex>()) {
+			l_Vertex v = u.as<l_Vertex>();
+			return "Vertex(Vector2(" + DoubleToString(v.Position.x) + "," + DoubleToString(v.Position.y) + "),Color(" + DoubleToString(v.Color.r) + "," + DoubleToString(v.Color.g) + "," + DoubleToString(v.Color.b) + "," + DoubleToString(v.Color.a) + "))";
 		}
 	}
 
@@ -912,7 +941,7 @@ void LuaCompile() {
 
 	/*Конструкторы*/
 	lua.new_usertype<l_Color>("Color",
-		sol::constructors<l_Color(), l_Color(int, int, int, int), l_Color(int, int, int)>(),
+		sol::constructors<l_Color(), l_Color(int, int, int, int), l_Color(int, int, int), l_Color(int, int), l_Color(int)>(),
 		"r", &l_Color::r,
 		"g", &l_Color::g,
 		"b", &l_Color::b,
@@ -920,9 +949,32 @@ void LuaCompile() {
 	);
 
 	lua.new_usertype<l_Vector2>("Vector2",
-		sol::constructors<l_Vector2(), l_Vector2(float, float)>(),
+		sol::constructors<l_Vector2(), l_Vector2(float), l_Vector2(float, float)>(),
 		"x", &l_Vector2::x,
 		"y", &l_Vector2::y
+	);
+
+	lua.new_usertype<l_Vector3>("Vector3",
+		sol::constructors<l_Vector3(), l_Vector2(float), l_Vector2(float, float), l_Vector3(float, float, float)>(),
+		"x", &l_Vector3::x,
+		"y", &l_Vector3::y,
+		"z", &l_Vector3::z
+	);
+
+	lua.new_usertype<l_Vector4>("Vector4",
+		sol::constructors<l_Vector4(), l_Vector2(float), l_Vector2(float, float), l_Vector3(float, float, float), l_Vector4(float, float, float, float)>(),
+		"x", &l_Vector4::x,
+		"y", &l_Vector4::y,
+		"z", &l_Vector4::z,
+		"w", &l_Vector4::w
+	);
+
+	lua.new_usertype<l_Texture>("Texture",
+		sol::constructors<l_Texture()>()
+	);
+
+	lua.new_usertype<l_Sound>("Sound",
+		sol::constructors<l_Sound()>()
 	);
 
 	lua.new_usertype<l_Vertex>("Vertex",
@@ -930,33 +982,6 @@ void LuaCompile() {
 		"Color", &l_Vertex::Color,
 		"Position", &l_Vertex::Position
 	);
-
-	/*lua.new_usertype<l_Element>("Element",
-		sol::constructors<l_Element(), l_Element(string)>(),
-		"SetType", &l_Element::SetTypeLua
-	);*/
-
-	/*lua.new_usertype<l_Sprite>("Sprite",
-		sol::constructors<l_Sprite(), l_Sprite(string),l_Sprite(string,string,l_Vector2)>(),
-		"Position", &l_Sprite::position,
-		"Orientation", &l_Sprite::angle,
-		"Color", &l_Sprite::color,
-		"ZIndex", &l_Sprite::zindex,
-		"Size", &l_Sprite::size,
-		"Texture", &l_Sprite::texture,
-		"Origin", &l_Sprite::origin,
-		"ThatUI", &l_Sprite::movewithcamera,
-		"Blur", &l_Sprite::Linear,
-		"Shader", &l_Sprite::shader,
-		"AutoSize", &l_Sprite::autoresize
-	);*/
-
-	/*lua.new_usertype<l_Scene>("Scene",
-		sol::constructors<l_Scene(), l_Scene(string)>(),
-		"AddSprite", &l_Scene::AddSprite,
-		"SetBackgroundColor", &l_Scene::SetBackgroundColor,
-		"GetBackgroundColor", &l_Scene::GetBackgroundColor
-	);*/
 
 	/*Константы*/
 	lua["Pi"] = sol::as_table(3.14159265358979323846);
@@ -1075,7 +1100,6 @@ void LuaCompile() {
 	lua.set_function("SetWindowSizeY", &l_SetWindowY);
 	lua.set_function("SetWindowTitle", &l_SetWindowTitle);
 	lua.set_function("SetWindowAutoScale", &l_SetWindowAutoScale);
-	lua.set_function("SetWindowScale", &l_SetWindowScale);
 	lua.set_function("AbsSin", &l_AbsSin);
 	lua.set_function("AbsCos", &l_AbsCos);
 	lua.set_function("DSin", &l_DSin);
@@ -1116,9 +1140,11 @@ void LuaCompile() {
 	lua.set_function("GetMousePosition", &l_GetMousePosition);
 	lua.set_function("GetMouseWPosition", &l_GetMouseWPosition);
 	lua.set_function("ScreenToWorld", &l_ScreenToWorld);
+	lua.set_function("WorldToScreen", &l_WorldToScreen);
 	lua.set_function("SetWindowEventMousePress", &l_SetWindowEventMousePress);
 	lua.set_function("SetWindowEventMouseRelease", &l_SetWindowEventMouseRelease);
 	lua.set_function("SetWindowEventMouseHold", &l_SetWindowEventMouseHold);
+	lua.set_function("Sign", &l_Sign);
 
 	P("LUA", "Lua functions and etc. are loaded!");
 	P("LUA", "Start start.lua script...");

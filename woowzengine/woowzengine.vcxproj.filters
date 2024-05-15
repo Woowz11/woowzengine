@@ -25,6 +25,9 @@
     <Filter Include="Исходные файлы\Other">
       <UniqueIdentifier>{674acadd-c5a7-4731-a91e-dcc1614f9b60}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Исходные файлы\Elements\Old">
+      <UniqueIdentifier>{13e00c8c-d833-41ab-b0f5-9d6c19f2f455}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
@@ -65,6 +68,9 @@
     </ClCompile>
     <ClCompile Include="LIBS\glad\gl.c">
       <Filter>Исходные файлы\Other</Filter>
+    </ClCompile>
+    <ClCompile Include="l_Vector3.h">
+      <Filter>Исходные файлы\Elements\Lua</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -122,9 +128,6 @@
     <ClInclude Include="l_Vertex.h">
       <Filter>Исходные файлы\Elements\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="l_Element.h">
-      <Filter>Исходные файлы\Elements\Lua</Filter>
-    </ClInclude>
     <ClInclude Include="Cycles.h">
       <Filter>Исходные файлы</Filter>
     </ClInclude>
@@ -133,6 +136,15 @@
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="l_Vector4.h">
+      <Filter>Исходные файлы\Elements\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="l_Texture.h">
+      <Filter>Исходные файлы\Elements\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="l_Element.h">
+      <Filter>Исходные файлы\Elements\Old</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -147,5 +159,10 @@
     <Image Include="..\resources\icon.ico">
       <Filter>Файлы ресурсов</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="l_Sound.h">
+      <Filter>Исходные файлы\Elements\Lua</Filter>
+    </None>
   </ItemGroup>
 </Project>

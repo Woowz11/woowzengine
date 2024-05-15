@@ -237,8 +237,8 @@ GLuint GetTexture(string window,l_Sprite sprite) {
 	return result;
 }
 
-void RenderQuad(Window window, list<float> v) {
-	float vert[12];
+void RenderQuad(list<float> v) {
+	float vert[12] = { 0 };
 	int i = 0;
 	for (float element : v) {
 		vert[i] = element;
@@ -286,8 +286,8 @@ Vector2 ScreenToWorld(Window window,Vector2 sc) {
 	glfwGetWindowSize(window.glfw, &WSX, &WSY);
 	float xw = static_cast<float>(WSX), yw = static_cast<float>(WSY);
 	Scene scene = GetScene(window.scene);
-	float x =  ((sc.x-xw)/xw+0.5) * 2 * (xw / 500);
-	float y = -((sc.y-yw)/yw+0.5) * 2 * (yw / 500);
+	float x =  ((sc.x-xw)/xw+0.5) * 2 * (window.AutoResize ? 1 : (xw / 500));
+	float y = -((sc.y-yw)/yw+0.5) * 2 * (window.AutoResize ? 1 : (yw / 500));
 
 	x /= scene.CameraZoom;
 	y /= scene.CameraZoom;
@@ -296,91 +296,108 @@ Vector2 ScreenToWorld(Window window,Vector2 sc) {
 	return Vector2(x, y);
 }
 
-Vector2 WorldToScreen(Window window, Vector2 world) {
+Vector2 WorldToScreen(Window window, Vector2 world, Scene scene, float xw, float yw) {
 	if (window.scene == "") {
-		PW("Window doesn't have a scene! WorldToScreen(" + window.id + ", Vector2(" + to_string(world.x) + "," + to_string(world.y) + "))", "?");
+		PW("Window doesn't have a scene! WorldToScreen(" + window.id + ", Vector2(" + to_string(world.x) + "," + to_string(world.y) + "))", "W0007");
 		return Vector2(0, 0);
 	}
 
-	int WSX, WSY;
-	glfwGetWindowSize(window.glfw, &WSX, &WSY);
-	float xw = static_cast<float>(WSX), yw = static_cast<float>(WSY);
-	Scene scene = GetScene(window.scene);
+	if (scene.name == "") {
+		scene = GetScene(window.scene);
+	}
+	if (xw == -1 || yw == -1) {
+		int WSX, WSY;
+		glfwGetWindowSize(window.glfw, &WSX, &WSY);
+		xw = static_cast<float>(WSX);
+		yw = static_cast<float>(WSY);
+	}
 
-	world.x += scene.CameraPosition.x;
-	world.y += scene.CameraPosition.y;
-	world.x *= scene.CameraZoom;
-	world.y *= scene.CameraZoom;
+	float zoom = (1 / scene.CameraZoom);
+	float x = world.x + scene.CameraPosition.x/zoom;
+	float y = world.y + scene.CameraPosition.y/zoom;;
 
-	float x = 250*world.x + 0.5*xw;
-	float y = -(250 * world.y + 0.5 * yw);
 
-	//float SizeMult = (float)window.StartSizeY / (float)window.StartSizeX;
-	//PP(to_string(SizeMult));
-	//x *= SizeMult;
+
+	x = ((x * (window.AutoResize ? 1 : (500 / xw))) + 1) / 2;
+	y = ((y * (window.AutoResize ? 1 : (500 / yw))) + 1) / 2;
+
+	x *= xw;
+	y *= yw;
 
 	return Vector2(round(x), round(y));
 }
-bool PointOutside(Window window, Vector2 world) {
+bool PointOutside(Window window, Vector2 world, Scene scene, float xw, float yw) {
 	Vector2 screen = WorldToScreen(window, world);
-	int WSX, WSY;
-	glfwGetWindowSize(window.glfw, &WSX, &WSY);
-	float xw = static_cast<float>(WSX), yw = static_cast<float>(WSY);
-	Scene scene = GetScene(window.scene);
-	bool result = true;
-	float f = ((xw + (xw / 2))); //БЕЗ ПОНЯТНИЯ КУДА СОВАТЬ
-	PP(to_string(screen.x) + " < " + to_string(f));
-	if (screen.x > (-xw / 2 * scene.CameraZoom) && screen.x < f) {
-		result = false;
+	if (scene.name == "") {
+		scene = GetScene(window.scene);
 	}
-	else {
-		PP("OUT");
+	if (xw == -1 || yw == -1) {
+		int WSX, WSY;
+		glfwGetWindowSize(window.glfw, &WSX, &WSY);
+		xw = static_cast<float>(WSX);
+		yw = static_cast<float>(WSY);
+	}
+	bool result = true;
+	if (screen.x <= xw && screen.x >= 0 && screen.y <= yw && screen.y >= 0) {
+		result = false;
 	}
 	return result;
 }
 
-void RenderSprite(Window window, string id, l_Sprite sprite, int width, int height) {
+void RenderSprite(Window window, string id, l_Sprite sprite, int width, int height,Scene scene) {
 	if (sprite.id != "") {
-		Scene scene = GetScene(window.scene);
 		float Zoom = scene.CameraZoom;
 		float SizeMult = (float)window.StartSizeY / (float)window.StartSizeX;
 		float SizeX = sprite.size.x * SizeMult * Zoom;
 		float SizeY = sprite.size.y * Zoom;
-		float CamPosX = (sprite.movewithcamera ? 0 : scene.CameraPosition.x) * Zoom;
-		float CamPosY = (sprite.movewithcamera ? 0 : scene.CameraPosition.y) * Zoom;
 		float PosX = sprite.position.x * Zoom;
 		float PosY = sprite.position.y * Zoom;
 
-		float BLX = -SizeX + PosX + CamPosX;
-		float BLY = -SizeY + PosY + CamPosY;
-		float TLX = -SizeX + PosX + CamPosX;
-		float TLY =  SizeY + PosY + CamPosY;
-		float TRX =  SizeX + PosX + CamPosX;
-		float TRY =  SizeY + PosY + CamPosY;
-		float BRX =  SizeX + PosX + CamPosX;
-		float BRY = -SizeY + PosY + CamPosY;
+		float BLX = -SizeX + PosX;
+		float BLY = -SizeY + PosY;
+		float TLX = -SizeX + PosX;
+		float TLY =  SizeY + PosY;
+		float TRX =  SizeX + PosX;
+		float TRY =  SizeY + PosY;
+		float BRX =  SizeX + PosX;
+		float BRY = -SizeY + PosY;
+		float CENTERX = (BLX / 4) + (BRX / 4) + (TLX / 4) + (TRX / 4);
+		float CENTERY = (BLY / 4) + (BRY / 4) + (TLY / 4) + (TRY / 4);
 
-		bool t = PointOutside(window, Vector2(BLX, BLY));
-		//PP(to_string(WorldToScreen(window,Vector2(BLX,BLY)).x));
-		//PP(PointOutside(window, Vector2(BLX, BLY))?"true":"false");
-		if (true){//!(PointOutside(window, Vector2(BLX, BLY))&&PointOutside(window, Vector2(TLX, TLY))&&PointOutside(window, Vector2(TRX, TRY))&&PointOutside(window, Vector2(BRX, BRY)))) {
+		float xw = static_cast<float>(width);
+		float yw = static_cast<float>(height);
+
+		if (sprite.DontHide || (!(
+			PointOutside(window, Vector2(CENTERX,CENTERY),scene,xw,yw) && 
+			PointOutside(window, Vector2(BLX, BLY)       ,scene,xw,yw) &&
+			PointOutside(window, Vector2(TLX, TLY)       ,scene,xw,yw) &&
+			PointOutside(window, Vector2(TRX, TRY)       ,scene,xw,yw) &&
+			PointOutside(window, Vector2(BRX, BRY)       ,scene,xw,yw)
+			))) {
+
 			UpdateShader(window, sprite.color.ToCPP(), width, height, sprite.autoresize);
 			GLuint texture = GetTexture(window.id, sprite);
 			glBindTexture(GL_TEXTURE_2D, texture);
 
-			RenderQuad(window, {
-				BLX,BLY, 0.0f, /*Нижний  левый  */
-				TLX,TLY, 0.0f, /*Верхний левый  */
-				TRX,TRY, 0.0f, /*Верхний правый */
-				BRX,BRY, 0.0f  /*Нижний  правый */
+			float CamPosX = (sprite.movewithcamera ? 0 : scene.CameraPosition.x) * Zoom;
+			float CamPosY = (sprite.movewithcamera ? 0 : scene.CameraPosition.y) * Zoom;
+
+			RenderQuad({
+				BLX + CamPosX,BLY + CamPosY, 0.0f, /*Нижний  левый  */
+				TLX + CamPosX,TLY + CamPosY, 0.0f, /*Верхний левый  */
+				TRX + CamPosX,TRY + CamPosY, 0.0f, /*Верхний правый */
+				BRX + CamPosX,BRY + CamPosY, 0.0f  /*Нижний  правый */
 			});
 			
 			glFlush();
 		}
-		else {
-			PP("HIDE");
-		}
 	}
+}
+
+void ErrorScene(string text) {
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glClearColor(0,0,0,1);
 }
 
 void Render() {
@@ -395,26 +412,34 @@ void Render() {
 					glViewport(0, 0, round(width * scale), round(height * scale));
 					/*----------------[Рисование]------------------*/
 					if (window.scene != "") {
-						glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-						glEnable(GL_BLEND);
-						glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 						Scene scene = GetScene(window.scene);
-						if (scene.windowid != "") {
-							glClearColor(scene.BackgroundColor.GetR(), scene.BackgroundColor.GetG(), scene.BackgroundColor.GetB(), 1);
+						if (scene.CameraZoom != 0) {
+							glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+							glEnable(GL_BLEND);
+							glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+							if (scene.windowid != "") {
+								glClearColor(scene.BackgroundColor.GetR(), scene.BackgroundColor.GetG(), scene.BackgroundColor.GetB(), 1);
+							}
+							else {
+								glClearColor(0, 0, 0, 1);
+							}
+							glEnable(GL_TEXTURE_2D);
+							if (scene.sprites.size() > 0) {
+								for (auto const& [sid, sprite] : scene.sprites) {
+									RenderSprite(window, sid, sprite, width, height, scene);
+								}
+							}
+
 						}
 						else {
-							glClearColor(0, 0, 0, 1);
+							ErrorScene("Camera zoom cannot be equal to 0!");
 						}
-						glEnable(GL_TEXTURE_2D);
-						if (scene.sprites.size() > 0) {
-							for (auto const& [sid, sprite] : scene.sprites) {
-								RenderSprite(window, sid, sprite, width, height);
-							}
-						}
-
-						glfwSwapBuffers(window.glfw);
 					}
+					else {
+						ErrorScene("Empty scene");
+					}
+					glfwSwapBuffers(window.glfw);
 					/*------------[Конец рисования]----------------*/
 					PE_GLFW();
 			}
