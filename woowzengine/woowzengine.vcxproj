@@ -68,8 +68,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>F:\woowzengine\woowzengine\LIBS\GLAD;F:\woowzengine\woowzengine\LIBS\GLEW;F:\woowzengine\woowzengine\LIBS\GLFW;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;Lua.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>F:\woowzengine\woowzengine\LIBS\DISCORD;F:\woowzengine\woowzengine\LIBS\GLAD;F:\woowzengine\woowzengine\LIBS\GLEW;F:\woowzengine\woowzengine\LIBS\GLFW;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;Lua.lib;discord_game_sdk.dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -89,17 +89,32 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>F:\woowzengine\woowzengine\LIBS\GLAD;F:\woowzengine\woowzengine\LIBS\GLEW;F:\woowzengine\woowzengine\LIBS\GLFW;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;Lua.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>F:\woowzengine\woowzengine\LIBS\DISCORD;F:\woowzengine\woowzengine\LIBS\GLAD;F:\woowzengine\woowzengine\LIBS\GLEW;F:\woowzengine\woowzengine\LIBS\GLFW;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;Lua.lib;discord_game_sdk.dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Base.cpp" />
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="Cycles.cpp" />
+    <ClCompile Include="Discord.cpp" />
     <ClCompile Include="Easyer.cpp" />
     <ClCompile Include="Files.cpp" />
     <ClCompile Include="GLFW.cpp" />
+    <ClCompile Include="LIBS\discord-files\achievement_manager.cpp" />
+    <ClCompile Include="LIBS\discord-files\activity_manager.cpp" />
+    <ClCompile Include="LIBS\discord-files\application_manager.cpp" />
+    <ClCompile Include="LIBS\discord-files\core.cpp" />
+    <ClCompile Include="LIBS\discord-files\image_manager.cpp" />
+    <ClCompile Include="LIBS\discord-files\lobby_manager.cpp" />
+    <ClCompile Include="LIBS\discord-files\network_manager.cpp" />
+    <ClCompile Include="LIBS\discord-files\overlay_manager.cpp" />
+    <ClCompile Include="LIBS\discord-files\relationship_manager.cpp" />
+    <ClCompile Include="LIBS\discord-files\storage_manager.cpp" />
+    <ClCompile Include="LIBS\discord-files\store_manager.cpp" />
+    <ClCompile Include="LIBS\discord-files\types.cpp" />
+    <ClCompile Include="LIBS\discord-files\user_manager.cpp" />
+    <ClCompile Include="LIBS\discord-files\voice_manager.cpp" />
     <ClCompile Include="LIBS\glad\gl.c" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="LuaCompile.cpp" />
@@ -114,9 +129,27 @@
     <ClInclude Include="Color.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="Cycles.h" />
+    <ClInclude Include="Discord.h" />
     <ClInclude Include="Easyer.h" />
     <ClInclude Include="Files.h" />
     <ClInclude Include="GLFW.h" />
+    <ClInclude Include="LIBS\discord-files\achievement_manager.h" />
+    <ClInclude Include="LIBS\discord-files\activity_manager.h" />
+    <ClInclude Include="LIBS\discord-files\application_manager.h" />
+    <ClInclude Include="LIBS\discord-files\core.h" />
+    <ClInclude Include="LIBS\discord-files\discord.h" />
+    <ClInclude Include="LIBS\discord-files\event.h" />
+    <ClInclude Include="LIBS\discord-files\ffi.h" />
+    <ClInclude Include="LIBS\discord-files\image_manager.h" />
+    <ClInclude Include="LIBS\discord-files\lobby_manager.h" />
+    <ClInclude Include="LIBS\discord-files\network_manager.h" />
+    <ClInclude Include="LIBS\discord-files\overlay_manager.h" />
+    <ClInclude Include="LIBS\discord-files\relationship_manager.h" />
+    <ClInclude Include="LIBS\discord-files\storage_manager.h" />
+    <ClInclude Include="LIBS\discord-files\store_manager.h" />
+    <ClInclude Include="LIBS\discord-files\types.h" />
+    <ClInclude Include="LIBS\discord-files\user_manager.h" />
+    <ClInclude Include="LIBS\discord-files\voice_manager.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="LuaCompile.h" />
     <ClInclude Include="l_Color.h" />
@@ -143,9 +176,9 @@
     <Image Include="..\resources\icon.png" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="LIBS\DISCORD\discord_game_sdk.dll" />
     <None Include="l_Sound.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets" />
 </Project>

@@ -37,20 +37,35 @@ int StringToInt(string Str) {
 }
 
 /*Превращает строку в дробное число*/
-float StringToFloat(string Str) {
-	float f = -1;
-	try {
-		f = stof(Str);
+float StringToFloat(string Str, float IfError) {
+	if (IfError == -627892215) {
+		float f = -1;
+		try {
+			f = stof(Str);
+		}
+		catch (const std::invalid_argument& e) {
+			PE("It is not possible to convert a string to a number! StringToFloat('" + Str + "')", "E0005");
+			return -1;
+		}
+		catch (const std::out_of_range& e) {
+			PE("Can't convert a string to a number because it's huge! StringToFloat('" + Str + "')", "E0006");
+			return -1;
+		}
+		return f;
 	}
-	catch (const std::invalid_argument& e) {
-		PE("It is not possible to convert a string to a number! StringToFloat('"+Str+"')", "E0005");
-		return -1;
+	else {
+		float f = -1;
+		try {
+			f = stof(Str);
+		}
+		catch (const std::invalid_argument& e) {
+			return IfError;
+		}
+		catch (const std::out_of_range& e) {
+			return IfError;
+		}
+		return f;
 	}
-	catch (const std::out_of_range& e) {
-		PE("Can't convert a string to a number because it's huge! StringToFloat('"+Str+"')", "E0006");
-		return -1;
-	}
-	return f;
 }
 
 /*Превращает число в DWORD*/
@@ -60,7 +75,7 @@ DWORD IntToDWORD(int i) {
 
 /*Превращает дробное число в число*/
 int FloatToInt(float f) {
-	return (int)round(f);
+	return (int)floor(f);
 }
 
 /*Превращает строку в wстроку*/

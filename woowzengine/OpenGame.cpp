@@ -18,6 +18,7 @@
 #include "LuaCompile.h"
 #include "GLFW.h"
 #include "Cycles.h"
+#include "Discord.h"
 
 using namespace std;
 
@@ -45,6 +46,7 @@ void SetGameClosedEvent(sol::function f) {
 
 bool WINAPI StopEngine(DWORD CEvent) {
 	StartFunction(GameClosed, {});
+	DiscordEnd();
 	if (CEvent == CTRL_CLOSE_EVENT) {
 		StopGLFW();
 		P("ENGINE", "WoowzEngine stopping...");
@@ -85,6 +87,7 @@ void CheckFiles(string ev) {
 	CreateValueJson(JEngine, "LogFormat", "%y-%mn-%d-%h-%m-%s-%ms");
 	CreateValueJson(JEngine, "LogStyle", "%b[%h:%m:%s:%ms][%t] %c");
 	CreateValueJson(JEngine, "LogFatal", "-FATAL");
+	CreateValueJson(JEngine, "DiscordActivities", "true");
 
 	GetOrCreateFile(JGame);
 	if (!JSONValid(JGame)) {
@@ -106,10 +109,13 @@ void CheckFiles(string ev) {
 }
 
 void Cycle() {
+	DiscordUpdate();
 	Render();
 }
 
 void GameInstall() {
+	DiscordStart();
+	P("DISCORD", "Discord Loaded!");
 	LuaCompile();
 }
 

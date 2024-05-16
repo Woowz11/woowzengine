@@ -3,3 +3,4 @@
 using namespace std;
 
 int PrintToConsole(string,int = -1);
+void ConsoleInstall();

@@ -1,5 +1,6 @@
 {
     "Console": "true",
+    "DiscordActivities": "true",
     "LogFatal": "-FATAL",
     "LogFormat": "%y-%mn-%d-%h-%m-%s-%ms",
     "LogStyle": "%b[%h:%m:%s:%ms][%t] %c",

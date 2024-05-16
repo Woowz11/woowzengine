@@ -70,7 +70,6 @@ void SetSprite(l_Sprite sprite);
 l_Sprite GetSprite(string sceneid, string id);
 Scene GetScene(string id);
 void CreateScene(string id);
-void RemoveScene(string id);
 void CreateSprite(string id, string sceneid);
 void SetSceneBackgroundColor(string id, Color color);
 void SetSpritePosition(string sceneid, string id, l_Vector2 pos);

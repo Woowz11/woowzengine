@@ -12,6 +12,7 @@
 #include "Files.h"
 #include "GLFW.h"
 #include "Cycles.h"
+#include "Discord.h"
 
 #include "Color.h"
 #include "Vector2.h"
@@ -33,8 +34,13 @@ sol::state lua{};
 
 /*Зона игры*/
 
+string EmptyWindow = "New Window";
+string EmptyScene = "New Scene";
+string EmptySprite = "New Sprite";
+
 /*Проверяет работает ли lua или нет*/
 void l_CheckLua() {
+	DiscordTest();
 	P("LUACHK", "Lua supported!");
 }
 
@@ -76,17 +82,19 @@ int l_Round(float val) {
 }
 
 /*Есть папка или файл в этой позиции*/
-bool l_HasDirectory(string path) {
-	return HasDirectory(path);
+bool l_HasDirectory(sol::object path) {
+	return HasDirectory(ToString(path));
 }
 
 /*Получить данные из файла*/
-string l_ReadFile(string path) {
-	return ReadFile(path);
+string l_ReadFile(sol::object path) {
+	return ReadFile(ToString(path));
 }
 
 /*Записать данные в файл*/
-void l_WriteFile(string path, string value, bool Add) {
+void l_WriteFile(sol::object path_, sol::object value_, bool Add) {
+	string path = ToString(path_);
+	string value = ToString(value_);
 	if (SafeMode()) { PW("Function [WriteFile('"+path+"','"+value+"')] cannot be started in SafeMode!","LW0001"); }
 	else {
 		if (Add) {
@@ -165,7 +173,8 @@ void l_Cycle(sol::function func, int milisec) {
 }
 
 /*Создать папки*/
-void l_CreateDirectory(string path) {
+void l_CreateDirectory(sol::object path_) {
+	string path = ToString(path_);
 	if (SafeMode()) { PW("Function [CreateDirectory('" + path + "')] cannot be started in SafeMode!", "LW0002"); }
 	else {
 		GetOrCreateFolder(path);
@@ -173,7 +182,9 @@ void l_CreateDirectory(string path) {
 }
 
 /*Создать файл*/
-void l_CreateFile(string pathandname, string source) {
+void l_CreateFile(sol::object pathandname_, sol::object source_) {
+	string pathandname = ToString(pathandname_);
+	string source = ToString(source_);
 	if (SafeMode()) { PW("Function [CreateFile('" + pathandname + "','" + source + "')] cannot be started in SafeMode!", "LW0003"); }
 	else {
 		bool has = HasDirectory(pathandname);
@@ -185,7 +196,9 @@ void l_CreateFile(string pathandname, string source) {
 }
 
 /*Переменовать файл*/
-void l_RenameFile(string path, string newname) {
+void l_RenameFile(sol::object path_, sol::object newname_) {
+	string path = ToString(path_);
+	string newname = ToString(newname_);
 	if (SafeMode()) { PW("Function [RenameFile('" + path + "','" + newname + "')] cannot be started in SafeMode!", "LW0008"); }
 	else {
 		if (!HasDirectory(path)) { PE("File not found! RenameFile('"+path+"','"+newname+"')","L0007"); }
@@ -196,15 +209,20 @@ void l_RenameFile(string path, string newname) {
 }
 
 /*Запись переменных в JSON*/
-void l_WriteJSON(string path, string id, sol::object val) {
-	if (SafeMode()) { PW("Function [WriteJSON('" + path + "','" + id + "','"+ToString(val)+"')] cannot be started in SafeMode!", "LW0004"); }
+void l_WriteJSON(sol::object path_, sol::object id_, sol::object val_) {
+	string path = ToString(path_);
+	string id = ToString(id_,"Key");
+	string val = ToString(val_,"Value");
+	if (SafeMode()) { PW("Function [WriteJSON('" + path + "','" + id + "','"+val+"')] cannot be started in SafeMode!", "LW0004"); }
 	else {
-		WriteToJson(path, id, ToString(val));
+		WriteToJson(path, id, val);
 	}
 }
 
 /*Получить данные из json файла*/
-string l_ReadJSON(string path, string id) {
+string l_ReadJSON(sol::object path_, sol::object id_) {
+	string path = ToString(path_);
+	string id = ToString(id_,"Key");
 	if (!HasDirectory(path)) { PE("Json file not found! ReadJSON('"+path+"','"+id+"')", "L0006"); return "ERROR_L0006"; }
 	if(!JSONValid(path)){ PE("Json file corrupted! ReadJSON('" + path + "','" + id + "')","L0005"); return "ERROR_L0005"; }
 	return ReadJson(path,id);
@@ -389,14 +407,19 @@ float l_Modf(float f, float * f2) {
 }
 
 /*Ищет строку в строке*/
-bool l_HasString(string Str, string whatneedfound) {
+bool l_HasString(sol::object Str_, sol::object whatneedfound_) {
+	string Str = ToString(Str_,"");
+	string whatneedfound = ToString(whatneedfound_,"");
 	if (Str == "") { PE("String cannot be empty! HasString('','"+whatneedfound+"')", "L0012"); return false; }
 	if (whatneedfound == "") { PW("The string to be found cannot be empty! HasString('" + Str + "','')", "LW0010"); return true; }
 	return StringHasString(Str, whatneedfound);
 }
 
 /*Замена строк в строке*/
-string l_Replace(string Str, string that, string tothat) {
+string l_Replace(sol::object Str_, sol::object that_, sol::object tothat_) {
+	string Str = ToString(Str_,"");
+	string that = ToString(that_, "");
+	string tothat = ToString(tothat_, "");
 	if (Str == "") { PE("String cannot be empty! Replace('','"+that+"','"+tothat+"')", "L0010"); return "ERROR_L0010"; }
 	if (that == "") { PE("Replace string cannot be empty! Replace('" + Str + "','','" + tothat + "')","L0008"); return "ERROR_L0008"; }
 	if (that == tothat) { PW("Replace strings can't be the same! Replace('"+Str+"','"+that+"','"+tothat+"')","LW0009"); return Str; }
@@ -404,14 +427,17 @@ string l_Replace(string Str, string that, string tothat) {
 }
 
 /*Удалить строку из строки*/
-string l_Remove(string Str, string that) {
+string l_Remove(sol::object Str_, sol::object that_) {
+	string Str = ToString(Str_, "");
+	string that = ToString(that_, "");
 	if (Str == "") { PE("String cannot be empty! Remove('','" + that + "')", "L0011"); return "ERROR_L0011"; }
 	if (that == "") { PE("Remove string cannot be empty! Remove('" + Str + "','" + that + "')", "L0009"); return "ERROR_L0009"; }
 	return ReplaceString(Str, that, "");
 }
 
 /*Получить таблицу символов*/
-sol::table l_Charcters(string Str) {
+sol::table l_Charcters(sol::object Str_) {
+	string Str = ToString(Str_, "");
 	if (Str == "") { PW("String cannot be empty! Charcters('')","LW0011"); return lua.create_table(); }
 	sol::table tbl = lua.create_table();
 	for (char& c : Str) {
@@ -421,13 +447,15 @@ sol::table l_Charcters(string Str) {
 }
 
 /*Делает строку заглавной*/
-string l_Uppercase(string Str) {
+string l_Uppercase(sol::object Str_) {
+	string Str = ToString(Str_, "");
 	if (Str == "") { PW("String cannot be empty! Uppercase('"+Str+"')", "LW0012"); return ""; }
 	return Uppercase(Str);
 }
 
 /*Делает строку не заглавной*/
-string l_Lowercase(string Str) {
+string l_Lowercase(sol::object Str_) {
+	string Str = ToString(Str_, "");
 	if (Str == "") { PW("String cannot be empty! Lowercase('"+Str+"')", "LW0013"); return ""; }
 	return Lowercase(Str);
 }
@@ -443,30 +471,49 @@ int l_Length(sol::object obj) {
 		}
 		return size;
 	}
-	PE("This type of variable is not supported! Length()", "L0018");
+	PE("This type of variable ["+ToString(obj) + "] is not supported! Length()", "L0018");
 	return -1;
 }
 
 /*Удаление части строки*/
-string l_SubStr(string Str, int pos, int size) {
-	return Str.substr(pos, size);
+string l_SubStr(sol::object Str_, int pos, int size) {
+	string Str = ToString(Str_, "");
+	if (Str == "") { PE("String cannot be empty! SubStr('" + Str + "')", "L0019"); return "ERROR_L0019"; }
+	if (pos < 0) { PE("Position cannot be < 0! SubStr('" + Str + "'," + to_string(pos) + "," + to_string(size) + ")","L0021"); return "ERROR_L0021"; }
+	if ((size) <= 0) { PE("Size cannot be <= 0! SubStr('" + Str + "'," + to_string(pos) + "," + to_string(size) + ")", "L0020"); return "ERROR_L0020"; }
+	if (pos > Str.length()) { PW("Position ["+to_string(pos) + "] goes beyond the string ["+to_string(Str.length()) + "]! SubStr('" + Str + "'," + to_string(pos) + "," + to_string(size) + ")", "LW0021"); }
+	if ((size + pos) > Str.length()) { PW("Size [" + to_string(size) + "] extends beyond the string ["+to_string(Str.length()) + "]! SubStr('" + Str + "'," + to_string(pos) + "," + to_string(size) + ")", "LW0020"); }
+	return Str.erase(pos, size);
 }
 
 /*Превращает строку в число*/
-float l_ToNumber(string Str) {
-	return StringToFloat(Str);
+float l_ToNumber(sol::object Str_, sol::object IfError) {
+	string Str = ToString(Str_, "");
+	if (Str == "") { PE("String cannot be empty! ToNumber('" + Str + "')", "L0016"); return 0; }
+	if (GetObjectType(IfError) != "number") {
+		return StringToFloat(Str);
+	}
+	else {
+		return StringToFloat(Str,ToNumber(IfError));
+	}
 }
 
 /*Запуск команды cmd*/
-void l_Cmd(string command) {
+void l_Cmd(sol::object command_) {
+	string command = ToString(command_);
 	if (SafeMode()) { PW("Function [Cmd('" + command + "')] cannot be started in SafeMode!", "LW0014"); }
 	else {
-		system(StringToConstChar(command));
+		int result = system(StringToConstChar(command));
+		if (result != 0) {
+			PE("Cmd command failed! Cmd('"+command+"')","L0022");
+		}
 	}
 }
 
 /*Создать окно*/
-void l_CreateWindow(string id, string Title, int sizex, int sizey) {
+void l_CreateWindow(sol::object id_, sol::object Title_, int sizex, int sizey) {
+	string id = ToString(id_, EmptyWindow);
+	string Title = ToString(Title_, EmptyWindow);
 	int x = sizex;
 	int y = sizey;
 	if (sizex == 0) { x = 640; }
@@ -475,18 +522,18 @@ void l_CreateWindow(string id, string Title, int sizex, int sizey) {
 }
 
 /*Уничтожить окно*/
-void l_DestroyWindow(string id) {
-	DestroyWindowGLFW(id);
+void l_DestroyWindow(sol::object id) {
+	DestroyWindowGLFW(ToString(id,EmptyWindow));
 }
 
 /*Проверяет есть ли окно в данных*/
-bool l_HasWindow(string id) {
-	return HasWindow(id);
+bool l_HasWindow(sol::object id) {
+	return HasWindow(ToString(id,EmptyWindow));
 }
 
 /*Делает окно главным*/
-void l_SetWindowMain(string id) {
-	SetWindowToMain(id);
+void l_SetWindowMain(sol::object id) {
+	SetWindowToMain(ToString(id,EmptyWindow));
 }
 
 /*Получить айди главного окна*/
@@ -505,37 +552,37 @@ void l_SetSeed(int seed) {
 }
 
 /*Получить размер окна X*/
-int l_GetWindowX(string id) {
-	return GetWindowSize(id, false);
+int l_GetWindowX(sol::object id) {
+	return GetWindowSize(ToString(id,EmptyWindow), false);
 }
 
 /*Получить размер окна Y*/
-int l_GetWindowY(string id) {
-	return GetWindowSize(id, true);
+int l_GetWindowY(sol::object id) {
+	return GetWindowSize(ToString(id, EmptyWindow), true);
 }
 
 /*Изменить размер экрана по X*/
-void l_SetWindowX(string id, int i) {
-	SetWindowSize(id, false, i);
+void l_SetWindowX(sol::object id, int i) {
+	SetWindowSize(ToString(id, EmptyWindow), false, i);
 }
 
 /*Изменить размер экрана по Y*/
-void l_SetWindowY(string id, int i) {
-	SetWindowSize(id, true, i);
+void l_SetWindowY(sol::object id, int i) {
+	SetWindowSize(ToString(id, EmptyWindow), true, i);
 }
 
 /*Изменяет название окна*/
-void l_SetWindowTitle(string id, string title) {
-	SetWindowTitle(id, title);
+void l_SetWindowTitle(sol::object id, sol::object title) {
+	SetWindowTitle(ToString(id, EmptyWindow), ToString(title,"New Title"));
 }
 
 /*Изменение авторазмера у окна*/
-void l_SetWindowAutoScale(string id, sol::optional<bool> b) {
+void l_SetWindowAutoScale(sol::object id, sol::optional<bool> b) {
 	if (b) {
-		SetWindowAutosize(id, b.value());
+		SetWindowAutosize(ToString(id, EmptyWindow), b.value());
 	}
 	else {
-		SetWindowAutosize(id, true);
+		SetWindowAutosize(ToString(id, EmptyWindow), true);
 	}
 }
 
@@ -560,12 +607,13 @@ float l_DCos(float f) {
 }
 
 /*Запретить или размешить менять размер окна*/
-void l_SetWindowResizable(string id, bool b) {
-	SetWindowResizable(id, b);
+void l_SetWindowResizable(sol::object id, bool b) {
+	SetWindowResizable(ToString(id, EmptyWindow), b);
 }
 
 /*Вызывает функцию когда окно закрывается*/
-void l_SetWindowEventClosed(string id, sol::function func) {
+void l_SetWindowEventClosed(sol::object id_, sol::function func) {
+	string id = ToString(id_, EmptyWindow);
 	if (func == sol::nil || !func.valid()) { PE("Function not found or does not exist for SetWindowEventClosed(" + id + ")!", "L0013"); }
 	else {
 		SetWindowClosedEvent(id, func);
@@ -581,18 +629,18 @@ void l_SetEventClosed(sol::function func) {
 }
 
 /*Нажатие клавиши в окне*/
-void l_SetWindowEventKeyPress(string id, sol::function func) {
-	SetWindowKPEvent(id, func);
+void l_SetWindowEventKeyPress(sol::object id, sol::function func) {
+	SetWindowKPEvent(ToString(id, EmptyWindow), func);
 }
 
 /*Отжатие клавиши в окне*/
-void l_SetWindowEventKeyRelease(string id, sol::function func) {
-	SetWindowKREvent(id, func);
+void l_SetWindowEventKeyRelease(sol::object id, sol::function func) {
+	SetWindowKREvent(ToString(id, EmptyWindow), func);
 }
 
 /*Зажатие клавиши в окне*/
-void l_SetWindowEventKeyHold(string id, sol::function func) {
-	SetWindowKHEvent(id, func);
+void l_SetWindowEventKeyHold(sol::object id, sol::function func) {
+	SetWindowKHEvent(ToString(id, EmptyWindow), func);
 }
 
 /*Таблица зажатых клавиш*/
@@ -611,23 +659,23 @@ int l_RRandom(int min, int max) {
 }
 
 /*Установить позицию окна по X*/
-void l_SetWindowXPosition(string id, int i) {
-	SetWindowPosition(id, i, true);
+void l_SetWindowXPosition(sol::object id, int i) {
+	SetWindowPosition(ToString(id, EmptyWindow), i, true);
 }
 
 /*Установить позицию окна по Y*/
-void l_SetWindowYPosition(string id, int i) {
-	SetWindowPosition(id, i, false);
+void l_SetWindowYPosition(sol::object id, int i) {
+	SetWindowPosition(ToString(id, EmptyWindow), i, false);
 }
 
 /*Получить позицию окна по X*/
-int l_GetWindowXPosition(string id) {
-	return GetWindowPosition(id, true);
+int l_GetWindowXPosition(sol::object id) {
+	return GetWindowPosition(ToString(id, EmptyWindow), true);
 }
 
 /*Получить позицию окна по Y*/
-int l_GetWindowYPosition(string id) {
-	return GetWindowPosition(id, false);
+int l_GetWindowYPosition(sol::object id) {
+	return GetWindowPosition(ToString(id, EmptyWindow), false);
 }
 
 /*Получает дробное число из числа*/
@@ -636,8 +684,8 @@ float l_Frac(float f) {
 }
 
 /*Получить весь JSON файл в виде таблицы*/
-sol::table l_JSONTable(string path) {
-	map<string, string> data = ReadAllJson(path);
+sol::table l_JSONTable(sol::object path) {
+	map<string, string> data = ReadAllJson(ToString(path));
 	sol::table tbl = lua.create_table();
 	for (const auto& p : data) {
 		tbl.set(p.first, p.second);
@@ -663,7 +711,8 @@ string l_GetType(sol::object obj) {
 }
 
 /*Открыть ссылку*/
-void l_OpenLink(string html) {
+void l_OpenLink(sol::object html_) {
+	string html = ToString(html_, "https://woowz11.github.io/woowzsite/woowzengine.html");
 	if (SafeMode()) { PW("Function [OpenLink('" + html + "')] cannot be started in SafeMode!", "LW0019"); }
 	else {
 		system(StringToConstChar("start \"\" " + html));
@@ -675,39 +724,32 @@ int l_ActiveTime() {
 	return GetActiveTime();
 }
 
-/*Установить позицию камеры по X*/
-void l_SetCameraX(string scene, float f) {
-	SetCameraPosition(scene, f, true);
+/*Установить позицию камеры*/
+void l_SetCameraPosition(sol::object scene_, l_Vector2 f) {
+	string scene = ToString(scene_, EmptyScene);
+	SetCameraPosition(scene, f.x, true);
+	SetCameraPosition(scene, f.y, false);
 }
 
-/*Установить позицию камеры по Y*/
-void l_SetCameraY(string scene, float f) {
-	SetCameraPosition(scene, f, false);
-}
-
-/*Получить позицию камеры по X*/
-float l_GetCameraX(string scene) {
-	return GetCameraPosition(scene, true);
-}
-
-/*Получить позицию камеры по Y*/
-float l_GetCameraY(string scene) {
-	return GetCameraPosition(scene, false);
+/*Получить позицию камеры*/
+l_Vector2 l_GetCameraPosition(sol::object scene_) {
+	string scene = ToString(scene_, EmptyScene);
+	return l_Vector2(GetCameraPosition(scene, true), GetCameraPosition(scene, false));
 }
 
 /*Нажатие клавиши на мышке в окне*/
-void l_SetWindowEventMousePress(string id, sol::function func) {
-	SetWindowMPEvent(id, func);
+void l_SetWindowEventMousePress(sol::object id, sol::function func) {
+	SetWindowMPEvent(ToString(id,EmptyWindow), func);
 }
 
 /*Отжатие клавиши на мышке в окне*/
-void l_SetWindowEventMouseRelease(string id, sol::function func) {
-	SetWindowMREvent(id, func);
+void l_SetWindowEventMouseRelease(sol::object id, sol::function func) {
+	SetWindowMREvent(ToString(id,EmptyWindow), func);
 }
 
 /*Зажатие клавиши на мышке в окне*/
-void l_SetWindowEventMouseHold(string id, sol::function func) {
-	SetWindowMHEvent(id, func);
+void l_SetWindowEventMouseHold(sol::object id, sol::function func) {
+	SetWindowMHEvent(ToString(id,EmptyWindow), func);
 }
 
 /*Получить FPS*/
@@ -716,28 +758,28 @@ int l_GetFPS() {
 }
 
 /*Создать сцену*/
-void l_CreateScene(string id) {
-	CreateScene(id);
+void l_CreateScene(sol::object id) {
+	CreateScene(ToString(id));
 }
 
 /*Установить цвет заднего фона у сцены*/
-void l_SetSceneBackgroundColor(string id, l_Color color) {
-	SetSceneBackgroundColor(id, color.ToCPP());
+void l_SetSceneBackgroundColor(sol::object id, sol::object color) {
+	SetSceneBackgroundColor(ToString(id), ObjToColor(color).ToCPP());
 }
 
 /*Установить сцену на окно*/
-void l_SetSceneWindow(string id, string window) {
-	SetWindowScene(window, id);
+void l_SetSceneWindow(sol::object window, sol::object id) {
+	SetWindowScene(ToString(window), ToString(id));
 }
 
 /*Создать спрайт*/
-void l_CreateSprite(string id, string sceneid) {
-	CreateSprite(id, sceneid);
+void l_CreateSprite(sol::object id, sol::object sceneid) {
+	CreateSprite(ToString(id, EmptySprite), ToString(sceneid));
 }
 
 /*Установить позицию спрайта*/
-void l_SetSpritePosition(string sceneid, string id, l_Vector2 position) {
-	SetSpritePosition(sceneid, id, position);
+void l_SetSpritePosition(sol::object sceneid, sol::object id, l_Vector2 position) {
+	SetSpritePosition(ToString(sceneid), ToString(id, EmptySprite), position);
 }
 
 /*Установить цикл на рендер*/
@@ -746,36 +788,43 @@ void l_CycleRender(sol::function f) {
 }
 
 /*Установить масштаб для камеры*/
-void l_SetCameraZoom(string sceneid, float f) {
-	SetCameraZoom(sceneid, f);
+void l_SetCameraZoom(sol::object sceneid_, float f) {
+	string sceneid = ToString(sceneid_);
+	if (f == 0) {
+		PE("Camera zoom cannot be 0! SetCameraZoom('"+sceneid+"',0)","L0023");
+		SetCameraZoom(sceneid, 1);
+	}
+	else {
+		SetCameraZoom(sceneid, f);
+	}
 }
 
 /*Получить маштаб камеры*/
-float l_GetCameraZoom(string sceneid) {
-	return GetCameraZoom(sceneid);
+float l_GetCameraZoom(sol::object sceneid) {
+	return GetCameraZoom(ToString(sceneid));
 }
 
 /*Получить позицию курсора*/
-l_Vector2 l_GetMousePosition(string windowid) {
-	Vector2 v = GetMousePosition(windowid);
+l_Vector2 l_GetMousePosition(sol::object windowid) {
+	Vector2 v = GetMousePosition(ToString(windowid));
 	return l_Vector2(v.x, v.y);
 }
 
 /*Экранные координаты в мировые*/
-l_Vector2 l_ScreenToWorld(string windowid, l_Vector2 screencord) {
-	Vector2 v = ScreenToWorld(GetWindowByID(windowid), Vector2(screencord.x, screencord.y));
+l_Vector2 l_ScreenToWorld(sol::object windowid, l_Vector2 screencord) {
+	Vector2 v = ScreenToWorld(GetWindowByID(ToString(windowid)), Vector2(screencord.x, screencord.y));
 	return l_Vector2(v.x, v.y);
 }
 
 /*Получить мировую позицию курсора*/
-l_Vector2 l_GetMouseWPosition(string windowid) {
-	Vector2 v = ScreenToWorld(GetWindowByID(windowid), GetMousePosition(windowid));
+l_Vector2 l_GetMouseWPosition(sol::object windowid) {
+	Vector2 v = ScreenToWorld(GetWindowByID(ToString(windowid)), GetMousePosition(ToString(windowid)));
 	return l_Vector2(v.x, v.y);
 }
 
 /*Мировые координаты в экранные*/
-l_Vector2 l_WorldToScreen(string windowid, l_Vector2 worldcord) {
-	Vector2 v = WorldToScreen(GetWindowByID(windowid), Vector2(round(worldcord.x), round(worldcord.y)));
+l_Vector2 l_WorldToScreen(sol::object windowid, l_Vector2 worldcord) {
+	Vector2 v = WorldToScreen(GetWindowByID(ToString(windowid)), Vector2(round(worldcord.x), round(worldcord.y)));
 	return l_Vector2(v.x, v.y);
 }
 
@@ -788,53 +837,128 @@ float l_Sign(float f) {
 	return result;
 }
 
+/*Устанавливает название активности*/
+void l_SetDiscordActivityTitle(sol::object s_) {
+	string s = ToString(s_);
+	if (s.length() == 1 || s.length() == 2) {
+		PW("Title cannot contain 1,2 characters! Need less or more! SetDiscordActivityTitle('"+s+"')","LW0022");
+	}
+	else {
+		SetDiscordActivityTitle(s);
+	}
+}
+
+/*Устанавливает описание активности*/
+void l_SetDiscordActivityDescription(sol::object s_) {
+	string s = ToString(s_);
+	if (s.length() == 1 || s.length() == 2) {
+		PW("Description cannot contain 1,2 characters! Need less or more! SetDiscordActivityDescription('" + s + "')", "LW0023");
+	}
+	else {
+		SetDiscordActivityDescription(s);
+	}
+}
+
 /*Зона woowzengine*/
 
-string ToString(sol::object obj) {
+l_Color ObjToColor(sol::object obj) {
+	string type = GetObjectType(obj);
+	if (type == "color") {
+		return obj.as<sol::userdata>().as<l_Color>();
+	}
+	else if (type == "nil") {
+		return l_Color(0, 0, 0, 255);
+	}
+	else {
+		PE("Failed to convert the object [" + ToString(obj) + "] to color!", "L0015");
+		return l_Color(255,0,255,255);
+	}
+}
+
+string GetObjectType(sol::object obj) {
 	sol::type type = obj.get_type();
 
 	switch (type) {
 	case sol::type::string:
-		return obj.as<std::string>();
+		return "string";
 		break;
 	case sol::type::number:
-		return DoubleToString(obj.as<double>());
+		return "number";
 		break;
 	case sol::type::nil:
 		return "nil";
 		break;
 	case sol::type::boolean:
-		if (obj.as<bool>()) {
-			return "true";
-		}
-		else {
-			return "false";
-		}
+		return "bool";
 		break;
 	}
 
 	if (type == sol::type::userdata) {
 		sol::userdata u = obj.as<sol::userdata>();
 		if (u.is<l_Vector2>()) {
-			l_Vector2 v2 = u.as<l_Vector2>();
-			return "Vector2(" + DoubleToString(v2.x) + "," + DoubleToString(v2.y) + ")";
+			return "vector2";
 		}
 		else if (u.is<l_Vector3>()) {
-			l_Vector3 v3 = u.as<l_Vector3>();
-			return "Vector3(" + DoubleToString(v3.x) + "," + DoubleToString(v3.y) + "," + DoubleToString(v3.z) + ")";
+			return "vector3";
 		}
 		else if (u.is<l_Vector4>()) {
-			l_Vector4 v4 = u.as<l_Vector4>();
-			return "Vector4(" + DoubleToString(v4.x) + "," + DoubleToString(v4.y) + "," + DoubleToString(v4.z) + "," + DoubleToString(v4.w) + ")";
+			return "vector4";
 		}
 		else if (u.is<l_Color>()) {
-			l_Color c = u.as<l_Color>();
-			return "Color(" + DoubleToString(c.r) + "," + DoubleToString(c.g) + "," + DoubleToString(c.b) + "," + DoubleToString(c.a) + ")";
+			return "color";
 		}
 		else if (u.is<l_Vertex>()) {
-			l_Vertex v = u.as<l_Vertex>();
-			return "Vertex(Vector2(" + DoubleToString(v.Position.x) + "," + DoubleToString(v.Position.y) + "),Color(" + DoubleToString(v.Color.r) + "," + DoubleToString(v.Color.g) + "," + DoubleToString(v.Color.b) + "," + DoubleToString(v.Color.a) + "))";
+			return "vertex";
 		}
+	}
+
+	return "unknown";
+}
+
+float ToNumber(sol::object obj) {
+	return obj.as<float>();
+}
+
+string ToString(sol::object obj, string IfNil) {
+	string type = GetObjectType(obj);
+	sol::userdata u = obj.as<sol::userdata>();
+
+	if (type == "string") {
+		return obj.as<std::string>();
+	}
+	else if (type == "number") {
+		return DoubleToString(obj.as<double>());
+	}
+	else if (type == "nil") {
+		return IfNil;
+	}
+	else if (type == "bool") {
+		if (obj.as<bool>()) {
+			return "true";
+		}
+		else {
+			return "false";
+		}
+	}
+	else if (type == "vector2") {
+		l_Vector2 v2 = u.as<l_Vector2>();
+		return "Vector2(" + DoubleToString(v2.x) + "," + DoubleToString(v2.y) + ")";
+	}
+	else if (type == "vector3") {
+		l_Vector3 v3 = u.as<l_Vector3>();
+		return "Vector3(" + DoubleToString(v3.x) + "," + DoubleToString(v3.y) + "," + DoubleToString(v3.z) + ")";
+	}
+	else if (type == "vector4") {
+		l_Vector4 v4 = u.as<l_Vector4>();
+		return "Vector4(" + DoubleToString(v4.x) + "," + DoubleToString(v4.y) + "," + DoubleToString(v4.z) + "," + DoubleToString(v4.w) + ")";
+	}
+	else if (type == "color") {
+		l_Color c = u.as<l_Color>();
+		return "Color(" + DoubleToString(c.r) + "," + DoubleToString(c.g) + "," + DoubleToString(c.b) + "," + DoubleToString(c.a) + ")";
+	}
+	else if (type == "vertex") {
+		l_Vertex v = u.as<l_Vertex>();
+		return "Vertex(Vector2(" + DoubleToString(v.Position.x) + "," + DoubleToString(v.Position.y) + "),Color(" + DoubleToString(v.Color.r) + "," + DoubleToString(v.Color.g) + "," + DoubleToString(v.Color.b) + "," + DoubleToString(v.Color.a) + "))";
 	}
 
 	return "Value type [" + sol::type_name(lua, obj.get_type()) + "]";
@@ -1123,11 +1247,8 @@ void LuaCompile() {
 	lua.set_function("GetType", &l_GetType);
 	lua.set_function("OpenLink", &l_OpenLink);
 	lua.set_function("ActiveTime", &l_ActiveTime);
-	lua.set_function("SetCameraX", &l_SetCameraX);
-	lua.set_function("SetCameraY", &l_SetCameraY);
-	lua.set_function("GetCameraX", &l_GetCameraX);
-	lua.set_function("GetCameraY", &l_GetCameraY);
-
+	lua.set_function("SetCameraPosition", &l_SetCameraPosition);
+	lua.set_function("GetCameraPosition", &l_GetCameraPosition);
 	lua.set_function("SetSpritePosition", &l_SetSpritePosition);
 	lua.set_function("CreateScene", &l_CreateScene);
 	lua.set_function("SetSceneBackgroundColor", &l_SetSceneBackgroundColor);
@@ -1145,6 +1266,9 @@ void LuaCompile() {
 	lua.set_function("SetWindowEventMouseRelease", &l_SetWindowEventMouseRelease);
 	lua.set_function("SetWindowEventMouseHold", &l_SetWindowEventMouseHold);
 	lua.set_function("Sign", &l_Sign);
+
+	lua.set_function("SetDiscordActivityTitle", &l_SetDiscordActivityTitle);
+	lua.set_function("SetDiscordActivityDescription", &l_SetDiscordActivityDescription);
 
 	P("LUA", "Lua functions and etc. are loaded!");
 	P("LUA", "Start start.lua script...");

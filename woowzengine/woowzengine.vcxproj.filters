@@ -28,6 +28,9 @@
     <Filter Include="Исходные файлы\Elements\Old">
       <UniqueIdentifier>{13e00c8c-d833-41ab-b0f5-9d6c19f2f455}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Исходные файлы\discord-files">
+      <UniqueIdentifier>{e83ffe80-3560-4679-a98a-d58970385fd0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
@@ -71,6 +74,51 @@
     </ClCompile>
     <ClCompile Include="l_Vector3.h">
       <Filter>Исходные файлы\Elements\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Discord.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="LIBS\discord-files\achievement_manager.cpp">
+      <Filter>Исходные файлы\discord-files</Filter>
+    </ClCompile>
+    <ClCompile Include="LIBS\discord-files\activity_manager.cpp">
+      <Filter>Исходные файлы\discord-files</Filter>
+    </ClCompile>
+    <ClCompile Include="LIBS\discord-files\application_manager.cpp">
+      <Filter>Исходные файлы\discord-files</Filter>
+    </ClCompile>
+    <ClCompile Include="LIBS\discord-files\core.cpp">
+      <Filter>Исходные файлы\discord-files</Filter>
+    </ClCompile>
+    <ClCompile Include="LIBS\discord-files\image_manager.cpp">
+      <Filter>Исходные файлы\discord-files</Filter>
+    </ClCompile>
+    <ClCompile Include="LIBS\discord-files\lobby_manager.cpp">
+      <Filter>Исходные файлы\discord-files</Filter>
+    </ClCompile>
+    <ClCompile Include="LIBS\discord-files\network_manager.cpp">
+      <Filter>Исходные файлы\discord-files</Filter>
+    </ClCompile>
+    <ClCompile Include="LIBS\discord-files\overlay_manager.cpp">
+      <Filter>Исходные файлы\discord-files</Filter>
+    </ClCompile>
+    <ClCompile Include="LIBS\discord-files\relationship_manager.cpp">
+      <Filter>Исходные файлы\discord-files</Filter>
+    </ClCompile>
+    <ClCompile Include="LIBS\discord-files\storage_manager.cpp">
+      <Filter>Исходные файлы\discord-files</Filter>
+    </ClCompile>
+    <ClCompile Include="LIBS\discord-files\store_manager.cpp">
+      <Filter>Исходные файлы\discord-files</Filter>
+    </ClCompile>
+    <ClCompile Include="LIBS\discord-files\types.cpp">
+      <Filter>Исходные файлы\discord-files</Filter>
+    </ClCompile>
+    <ClCompile Include="LIBS\discord-files\user_manager.cpp">
+      <Filter>Исходные файлы\discord-files</Filter>
+    </ClCompile>
+    <ClCompile Include="LIBS\discord-files\voice_manager.cpp">
+      <Filter>Исходные файлы\discord-files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -146,6 +194,60 @@
     <ClInclude Include="l_Element.h">
       <Filter>Исходные файлы\Elements\Old</Filter>
     </ClInclude>
+    <ClInclude Include="Discord.h">
+      <Filter>Исходные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="LIBS\discord-files\achievement_manager.h">
+      <Filter>Исходные файлы\discord-files</Filter>
+    </ClInclude>
+    <ClInclude Include="LIBS\discord-files\activity_manager.h">
+      <Filter>Исходные файлы\discord-files</Filter>
+    </ClInclude>
+    <ClInclude Include="LIBS\discord-files\application_manager.h">
+      <Filter>Исходные файлы\discord-files</Filter>
+    </ClInclude>
+    <ClInclude Include="LIBS\discord-files\core.h">
+      <Filter>Исходные файлы\discord-files</Filter>
+    </ClInclude>
+    <ClInclude Include="LIBS\discord-files\discord.h">
+      <Filter>Исходные файлы\discord-files</Filter>
+    </ClInclude>
+    <ClInclude Include="LIBS\discord-files\event.h">
+      <Filter>Исходные файлы\discord-files</Filter>
+    </ClInclude>
+    <ClInclude Include="LIBS\discord-files\ffi.h">
+      <Filter>Исходные файлы\discord-files</Filter>
+    </ClInclude>
+    <ClInclude Include="LIBS\discord-files\image_manager.h">
+      <Filter>Исходные файлы\discord-files</Filter>
+    </ClInclude>
+    <ClInclude Include="LIBS\discord-files\lobby_manager.h">
+      <Filter>Исходные файлы\discord-files</Filter>
+    </ClInclude>
+    <ClInclude Include="LIBS\discord-files\network_manager.h">
+      <Filter>Исходные файлы\discord-files</Filter>
+    </ClInclude>
+    <ClInclude Include="LIBS\discord-files\overlay_manager.h">
+      <Filter>Исходные файлы\discord-files</Filter>
+    </ClInclude>
+    <ClInclude Include="LIBS\discord-files\relationship_manager.h">
+      <Filter>Исходные файлы\discord-files</Filter>
+    </ClInclude>
+    <ClInclude Include="LIBS\discord-files\storage_manager.h">
+      <Filter>Исходные файлы\discord-files</Filter>
+    </ClInclude>
+    <ClInclude Include="LIBS\discord-files\store_manager.h">
+      <Filter>Исходные файлы\discord-files</Filter>
+    </ClInclude>
+    <ClInclude Include="LIBS\discord-files\types.h">
+      <Filter>Исходные файлы\discord-files</Filter>
+    </ClInclude>
+    <ClInclude Include="LIBS\discord-files\user_manager.h">
+      <Filter>Исходные файлы\discord-files</Filter>
+    </ClInclude>
+    <ClInclude Include="LIBS\discord-files\voice_manager.h">
+      <Filter>Исходные файлы\discord-files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="woowzengine.rc">
@@ -163,6 +265,9 @@
   <ItemGroup>
     <None Include="l_Sound.h">
       <Filter>Исходные файлы\Elements\Lua</Filter>
+    </None>
+    <None Include="LIBS\DISCORD\discord_game_sdk.dll">
+      <Filter>Файлы ресурсов</Filter>
     </None>
   </ItemGroup>
 </Project>

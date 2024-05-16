@@ -11,19 +11,16 @@ SetSpritePosition("scene","sprite",Vector2.new(-1,1))
 
 CreateScene("scene2")
 
-function SetCameraPosition(x,y,zoom)
-	SetCameraX("scene",x)
-    SetCameraY("scene",y)
-	
-	SetCameraX("scene2",x)
-    SetCameraY("scene2",y)
+function SetCameraPosition_(x,y,zoom)
+	SetCameraPosition("scene",Vector2.new(x,y))
+	SetCameraPosition("scene2",Vector2.new(x,y))
 	
 	SetCameraZoom("scene",zoom)
 	SetCameraZoom("scene2",zoom)
 end
 
 local selectedscene = "scene"
-SetWindowScene("scene","window")
+SetWindowScene("window","scene")
 SetWindowEventKeyPress("window",function(key) 
 if key=="c" then
 	if selectedscene == "scene" then 
@@ -31,7 +28,7 @@ if key=="c" then
     else 
         selectedscene = "scene" 
     end
-	SetWindowScene(selectedscene,"window")
+	SetWindowScene("window",selectedscene)
 end
 
 function setsize(size)
@@ -67,16 +64,16 @@ if key=="9" then
 	setsize(1000)
 end
 if key=="0" then
-	SetCameraPosition(0,0,0.5)
+	SetCameraPosition_(0,0,0.5)
 end
 if key=="q" then
-	SetCameraPosition(0,0,0.25)
+	SetCameraPosition_(0,0,0.25)
 end
 if key=="e" then
-	SetCameraPosition(0,0,0.125)
+	SetCameraPosition_(0,0,0.125)
 end
 if key=="r" then
-	SetCameraPosition(0,0,0)
+	SetCameraPosition_(0,0,0)
 end
 end)
 
@@ -140,11 +137,12 @@ elseif(Keys["minus"])then
 end
 
 if(VelX~=0 or VelY~=0 or VelZoom~=0)then
-	SetCameraPosition(GetCameraX("scene")+VelX,GetCameraY("scene")+VelY, GetCameraZoom("scene")+(VelZoom/100))
+	local campos = GetCameraPosition("scene")
+	SetCameraPosition_(campos.x+VelX,campos.y+VelY, GetCameraZoom("scene")+(VelZoom/100))
 end
 
 if(Keys["home"])then
-	SetCameraPosition(0,0,1)
+	SetCameraPosition_(0,0,1)
 end
 
 -------------------------------------

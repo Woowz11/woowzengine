@@ -10,6 +10,7 @@
 #include "Files.h"
 #include "WindowsElements.h"
 #include "base.h"
+#include "Console.h"
 #include "GLFW.h"
 
 using namespace std;
@@ -25,6 +26,7 @@ int main(int argc, char** argv)
 {
     if (!DebugVersion) { ::ShowWindow(::GetConsoleWindow(), SW_HIDE); }
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 8);
+    ConsoleInstall();
     SetConsoleTitle(StringToLPCWSTR("WoowzEngine Console"));
     cout << "WoowzEngine realization..." << "\n";
     if (DebugVersion) { cout << "Debug mode enabled!" << "\n"; }

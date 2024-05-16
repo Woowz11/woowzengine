@@ -135,7 +135,7 @@ void GLFWInstall() {
 	}
 	else {
 		glfwGetVersion(&major, &minor, &revision);
-		P("GLFW", "GLFW Installed! (minor-" + to_string(minor) + ",major-" + to_string(major) + ",revision-" + to_string(revision) + ")");
+		P("GLFW", "GLFW Loaded! (minor-" + to_string(minor) + ",major-" + to_string(major) + ",revision-" + to_string(revision) + ")");
 	}
 
 	if (!StringToBool(GetSessionInfo("Debug"))) { glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); }
@@ -456,11 +456,24 @@ void Render() {
 /*---------------------------*/
 
 l_Sprite GetSprite(string sceneid, string id) {
-	return Scenes[sceneid].sprites[id];
+	Scene scene = GetScene(sceneid);
+	if (scene.sprites.find(id) == scene.sprites.end()) {
+		PF("No sprite found! GetSprite('"+sceneid+"','"+id+"')","C0027");
+		return l_Sprite("");
+	}
+	else {
+		return scene.sprites[id];
+	}
 }
 
 Scene GetScene(string id) {
-	return Scenes[id];
+	if (Scenes.find(id) == Scenes.end()) {
+		PF("No scene found! GetScene('"+id+"')","C0026");
+		return Scene("");
+	}
+	else {
+		return Scenes[id];
+	}
 }
 
 void SetSprite(l_Sprite sprite) {
@@ -479,10 +492,6 @@ void SetSceneBackgroundColor(string id, Color color) {
 	Scene scene = GetScene(id);
 	scene.BackgroundColor = color;
 	Scenes[id] = scene;
-}
-
-void RemoveScene(string id) {
-
 }
 
 void SetCameraZoom(string id, float f) {
