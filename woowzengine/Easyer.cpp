@@ -15,6 +15,34 @@
 
 using namespace std;
 
+/*Превращает строку в LPCSTR*/
+LPCSTR StringToLPCSTR(string str) {
+	LPCSTR l = str.c_str();
+	return l;
+}
+
+/*Превращает const wchar_t в строку*/
+string ConstWCharToString(const wchar_t* wchar) {
+	wstring ws(wchar);
+	return string(ws.begin(), ws.end());
+}
+
+/*Превращает const char в const wchar_t*/
+const wchar_t* ConstCharToConstWChar(const char* str) {
+	int size_needed = MultiByteToWideChar(CP_UTF8, 0, str, -1, NULL, 0);
+	std::vector<wchar_t> buffer(size_needed);
+	MultiByteToWideChar(CP_UTF8, 0, str, -1, &buffer[0], size_needed);
+
+	return &buffer[0];
+}
+
+/*Превращает TCHART в string*/
+string TCHARToString(const TCHAR* t) {
+	wstring wstr(t);
+	string str(wstr.begin(),wstr.end());
+	return str;
+}
+
 /*Превращает const unsigned char в строку*/
 string ConstUnsignedCharToString(const unsigned char* chr) {
 	return std::string(reinterpret_cast<const char*>(chr));
@@ -44,11 +72,11 @@ float StringToFloat(string Str, float IfError) {
 			f = stof(Str);
 		}
 		catch (const std::invalid_argument& e) {
-			PE("It is not possible to convert a string to a number! StringToFloat('" + Str + "')", "E0005");
+			PE("It is not possible to convert a string to a float! StringToFloat('" + Str + "')", "E0005");
 			return -1;
 		}
 		catch (const std::out_of_range& e) {
-			PE("Can't convert a string to a number because it's huge! StringToFloat('" + Str + "')", "E0006");
+			PE("Can't convert a string to a float because it's huge! StringToFloat('" + Str + "')", "E0006");
 			return -1;
 		}
 		return f;
@@ -68,6 +96,11 @@ float StringToFloat(string Str, float IfError) {
 	}
 }
 
+/*Превращает DWORD в число*/
+int DWORDToInt(DWORD D) {
+	return static_cast<int>(D);
+}
+
 /*Превращает число в DWORD*/
 DWORD IntToDWORD(int i) {
 	return (DWORD)i;
@@ -78,6 +111,19 @@ int FloatToInt(float f) {
 	return (int)floor(f);
 }
 
+/*Первращает wстроку в строку*/
+string WStringToString(wstring wstr) {
+	if (wstr.empty()) {
+		return std::string();
+	}
+
+	int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], static_cast<int>(wstr.size()), NULL, 0, NULL, NULL);
+	std::string strTo(size_needed, 0);
+	WideCharToMultiByte(CP_UTF8, 0, &wstr[0], static_cast<int>(wstr.size()), &strTo[0], size_needed, NULL, NULL);
+
+	return strTo;
+}
+
 /*Превращает строку в wстроку*/
 wstring StringToWString(string Str) {
 	int size_needed = MultiByteToWideChar(CP_UTF8, 0, Str.c_str(), -1, nullptr, 0);
@@ -85,6 +131,17 @@ wstring StringToWString(string Str) {
 	MultiByteToWideChar(CP_UTF8, 0, Str.c_str(), -1, &converted_str[0], size_needed);
 	return converted_str;
 }
+
+/*Превращает строку в LPWSTR*/
+LPWSTR StringToLPWSTR(string str) {
+	int size_needed = MultiByteToWideChar(CP_ACP, 0, str.c_str(), static_cast<int>(str.length()), NULL, 0);
+	LPWSTR wide_string = new WCHAR[size_needed + 1];
+	MultiByteToWideChar(CP_ACP, 0, str.c_str(), static_cast<int>(str.length()), wide_string, size_needed);
+	wide_string[size_needed] = 0;
+
+	return wide_string;
+}
+
 
 /*Превращает const char в LCPWSTR*/
 LPCWSTR ConstCharToLPCWSTR(const char* charString) {

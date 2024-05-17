@@ -1,20 +1,23 @@
-﻿  Discord.cpp
-  Source.cpp
+﻿  Base.cpp
 F:\woowzengine\WoowzEngine\l_Color.h(17,13): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
-  (компиляция исходного файла "Source.cpp")
+  (компиляция исходного файла "Base.cpp")
   
 F:\woowzengine\WoowzEngine\l_Color.h(19,13): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
-  (компиляция исходного файла "Source.cpp")
+  (компиляция исходного файла "Base.cpp")
   
 F:\woowzengine\WoowzEngine\l_Color.h(21,13): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
-  (компиляция исходного файла "Source.cpp")
+  (компиляция исходного файла "Base.cpp")
   
 F:\woowzengine\WoowzEngine\l_Color.h(23,13): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
-  (компиляция исходного файла "Source.cpp")
+  (компиляция исходного файла "Base.cpp")
   
+F:\woowzengine\WoowzEngine\Base.cpp(83,11): warning C4244: return: преобразование "double" в "float", возможна потеря данных
+F:\woowzengine\WoowzEngine\Base.cpp(100,11): warning C4244: инициализация: преобразование "__int64" в "int", возможна потеря данных
+F:\woowzengine\WoowzEngine\Base.cpp(212,17): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
+F:\woowzengine\WoowzEngine\Base.cpp(385,14): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
   Создание кода
-  5 of 13648 functions (<0.1%) were compiled, the rest were copied from previous compilation.
+  7 of 14124 functions (<0.1%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    86 functions had inline decision re-evaluated but remain unchanged
+    113 functions had inline decision re-evaluated but remain unchanged
   Создание кода завершено
   woowzengine.vcxproj -> F:\woowzengine\WoowzEngine\Build\woowzengine\Release\woowzengine.exe

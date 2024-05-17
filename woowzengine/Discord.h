@@ -4,7 +4,7 @@
 
 using namespace std;
 
-void DiscordStart();
+void DiscordStart(string ApplicationID);
 void DiscordUpdate();
 void DiscordEnd();
 void UpdateActivity();
@@ -14,3 +14,4 @@ void SetDiscordActivityDescription(string s);
 void DiscordErrors(discord::LogLevel level, const char* message);
 void DiscordTest();
 string DiscordStirngToString(const string& utf8Str);
+bool DiscordLaunched();

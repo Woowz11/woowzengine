@@ -12,7 +12,9 @@
 #include "Files.h"
 #include "GLFW.h"
 #include "Cycles.h"
+#include "Console.h"
 #include "Discord.h"
+#include "WindowsElements.h"
 
 #include "Color.h"
 #include "Vector2.h"
@@ -110,7 +112,7 @@ void l_WriteFile(sol::object path_, sol::object value_, bool Add) {
 void l_PrintCustom(sol::object module, sol::object text, sol::object firstsymbol, int color) {
 		if (module == sol::nil) { PE("Provided module in PrintCustom('"+ToString(text)+"') cannot be empty!", "L0003"); }
 		else {
-			if (color < 0 || color>255) { PE("The color must match 0<color<255 in PrintCustom('" + Uppercase(ToString(module)) + "','" + ToString(text) + "')!", "L0004"); }
+			if (color < 0 || color>255) { PE("The color must match color <= 255 & color >= 0 in PrintCustom('" + Uppercase(ToString(module)) + "','" + ToString(text) + "')!", "L0004"); }
 			int color_ = color;
 			if (color == 0) { color_ = 8; }
 			if (color == 8) { color_ = 0; }
@@ -440,8 +442,10 @@ sol::table l_Charcters(sol::object Str_) {
 	string Str = ToString(Str_, "");
 	if (Str == "") { PW("String cannot be empty! Charcters('')","LW0011"); return lua.create_table(); }
 	sol::table tbl = lua.create_table();
+	int i = 0;
 	for (char& c : Str) {
-		tbl.add(CharToString(c));
+		i++;
+		tbl.set(i,CharToString(c));
 	}
 	return tbl;
 }
@@ -859,6 +863,132 @@ void l_SetDiscordActivityDescription(sol::object s_) {
 	}
 }
 
+/*Получить имя аккаунта windows*/
+string l_GetUserName() {
+	return GetUserName_();
+}
+
+/*Проверить есть подключение к интернету или нет*/
+bool l_CheckInternet() {
+	return CheckInternet();
+}
+
+/*Конвертирует строку в bool*/
+bool l_StringToBool(sol::object s) {
+	return StringToBool(ToString(s));
+}
+
+/*Запускает строку кода lua*/
+string l_RunLua(sol::object s, bool DontError) {
+	string code = ToString(s, "");
+	if (code == "") { PW("Empty code in RunLua()!","LW0024"); return "WARNING_LW0024"; }
+	sol::protected_function_result result = lua.safe_script(code, &sol::script_pass_on_error);
+	if (!result.valid()) {
+		sol::error err = result.get<sol::error>();
+		string what = err.what();
+		if (!DontError) { PE(what, "GLUA"); }
+		return what;
+	}
+
+	return "Succed";
+}
+
+/*Функция которая повториться определённое кол-во раз*/
+void l_Repeat(sol::function func, int count, int milisec) {
+	if (func == sol::nil || !func.valid()) { PE("Empty function! Repeat(nil,"+to_string(count) + ","+to_string(milisec) + ")", "L0024"); }
+	else {
+		if (count > 0) {
+			if (milisec < 0) { PE("Expected time must be >= 0! Repeat(function," + to_string(count) + "," + to_string(milisec) + ")", "L0026"); }
+			else {
+				SetRepeatFunction(func, count, milisec);
+			}
+		}
+		else {
+			PE("Number of repetitions must be > 0! Repeat(function," + to_string(count) + "," + to_string(milisec) + ")", "L0025");
+		}
+	}
+}
+
+/*Проверяет запущено приложение или нет*/
+bool l_ProgramLaunched(sol::object name) {
+	return ProgramLaunched(ToString(name) + ".exe");
+}
+
+/*Проверяет запущен ли Discord*/
+bool l_DiscordLaunched() {
+	return DiscordLaunched();
+}
+
+/*Получить список запущеных программ*/
+sol::table l_ProgramsLaunched() {
+	map<int, string> programs = ProgramsLaunched();
+	sol::table tbl = lua.create_table();
+	for (const auto& pair : programs) {
+		tbl.set(pair.first,pair.second);
+	}
+	return tbl;
+}
+
+/*Быстрая отправка сообщения в консоль*/
+void l_PrintFast(sol::object str_, int color) {
+	string str = ToString(str_);
+	if (color < 0 || color>255) { PE("The color must match color <= 255 & color >= 0 in PrintFast('" + str + "'," + to_string(color) + ")!", "L0027"); }
+	int color_ = color;
+	if (color == 0) { color_ = 7; }
+	if (color == 7) { color_ = 0; }
+	PrintToConsole(str,color_);
+}
+
+/*Останавливает процесс*/
+void l_StopProgram(sol::object name_) {
+	string name = ToString(name_) + ".exe";
+	if (SafeMode()) { PW("Function [StopProgram('" + name + "')] cannot be started in SafeMode!", "LW0025"); }
+	else {
+		if (ProgramLaunched(name)) {
+			StopProgram(name);
+		}
+		else {
+			PW("Program not found! StopProgram('"+name+"')", "LW0026");
+		}
+	}
+}
+
+/*Завершает работу компьютера*/
+void l_ExitPC() {
+	if (SafeMode()) { PW("Function [ExitPC()] cannot be started in SafeMode!", "LW0028"); }
+	else {
+		StopPC();
+	}
+}
+
+/*Определяет находится ли точка за пределами окна*/
+bool l_PointOutsideWindow(l_Vector2 point, sol::object windowid_) {
+	string windowid = ToString(windowid_, EmptyWindow);
+	return PointOutside_(point, windowid);
+}
+
+/*Получить список файлов в папке*/
+sol::table l_GetFilesFromDirectory(sol::object dir_) {
+	string dir = ToString(dir_,"C:\\Windows");
+	map<string, string> files = GetFilesFromDirectory(dir);
+	sol::table tbl = lua.create_table();
+	for (const auto& pair : files) {
+		tbl.set(pair.first, pair.second);
+	}
+	return tbl;
+}
+
+/*Получить название файла из пути*/
+string l_GetFileName(sol::object dir) {
+	return GetFileName(ToString(dir));
+}
+
+/*Получить тип файла*/
+string l_GetFileType(sol::object dir_) {
+	string dir = ToString(dir_);
+	return GetFileType(dir);
+}
+
 /*Зона woowzengine*/
 
 l_Color ObjToColor(sol::object obj) {
@@ -1269,6 +1399,21 @@ void LuaCompile() {
 
 	lua.set_function("SetDiscordActivityTitle", &l_SetDiscordActivityTitle);
 	lua.set_function("SetDiscordActivityDescription", &l_SetDiscordActivityDescription);
+	lua.set_function("GetUserName", &l_GetUserName);
+	lua.set_function("CheckInternet", &l_CheckInternet);
+	lua.set_function("StringToBool", &l_StringToBool);
+	lua.set_function("RunLua", &l_RunLua);
+	lua.set_function("Repeat", &l_Repeat);
+	lua.set_function("ProgramLaunched", &l_ProgramLaunched);
+	lua.set_function("DiscordLaunched", &l_DiscordLaunched);
+	lua.set_function("ProgramsLaunched", &l_ProgramsLaunched);
+	lua.set_function("StopProgram", &l_StopProgram);
+	lua.set_function("ExitPC", &l_ExitPC);
+	lua.set_function("PointOutsideWindow", &l_PointOutsideWindow);
+	lua.set_function("GetFilesFromDirectory", &l_GetFilesFromDirectory);
+	lua.set_function("GetFileName", &l_GetFileName);
+	lua.set_function("GetFileType", &l_GetFileType);
+	lua.set_function("PrintFast", &l_PrintFast);
 
 	P("LUA", "Lua functions and etc. are loaded!");
 	P("LUA", "Start start.lua script...");

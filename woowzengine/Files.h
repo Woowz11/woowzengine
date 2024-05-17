@@ -1,4 +1,5 @@
 #include <string>
+#include <map>
 #pragma once
 using namespace std;
 
@@ -9,3 +10,5 @@ bool CreateFile(string Dir);
 void AddFileInfo(string Dir, string Info);
 void SetFileInfo(string Dir, string Info);
 string GetFileInfo(string Dir);
+map<string, string> GetFilesFromDirectory(string Dir);
+string GetFileType(string dir);

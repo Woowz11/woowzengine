@@ -1,9 +1,12 @@
 {
     "Console": "true",
     "DiscordActivities": "true",
+    "DiscordApplicationID": "1240635259221970954",
     "LogFatal": "-FATAL",
     "LogFormat": "%y-%mn-%d-%h-%m-%s-%ms",
     "LogStyle": "%b[%h:%m:%s:%ms][%t] %c",
     "LogType": "log",
+    "Logs": "true",
+    "OnlyOne": "true",
     "SafeMode": "false"
 }

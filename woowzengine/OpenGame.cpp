@@ -83,11 +83,14 @@ void CheckFiles(string ev) {
 	}
 	CreateValueJson(JEngine, "Console", "true");
 	CreateValueJson(JEngine, "SafeMode", "true");
+	CreateValueJson(JEngine, "Logs", "true");
 	CreateValueJson(JEngine, "LogType", "log");
 	CreateValueJson(JEngine, "LogFormat", "%y-%mn-%d-%h-%m-%s-%ms");
 	CreateValueJson(JEngine, "LogStyle", "%b[%h:%m:%s:%ms][%t] %c");
 	CreateValueJson(JEngine, "LogFatal", "-FATAL");
+	CreateValueJson(JEngine, "OnlyOne", "true");
 	CreateValueJson(JEngine, "DiscordActivities", "true");
+	CreateValueJson(JEngine, "DiscordApplicationID", "1240635259221970954");
 
 	GetOrCreateFile(JGame);
 	if (!JSONValid(JGame)) {
@@ -114,8 +117,7 @@ void Cycle() {
 }
 
 void GameInstall() {
-	DiscordStart();
-	P("DISCORD", "Discord Loaded!");
+	DiscordStart(GetEngineInfo("DiscordApplicationID"));
 	LuaCompile();
 }
 
@@ -166,6 +168,12 @@ void OpenGame(string GamePath_,string EngineVersion_, bool DebugVersion) {
 
 	/*=====================================*/
 
+	if (StringToBool(GetEngineInfo("OnlyOne"))) {
+		CreateMutexA(0, FALSE, StringToLPCSTR(GetSessionInfo("GamePath")+"woowzengine.exe"));
+		if (GetLastError() == ERROR_ALREADY_EXISTS) {
+			Exit();
+		}
+	}
 	GameInstall();
 	P("ENGINE", "Cycles started!");
 	CyclePerSecond();

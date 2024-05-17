@@ -11,8 +11,11 @@ string NowLog = "";
 string LogsPath = "woowzengine/log/";
 string LogsType = "log";
 
+bool LogsSystem = true;
+
 /*Установка логов*/
 void LoggerInstall() {
+	LogsSystem = StringToBool(GetEngineInfo("Logs"));
 	string LogsType_ = GetEngineInfo("LogType");
 	if (NameWindowsAccept(LogsType_, true)) {
 		LogsType = LogsType_;
@@ -34,25 +37,34 @@ void LoggerInstall() {
 
 /*Создать лог*/
 void CreateLog(string LogName) {
-	NowLog = LogName;
-	string log = GetSessionInfo("GamePath") + LogsPath + LogName + "." + LogsType;
-	if (HasDirectory(log)) { PF("Log file with that name ["+log+"] already exists! Check LogFormat (engine.json), it could be because of that!", "C0003", true); }
-	else {
-		GetOrCreateFile(log);
+	if (LogsSystem) {
+		NowLog = LogName;
+		string log = GetSessionInfo("GamePath") + LogsPath + LogName + "." + LogsType;
+		if (HasDirectory(log)) { PF("Log file with that name [" + log + "] already exists! Check LogFormat (engine.json), it could be because of that!", "C0003", true); }
+		else {
+			GetOrCreateFile(log);
+		}
+		SetSessionInfo("Log", log);
 	}
-	SetSessionInfo("Log",log);
+	else {
+		SetSessionInfo("Log", "Logs disabled!");
+	}
 }
 
 /*Записать в лог*/
 void PrintToLog(string Text) {
-	if (GetSessionInfo("GamePath") == "ERROR_SESSIONINFO_NOT_FOUND") { MessageBoxFatal("Can't save log, sessioninfo file not found!\n(" + Text + ")","C0004", true); }
-	if (!HasDirectory(GetSessionInfo("GamePath") + LogsPath)) { PF("Folder logs not found!\n(" + Text + ")","C0005", true); }
-	if (!HasDirectory(GetSessionInfo("GamePath") + LogsPath + NowLog + "." + LogsType)) { PF("Log file not found!\n("+Text+")", "C0006", true); }
-	string Log = GetSessionInfo("GamePath") + LogsPath + NowLog + "." + LogsType;
-	WriteToFile(Log, Text, true);
+	if (LogsSystem) {
+		if (GetSessionInfo("GamePath") == "ERROR_SESSIONINFO_NOT_FOUND") { MessageBoxFatal("Can't save log, sessioninfo file not found!\n(" + Text + ")", "C0004", true); }
+		if (!HasDirectory(GetSessionInfo("GamePath") + LogsPath)) { PF("Folder logs not found!\n(" + Text + ")", "C0005", true); }
+		if (!HasDirectory(GetSessionInfo("GamePath") + LogsPath + NowLog + "." + LogsType)) { PF("Log file not found!\n(" + Text + ")", "C0006", true); }
+		string Log = GetSessionInfo("GamePath") + LogsPath + NowLog + "." + LogsType;
+		WriteToFile(Log, Text, true);
+	}
 }
 
 /*Обозначает что в логах фатальная ошибка*/
 void LogsFatal() {
-	RenameFile(GetSessionInfo("GamePath") + LogsPath + NowLog + "." + LogsType, GetSessionInfo("GamePath") + LogsPath + NowLog + GetEngineInfo("LogFatal") + "." + LogsType);
+	if (LogsSystem) {
+		RenameFile(GetSessionInfo("GamePath") + LogsPath + NowLog + "." + LogsType, GetSessionInfo("GamePath") + LogsPath + NowLog + GetEngineInfo("LogFatal") + "." + LogsType);
+	}
 }

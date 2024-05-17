@@ -72,7 +72,9 @@ bool SafeMode() {
 
 /*Выход из приложения*/
 void Exit() {
-	system("taskkill /F /T /IM woowzengine.exe");
+	HANDLE hProcess = GetCurrentProcess();
+	TerminateProcess(hProcess, 0);
+	ExitProcess(0);
 	exit(EXIT_SUCCESS);
 }
 

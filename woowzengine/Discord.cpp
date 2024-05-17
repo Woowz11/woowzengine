@@ -9,12 +9,9 @@
 #include "Discord.h"
 #include "discord-files/discord.h"
 #include "Base.h"
-
-#include "fcntl.h"
-#include "io.h"
+#include "WindowsElements.h"
 
 using namespace std;
-discord::ClientId ApplicationID = 1240635259221970954;
 
 discord::Core* core{};
 
@@ -23,6 +20,12 @@ bool ActivityShow = true;
 
 string ActTitle = "Error ActTitle";
 string ActDescription = "Error ActDescription";
+
+bool DiscordLaunched_ = false;
+
+bool DiscordLaunched() {
+    return ProgramLaunched("Discord.exe") && CheckInternet();
+}
 
 void SetDiscordActivityTitle(string s) {
     ActTitle = s;
@@ -45,13 +48,26 @@ string DiscordStirngToString(const string& utf8Str) {
     return "буба";
 }
 
-void DiscordStart() {
-	discord::Core::Create(ApplicationID, DiscordCreateFlags_Default, &core);
-    core->SetLogHook(discord::LogLevel::Debug, &DiscordErrors);
-    ActivityShow = StringToBool(GetEngineInfo("DiscordActivities"));
-    ActTitle = GetGameInfo("Name");
-    ActDescription = GetGameInfo("Author") + " " + GetGameInfo("Version");
-    Launched = true;
+void DiscordStart(string ApplicationID) {
+    DiscordLaunched_ = DiscordLaunched();
+    if (DiscordLaunched_) {
+        char* endPtr;
+        long long id = strtoll(ApplicationID.c_str(), &endPtr, 10);
+        if (*endPtr != '\0') {
+            id = 1240635259221970954;
+            PE("Failed to get Discord application ID! DiscordStart('" + ApplicationID + "')", "E0017");
+        }
+        discord::Core::Create(id, DiscordCreateFlags_Default, &core);
+        core->SetLogHook(discord::LogLevel::Debug, &DiscordErrors);
+        ActivityShow = StringToBool(GetEngineInfo("DiscordActivities"));
+        ActTitle = GetGameInfo("Name");
+        ActDescription = GetGameInfo("Author") + " " + GetGameInfo("Version");
+        Launched = true;
+        P("DISCORD", "Discord Loaded!");
+    }
+    else {
+        P("DISCORD", "Discord is not running!");
+    }
 }
 
 void DiscordErrors(discord::LogLevel level, const char* message)
@@ -88,5 +104,7 @@ void DiscordUpdate() {
 }
 
 void DiscordEnd() {
-   delete core;
+    if (DiscordLaunched_) {
+        delete core;
+    }
 }

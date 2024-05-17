@@ -79,3 +79,4 @@ Vector2 GetMousePosition(string id);
 Vector2 ScreenToWorld(Window window,Vector2 sc);
 Vector2 WorldToScreen(Window window, Vector2 world, Scene scene = Scene(""), float xw = -1, float yw = -1);
 bool PointOutside(Window window, Vector2 world, Scene scene = Scene(""), float xw = -1, float yw = -1);
+bool PointOutside_(l_Vector2 vec, string windowid);

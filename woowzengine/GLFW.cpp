@@ -344,6 +344,11 @@ bool PointOutside(Window window, Vector2 world, Scene scene, float xw, float yw)
 	return result;
 }
 
+bool PointOutside_(l_Vector2 vec, string windowid) {
+	Window window = GetWindowByID(windowid);
+	return PointOutside(window, vec.ToCPP(), GetScene(window.scene));
+}
+
 void RenderSprite(Window window, string id, l_Sprite sprite, int width, int height,Scene scene) {
 	if (sprite.id != "") {
 		float Zoom = scene.CameraZoom;
