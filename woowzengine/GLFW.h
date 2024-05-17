@@ -63,7 +63,6 @@ void CreateBuffers(Window& window);
 void GLAPIENTRY PE_OPENGL(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
 int GetWindowPosition(string id, bool ThatX);
 void SetWindowPosition(string id, int pos, bool ThatX);
-
 void SetCameraZoom(string id, float f);
 float GetCameraZoom(string id);
 void SetSprite(l_Sprite sprite);
@@ -80,3 +79,6 @@ Vector2 ScreenToWorld(Window window,Vector2 sc);
 Vector2 WorldToScreen(Window window, Vector2 world, Scene scene = Scene(""), float xw = -1, float yw = -1);
 bool PointOutside(Window window, Vector2 world, Scene scene = Scene(""), float xw = -1, float yw = -1);
 bool PointOutside_(l_Vector2 vec, string windowid);
+
+void SetSpriteSize(string sceneid, string id, l_Vector2 size);
+void SetSpriteCorner(string sceneid, string id, l_Vector2 pos, bool left, bool top);

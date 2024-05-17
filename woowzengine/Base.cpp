@@ -34,6 +34,8 @@ string GamePath = "";
 string SessionInfoPath = "woowzengine/temporary/sessioninfo";
 string LogsStyle = "%b[%s:%m:%h][%t] %c";
 
+int ErrorsCount = 0;
+
 /*Получить знак числа, минус или плюс*/
 int GetNumberZnak(float num) {
 	int result = 1;
@@ -72,6 +74,7 @@ bool SafeMode() {
 
 /*Выход из приложения*/
 void Exit() {
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 8);
 	HANDLE hProcess = GetCurrentProcess();
 	TerminateProcess(hProcess, 0);
 	ExitProcess(0);
@@ -153,7 +156,11 @@ void PP(string Text) {
 }
 /*Отправить ошибку*/
 void PE(string Text,string ErrorCode) {
+	ErrorsCount++;
 	Print(ConvertTextToConsoleLogMessage(Text+" - "+ErrorCode, "ERROR", '!'), 12);
+	if (ErrorsCount >= 10) {
+		LogsErrors();
+	}
 }
 /*Отправить предупреждение*/
 void PW(string Text,string Code) {

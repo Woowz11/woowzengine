@@ -12,6 +12,7 @@ string LogsPath = "woowzengine/log/";
 string LogsType = "log";
 
 bool LogsSystem = true;
+bool LogsFatal_ = false;
 
 /*Установка логов*/
 void LoggerInstall() {
@@ -53,7 +54,7 @@ void CreateLog(string LogName) {
 
 /*Записать в лог*/
 void PrintToLog(string Text) {
-	if (LogsSystem) {
+	if (LogsSystem && !LogsFatal_) {
 		if (GetSessionInfo("GamePath") == "ERROR_SESSIONINFO_NOT_FOUND") { MessageBoxFatal("Can't save log, sessioninfo file not found!\n(" + Text + ")", "C0004", true); }
 		if (!HasDirectory(GetSessionInfo("GamePath") + LogsPath)) { PF("Folder logs not found!\n(" + Text + ")", "C0005", true); }
 		if (!HasDirectory(GetSessionInfo("GamePath") + LogsPath + NowLog + "." + LogsType)) { PF("Log file not found!\n(" + Text + ")", "C0006", true); }
@@ -65,6 +66,26 @@ void PrintToLog(string Text) {
 /*Обозначает что в логах фатальная ошибка*/
 void LogsFatal() {
 	if (LogsSystem) {
-		RenameFile(GetSessionInfo("GamePath") + LogsPath + NowLog + "." + LogsType, GetSessionInfo("GamePath") + LogsPath + NowLog + GetEngineInfo("LogFatal") + "." + LogsType);
+		LogsFatal_ = true;
+		P("LOGGER","Log set type FATAL!");
+		string oldlogname = GetSessionInfo("GamePath") + LogsPath + NowLog + "." + LogsType;
+		NowLog = ReplaceString(ReplaceString(NowLog, GetEngineInfo("LogErrors"), "%f"), "%f", GetEngineInfo("LogFatal"));
+		string newlogname = GetSessionInfo("GamePath") + LogsPath + NowLog + "." + LogsType;
+		SetSessionInfo("Log", newlogname);
+		RenameFile(oldlogname, newlogname);
+	}
+}
+
+/*Обозначает что в логах много ошибок*/
+bool LogsErrorsRenamed = false;
+void LogsErrors() {
+	if (LogsSystem && !LogsFatal_ && !LogsErrorsRenamed) {
+		LogsErrorsRenamed = true;
+		P("LOGGER", "Log set type ERRORS!");
+		string oldlogname = GetSessionInfo("GamePath") + LogsPath + NowLog + "." + LogsType;
+		NowLog = ReplaceString(NowLog, "%f", GetEngineInfo("LogErrors"));
+		string newlogname = GetSessionInfo("GamePath") + LogsPath + NowLog + "." + LogsType;
+		SetSessionInfo("Log", newlogname);
+		RenameFile(oldlogname, newlogname);
 	}
 }

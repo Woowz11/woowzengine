@@ -9,3 +9,6 @@ void SetCycleEngine();
 void CyclePerSecond();
 void SetCycleFunction(sol::function func, int milisec);
 void SetRepeatFunction(sol::function func, int count, int milisec);
+void StopCycleEngine();
+void StartCycleEngine();
+void SetTargetFPS(int newfps);

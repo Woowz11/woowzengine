@@ -10,6 +10,7 @@
 #include "Cycles.h"
 #include "OpenGame.h"
 #include "GLFW.h"
+#include "WindowsElements.h"
 
 using namespace std;
 
@@ -32,37 +33,65 @@ int GetFPS() {
 	return FPS;
 }
 
+void StopCycleEngine() {
+}
+
+void StartCycleEngine() {
+	SetCycleEngine();
+}
+
+int targetFPS = 60;
+std::chrono::milliseconds frameTime(1000 / (targetFPS * 2));
+void SetTargetFPS(int newfps) {
+	if (newfps <= 0) {
+		PE("New fps target cannot be <= 0! SetTargetFPS("+to_string(newfps) + ")", "E0019");
+	}
+	else {
+		targetFPS = newfps;
+		frameTime = std::chrono::milliseconds(1000 / (targetFPS * 2));
+	}
+}
+
 void SetCycleEngine() {
-	while (true) {
-		auto start = std::chrono::high_resolution_clock::now();
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	while (!GetFatal()) {
+		auto frameStart = std::chrono::high_resolution_clock::now();
+
 		Cycle();
-		if (DTFunction) {
-			try {
-				DTFunction();
-			}
-			catch (const sol::error& e) {
-				string what = e.what();
-				PE(what, "LUA");
-			}
+		if (DTFunction && DTFunction.valid()) {
+			std::thread t([=]() {
+				try {
+					{
+						std::unique_lock<std::mutex> lock(mtx);
+						DTFunction();
+					}
+				}
+				catch (const sol::error& e) {
+					string what = e.what();
+					PE(what, "CLUA");
+				}
+				});
+			t.detach();
 		}
+
 		Time++;
 		FPS_++;
-		auto end = std::chrono::high_resolution_clock::now();
-		auto needwait = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-		std::this_thread::sleep_for(std::chrono::milliseconds(16) - needwait);
+
+		auto frameEnd = std::chrono::high_resolution_clock::now();
+		auto frameDuration = std::chrono::duration_cast<std::chrono::milliseconds>(frameEnd - frameStart);
+		auto sleepTime = frameTime - frameDuration;
+		if (sleepTime > std::chrono::milliseconds(0)) {
+			std::this_thread::sleep_for(sleepTime);
+		}
 	}
 }
 
 void CyclePerSecond() {
 	auto cycle = []() {
-		while (true) {
+		while (!GetFatal()) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-			mtx.lock();
-			
 			FPS = FPS_;
 			FPS_ = 0;
-
-			mtx.unlock();
 		}
 		};
 	std::thread thread(cycle);
@@ -71,16 +100,17 @@ void CyclePerSecond() {
 
 void SetCycleFunction(sol::function func, int milisec) {
 	auto cycle = [func, milisec]() {
-		while (true) {
-			mtx.lock();
+		while (!GetFatal()) {
 			try {
-				func();
+				{
+					std::unique_lock<std::mutex> lock(mtx);
+					func();
+				}
 			}
 			catch (const sol::error& e) { /*Получение ошибок из lua скриптов*/
 				string what = e.what();
 				PE(what, "CLUA");
 			}
-			mtx.unlock();
 			std::this_thread::sleep_for(std::chrono::milliseconds(milisec));
 		}
 		};
@@ -91,17 +121,18 @@ void SetCycleFunction(sol::function func, int milisec) {
 void SetRepeatFunction(sol::function func,int count, int milisec) {
 	auto cycle = [func, count, milisec]() {
 		int i = 1;
-		while (i<(count+1)) {
+		while (i < (count + 1)) {
 			if (milisec > 0) { std::this_thread::sleep_for(std::chrono::milliseconds(milisec)); }
-			mtx.lock();
 			try {
-				func(i);
+				{
+					std::unique_lock<std::mutex> lock(mtx);
+					func(i);
+				}
 			}
 			catch (const sol::error& e) { /*Получение ошибок из lua скриптов*/
 				string what = e.what();
 				PE(what, "RLUA");
 			}
-			mtx.unlock();
 			i++;
 		}
 		};

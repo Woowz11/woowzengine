@@ -23,6 +23,11 @@ public:
 	bool FlipY = false;
 	bool DontHide = false;
 
+	l_Vector2 LT = l_Vector2(0, 0);
+	l_Vector2 LB = l_Vector2(0, 0);
+	l_Vector2 RT = l_Vector2(0, 0);
+	l_Vector2 RB = l_Vector2(0, 0);
+
 	string sceneid = "";
 
 	l_Sprite() {}

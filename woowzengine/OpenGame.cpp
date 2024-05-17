@@ -33,11 +33,18 @@ sol::function GameClosed = sol::nil;
 
 void DebugPrint(string text) {
 	if (DebugMode) {
-		cout << text << "\n";
+		DebugPrint_(text);
 	}
 }
 void DebugPrint(float f) {
 	DebugPrint(to_string(f));
+}
+void DebugPrint_(string text) {
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 8);
+	wcout << StringToWString(text) << "\n";
+}
+void DebugPrint_(float f) {
+	DebugPrint_(to_string(f));
 }
 
 void SetGameClosedEvent(sol::function f) {
@@ -47,6 +54,7 @@ void SetGameClosedEvent(sol::function f) {
 bool WINAPI StopEngine(DWORD CEvent) {
 	StartFunction(GameClosed, {});
 	DiscordEnd();
+	StopCycleEngine();
 	if (CEvent == CTRL_CLOSE_EVENT) {
 		StopGLFW();
 		P("ENGINE", "WoowzEngine stopping...");
@@ -85,9 +93,10 @@ void CheckFiles(string ev) {
 	CreateValueJson(JEngine, "SafeMode", "true");
 	CreateValueJson(JEngine, "Logs", "true");
 	CreateValueJson(JEngine, "LogType", "log");
-	CreateValueJson(JEngine, "LogFormat", "%y-%mn-%d-%h-%m-%s-%ms");
+	CreateValueJson(JEngine, "LogFormat", "%y-%mn-%d-%h-%m-%s-%ms%f");
 	CreateValueJson(JEngine, "LogStyle", "%b[%h:%m:%s:%ms][%t] %c");
 	CreateValueJson(JEngine, "LogFatal", "-FATAL");
+	CreateValueJson(JEngine, "LogErrors", "-ERRORS");
 	CreateValueJson(JEngine, "OnlyOne", "true");
 	CreateValueJson(JEngine, "DiscordActivities", "true");
 	CreateValueJson(JEngine, "DiscordApplicationID", "1240635259221970954");
@@ -171,11 +180,12 @@ void OpenGame(string GamePath_,string EngineVersion_, bool DebugVersion) {
 	if (StringToBool(GetEngineInfo("OnlyOne"))) {
 		CreateMutexA(0, FALSE, StringToLPCSTR(GetSessionInfo("GamePath")+"woowzengine.exe"));
 		if (GetLastError() == ERROR_ALREADY_EXISTS) {
+			P("ENGINE", "Game alredy started!");
 			Exit();
 		}
 	}
 	GameInstall();
 	P("ENGINE", "Cycles started!");
 	CyclePerSecond();
-	SetCycleEngine();
+	StartCycleEngine();
 }

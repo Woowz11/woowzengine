@@ -1,13 +1,11 @@
 local test = {
 
-["run"] = function()
+["run"] = function(cycle)
 
 
-CreateWindow("window","",500,500)
+CreateWindow("window","")--,500,500)
 SetWindowMain("window")
 CreateScene("scene")
-CreateSprite("sprite","scene")
-SetSpritePosition("scene","sprite",Vector2.new(-1,1))
 
 CreateScene("scene2")
 
@@ -145,12 +143,19 @@ if(Keys["home"])then
 	SetCameraPosition_(0,0,1)
 end
 
+if(Keys["g"])then
+	SetCameraPosition_(0,0,0.001)
+end
+
 -------------------------------------
 
 SetSceneBackgroundColor("scene",Color.new(Round(DSin(ActiveTime()/250)*255),0,0))
 SetSceneBackgroundColor("scene2",Color.new(0,Round(DSin(ActiveTime()/250)*255),0))
 
---SetSpritePosition("scene","sprite",Vector2.new(0,Sin(ActiveTime()/100)))
+local sin = DSin(ActiveTime()/25)
+local cos = DCos(ActiveTime()/25)
+
+cycle()
 
 end)
 

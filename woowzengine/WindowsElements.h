@@ -9,3 +9,4 @@ bool CheckInternet();
 string GetUserName_();
 void StopProgram(string name);
 void StopPC();
+bool GetFatal();

@@ -47,6 +47,5 @@ int PrintToConsole(string Text, int Color) {
 
 	_setmode(_fileno(stdout), _O_U16TEXT);
 	wcout << StringToWString(Text) << "\n";
-	SetConsoleTextAttribute(hConsole, DefaultConsoleColor);
 	return 0;
 }

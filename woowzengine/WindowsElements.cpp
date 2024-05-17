@@ -14,7 +14,12 @@
 
 using namespace std;
 
+bool Fatal = false;
+bool GetFatal() {
+	return Fatal;
+}
 void MessageBoxFatal(string Error, string Code, bool BrokenLogs) {
+	Fatal = true;
 	SetConsoleTitle(StringToLPCWSTR("WoowzEngine Console [Fatal error!]"));
 	if (!BrokenLogs) { LogsFatal(); }
 	string LookAtLog = "Look at log!";

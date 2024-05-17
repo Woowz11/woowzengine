@@ -137,19 +137,19 @@ void l_Print(sol::object text) {
 }
 
 /*Отправляет предупреждение в консоль*/
-void l_Warn(sol::object text,int code) {
+void l_Warn(sol::object text, sol::object code) {
 	
-	PW(ToString(text),"GW"+FillString(to_string(code),4,'0',true));
+	PW(ToString(text),"GW"+FillString(ToString(code,"0000"), 4, '0', true));
 }
 
 /*Отправляет ошибку в консоль*/
-void l_Error(sol::object text,int code) {
-	PE(ToString(text), "GE" + FillString(to_string(code), 4, '0', true));
+void l_Error(sol::object text, sol::object code) {
+	PE(ToString(text), "GE" + FillString(ToString(code, "0000"), 4, '0', true));
 }
 
 /*Отправляет фатальную ошибку в консоль*/
-void l_Fatal(sol::object text, int code) {
-	PF(ToString(text), "GF" + FillString(to_string(code), 4, '0', true));
+void l_Fatal(sol::object text, sol::object code) {
+	PF(ToString(text), "GF" + FillString(ToString(code, "0000"), 4, '0', true));
 }
 
 /*Отправляет сообщение в консоль (без формата лога)*/
@@ -555,24 +555,15 @@ void l_SetSeed(int seed) {
 	SetRandomSeed(seed);
 }
 
-/*Получить размер окна X*/
-int l_GetWindowX(sol::object id) {
-	return GetWindowSize(ToString(id,EmptyWindow), false);
+/*Получить размер окна*/
+l_Vector2 l_GetWindowSize(sol::object id) {
+	return l_Vector2(GetWindowSize(ToString(id, EmptyWindow), false), GetWindowSize(ToString(id, EmptyWindow), true));
 }
 
-/*Получить размер окна Y*/
-int l_GetWindowY(sol::object id) {
-	return GetWindowSize(ToString(id, EmptyWindow), true);
-}
-
-/*Изменить размер экрана по X*/
-void l_SetWindowX(sol::object id, int i) {
-	SetWindowSize(ToString(id, EmptyWindow), false, i);
-}
-
-/*Изменить размер экрана по Y*/
-void l_SetWindowY(sol::object id, int i) {
-	SetWindowSize(ToString(id, EmptyWindow), true, i);
+/*Изменить размер экрана*/
+void l_SetWindowSize(sol::object id, l_Vector2 v) {
+	SetWindowSize(ToString(id, EmptyWindow), false, v.x);
+	SetWindowSize(ToString(id, EmptyWindow), true, v.y);
 }
 
 /*Изменяет название окна*/
@@ -662,24 +653,15 @@ int l_RRandom(int min, int max) {
 	return round(Random(min, max));
 }
 
-/*Установить позицию окна по X*/
-void l_SetWindowXPosition(sol::object id, int i) {
-	SetWindowPosition(ToString(id, EmptyWindow), i, true);
+/*Установить позицию окна*/
+void l_SetWindowPosition(sol::object id, l_Vector2 v) {
+	SetWindowPosition(ToString(id, EmptyWindow), v.x, true);
+	SetWindowPosition(ToString(id, EmptyWindow), v.x, false);
 }
 
-/*Установить позицию окна по Y*/
-void l_SetWindowYPosition(sol::object id, int i) {
-	SetWindowPosition(ToString(id, EmptyWindow), i, false);
-}
-
-/*Получить позицию окна по X*/
-int l_GetWindowXPosition(sol::object id) {
-	return GetWindowPosition(ToString(id, EmptyWindow), true);
-}
-
-/*Получить позицию окна по Y*/
-int l_GetWindowYPosition(sol::object id) {
-	return GetWindowPosition(ToString(id, EmptyWindow), false);
+/*Получить позицию окна*/
+l_Vector2 l_GetWindowPosition(sol::object id) {
+	return l_Vector2(GetWindowPosition(ToString(id, EmptyWindow), true), GetWindowPosition(ToString(id, EmptyWindow), false));
 }
 
 /*Получает дробное число из числа*/
@@ -699,8 +681,10 @@ sol::table l_JSONTable(sol::object path) {
 
 /*Получить ключ и переменную из таблицы*/
 void l_Pairs(sol::table table, sol::function func) {
+	int i = 0;
 	for (auto& v : table) {
-		StartFunction(func, {v.first,v.second});
+		i++;
+		StartFunction(func, {v.first,v.second,i});
 	}
 }
 
@@ -763,32 +747,37 @@ int l_GetFPS() {
 
 /*Создать сцену*/
 void l_CreateScene(sol::object id) {
-	CreateScene(ToString(id));
+	CreateScene(ToString(id, EmptyScene));
 }
 
 /*Установить цвет заднего фона у сцены*/
 void l_SetSceneBackgroundColor(sol::object id, sol::object color) {
-	SetSceneBackgroundColor(ToString(id), ObjToColor(color).ToCPP());
+	SetSceneBackgroundColor(ToString(id, EmptyScene), ObjToColor(color).ToCPP());
 }
 
 /*Установить сцену на окно*/
 void l_SetSceneWindow(sol::object window, sol::object id) {
-	SetWindowScene(ToString(window), ToString(id));
+	SetWindowScene(ToString(window, EmptyWindow), ToString(id, EmptyScene));
 }
 
 /*Создать спрайт*/
 void l_CreateSprite(sol::object id, sol::object sceneid) {
-	CreateSprite(ToString(id, EmptySprite), ToString(sceneid));
+	CreateSprite(ToString(id, EmptySprite), ToString(sceneid, EmptyScene));
 }
 
 /*Установить позицию спрайта*/
 void l_SetSpritePosition(sol::object sceneid, sol::object id, l_Vector2 position) {
-	SetSpritePosition(ToString(sceneid), ToString(id, EmptySprite), position);
+	SetSpritePosition(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), position);
 }
 
 /*Установить цикл на рендер*/
 void l_CycleRender(sol::function f) {
-	SetDTFunction(f);
+	if (f && f.valid()) {
+		SetDTFunction(f);
+	}
+	else {
+		PE("Function not found or does not exist for CycleRender()!","L0028");
+	}
 }
 
 /*Установить масштаб для камеры*/
@@ -989,12 +978,48 @@ string l_GetFileType(sol::object dir_) {
 	return GetFileType(dir);
 }
 
+/*Установить размер спрайта*/
+void l_SetSpriteSize(sol::object sceneid, sol::object id, l_Vector2 size) {
+	SetSpriteSize(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), size);
+}
+
+/*Установить позицию левого верхнего угла*/
+void l_SetSpriteLTCorner(sol::object sceneid, sol::object id, l_Vector2 pos) {
+	SetSpriteCorner(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), pos, true, true);
+}
+
+/*Установить позицию левого нижнего угла*/
+void l_SetSpriteLBCorner(sol::object sceneid, sol::object id, l_Vector2 pos) {
+	SetSpriteCorner(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), pos, true, false);
+}
+
+/*Установить позицию правого верхнего угла*/
+void l_SetSpriteRTCorner(sol::object sceneid, sol::object id, l_Vector2 pos) {
+	SetSpriteCorner(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), pos, false, true);
+}
+
+/*Установить позицию правого нижнего угла*/
+void l_SetSpriteRBCorner(sol::object sceneid, sol::object id, l_Vector2 pos) {
+	SetSpriteCorner(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), pos, false, false);
+}
+
+/*Установить лимит фпс*/
+void l_SetFPSTarget(int fpstarget) {
+	SetTargetFPS(fpstarget);
+}
+
 /*Зона woowzengine*/
 
 l_Color ObjToColor(sol::object obj) {
 	string type = GetObjectType(obj);
 	if (type == "color") {
-		return obj.as<sol::userdata>().as<l_Color>();
+		if (obj.is<sol::userdata>()) {
+			return obj.as<sol::userdata>().as<l_Color>();
+		}
+		else {
+			PE("That not color! ObjToColor()", "?");
+			return l_Color(0, 0, 0, 255);
+		}
 	}
 	else if (type == "nil") {
 		return l_Color(0, 0, 0, 255);
@@ -1348,10 +1373,8 @@ void LuaCompile() {
 	lua.set_function("MainWindow", &l_MainWindow);
 	lua.set_function("Seed", &l_Seed);
 	lua.set_function("SetSeed", &l_SetSeed);
-	lua.set_function("GetWindowSizeX", &l_GetWindowX);
-	lua.set_function("GetWindowSizeY", &l_GetWindowY);
-	lua.set_function("SetWindowSizeX", &l_SetWindowX);
-	lua.set_function("SetWindowSizeY", &l_SetWindowY);
+	lua.set_function("GetWindowSize", &l_GetWindowSize);
+	lua.set_function("SetWindowSize", &l_SetWindowSize);
 	lua.set_function("SetWindowTitle", &l_SetWindowTitle);
 	lua.set_function("SetWindowAutoScale", &l_SetWindowAutoScale);
 	lua.set_function("AbsSin", &l_AbsSin);
@@ -1366,10 +1389,8 @@ void LuaCompile() {
 	lua.set_function("SetWindowEventKeyHold", &l_SetWindowEventKeyHold);
 	lua.set_function("PressedKeys", &l_PressedKeys);
 	lua.set_function("RRandom", &l_RRandom);
-	lua.set_function("GetWindowX", &l_GetWindowXPosition);
-	lua.set_function("GetWindowY", &l_GetWindowYPosition);
-	lua.set_function("SetWindowX", &l_SetWindowXPosition);
-	lua.set_function("SetWindowY", &l_SetWindowYPosition);
+	lua.set_function("GetWindowPosition", &l_GetWindowPosition);
+	lua.set_function("SetWindowPosition", &l_SetWindowPosition);
 	lua.set_function("Frac", &l_Frac);
 	lua.set_function("JSONTable", &l_JSONTable);
 	lua.set_function("Pairs", &l_Pairs);
@@ -1414,6 +1435,12 @@ void LuaCompile() {
 	lua.set_function("GetFileName", &l_GetFileName);
 	lua.set_function("GetFileType", &l_GetFileType);
 	lua.set_function("PrintFast", &l_PrintFast);
+	lua.set_function("SetSpriteSize", &l_SetSpriteSize);
+	lua.set_function("SetSpriteLTCorner", &l_SetSpriteLTCorner);
+	lua.set_function("SetSpriteLBCorner", &l_SetSpriteLBCorner);
+	lua.set_function("SetSpriteRTCorner", &l_SetSpriteRTCorner);
+	lua.set_function("SetSpriteRBCorner", &l_SetSpriteRBCorner);
+	lua.set_function("SetFPSTarget", &l_SetFPSTarget);
 
 	P("LUA", "Lua functions and etc. are loaded!");
 	P("LUA", "Start start.lua script...");

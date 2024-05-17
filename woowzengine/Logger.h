@@ -6,3 +6,4 @@ void LoggerInstall();
 void CreateLog(string LogName);
 void PrintToLog(string Text); 
 void LogsFatal();
+void LogsErrors();

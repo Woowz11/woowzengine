@@ -286,8 +286,8 @@ Vector2 ScreenToWorld(Window window,Vector2 sc) {
 	glfwGetWindowSize(window.glfw, &WSX, &WSY);
 	float xw = static_cast<float>(WSX), yw = static_cast<float>(WSY);
 	Scene scene = GetScene(window.scene);
-	float x =  ((sc.x-xw)/xw+0.5) * 2 * (window.AutoResize ? 1 : (xw / 500));
-	float y = -((sc.y-yw)/yw+0.5) * 2 * (window.AutoResize ? 1 : (yw / 500));
+	float x =  ((sc.x-xw)/xw+0.5) * 2 * (window.AutoResize ? 1 : (xw / window.StartSizeX));
+	float y = -((sc.y-yw)/yw+0.5) * 2 * (window.AutoResize ? 1 : (yw / window.StartSizeY));
 
 	x /= scene.CameraZoom;
 	y /= scene.CameraZoom;
@@ -318,8 +318,8 @@ Vector2 WorldToScreen(Window window, Vector2 world, Scene scene, float xw, float
 
 
 
-	x = ((x * (window.AutoResize ? 1 : (500 / xw))) + 1) / 2;
-	y = ((y * (window.AutoResize ? 1 : (500 / yw))) + 1) / 2;
+	x = ((x * (window.AutoResize ? 1 : (window.StartSizeX / xw))) + 1) / 2;
+	y = ((y * (window.AutoResize ? 1 : (window.StartSizeY / yw))) + 1) / 2;
 
 	x *= xw;
 	y *= yw;
@@ -358,14 +358,14 @@ void RenderSprite(Window window, string id, l_Sprite sprite, int width, int heig
 		float PosX = sprite.position.x * Zoom;
 		float PosY = sprite.position.y * Zoom;
 
-		float BLX = -SizeX + PosX;
-		float BLY = -SizeY + PosY;
-		float TLX = -SizeX + PosX;
-		float TLY =  SizeY + PosY;
-		float TRX =  SizeX + PosX;
-		float TRY =  SizeY + PosY;
-		float BRX =  SizeX + PosX;
-		float BRY = -SizeY + PosY;
+		float BLX = -SizeX + PosX + (sprite.LB.x * Zoom);
+		float BLY = -SizeY + PosY + (sprite.LB.y * Zoom);
+		float TLX = -SizeX + PosX + (sprite.LT.x * Zoom);
+		float TLY =  SizeY + PosY + (sprite.LT.y * Zoom);
+		float TRX =  SizeX + PosX + (sprite.RT.x * Zoom);
+		float TRY =  SizeY + PosY + (sprite.RT.y * Zoom);
+		float BRX =  SizeX + PosX + (sprite.RB.x * Zoom);
+		float BRY = -SizeY + PosY + (sprite.RB.y * Zoom);
 		float CENTERX = (BLX / 4) + (BRX / 4) + (TLX / 4) + (TRX / 4);
 		float CENTERY = (BLY / 4) + (BRY / 4) + (TLY / 4) + (TRY / 4);
 
@@ -519,6 +519,33 @@ void CreateSprite(string id, string sceneid) {
 void SetSpritePosition(string sceneid, string id, l_Vector2 pos) {
 	l_Sprite sprite = GetSprite(sceneid, id);
 	sprite.position = pos;
+	SetSprite(sprite);
+}
+
+void SetSpriteSize(string sceneid, string id, l_Vector2 size) {
+	l_Sprite sprite = GetSprite(sceneid, id);
+	sprite.size = size;
+	SetSprite(sprite);
+}
+
+void SetSpriteCorner(string sceneid, string id, l_Vector2 pos, bool left, bool top) {
+	l_Sprite sprite = GetSprite(sceneid, id);
+	if (left) {
+		if (top) {
+			sprite.LT = pos;
+		}
+		else {
+			sprite.LB = pos;
+		}
+	}
+	else {
+		if (top) {
+			sprite.RT = pos;
+		}
+		else {
+			sprite.RB = pos;
+		}
+	}
 	SetSprite(sprite);
 }
 
