@@ -1,3 +1,5 @@
+#pragma warning(disable : 4996)
+
 #define _HAS_STD_BYTE 0
 #include "Windows.h"
 
@@ -30,6 +32,27 @@ void MessageBoxFatal(string Error, string Code, bool BrokenLogs) {
 		Exit();
 	}
 	Exit();
+}
+
+bool SupportedWindowsVersion() {
+	OSVERSIONINFOEX info;
+	ZeroMemory(&info, sizeof(OSVERSIONINFOEX));
+	info.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
+	GetVersionEx((LPOSVERSIONINFO)&info);
+	int minor = DWORDToInt(info.dwMinorVersion);
+	int major = DWORDToInt(info.dwMajorVersion);
+
+	bool result = false;
+
+	if (minor > 1) {
+		result = true;
+	}
+
+	if (major != 6) {
+		result = false;
+	}
+
+	return result;
 }
 
 string GetUserName_() {

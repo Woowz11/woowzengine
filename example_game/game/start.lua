@@ -1,4 +1,4 @@
-local test = require("test")
+--[[local test = require("test")
 local i = 0
 test.run(function() 
 
@@ -14,5 +14,8 @@ SetSpritePosition("scene","sprite",Vector2.new(0,0))
 
 local tbl = {"hi","bye","omg","idk"}
 
-
+]]
 --Cycle(function() Print(tbl[RRandom(1,Length(tbl))]) end,1)
+
+CreateWindow("window","Transparency window")
+SetWindowTransparency("window",50)

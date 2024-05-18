@@ -1,2 +1,3 @@
 @echo off
-woowzengine.exe %~dp0
+woowzengine.exe run %~dp0
+if errorlevel 1 pause

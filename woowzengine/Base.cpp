@@ -142,33 +142,45 @@ string Lowercase(string Str) {
 }
 
 /*Первращает строку в сообщение для логов*/
-string ConvertTextToConsoleLogMessage(string Text, string Module, char StartSymbol) {
-	string c(1, StartSymbol);
+string ConvertTextToConsoleLogMessage(string Text, string Module, string c) {
 	return ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(LogsStyle, "%ms", GetTime("ms")), "%tt", Uppercase(Module)), "%c", Text), "%t", Uppercase(FillString(Module, 7, ' '))), "%b", c), "%w", GetTime("w")), "%y", GetTime("y")), "%mn", GetTime("mn")), "%d", GetTime("d")), "%h", GetTime("h")), "%m", GetTime("m")), "%s", GetTime("s"));
 }
 /*Отправить сообщение*/
-void P(string Module, string Text, int color) {
-	Print(ConvertTextToConsoleLogMessage(Text, Module),color);
+void P(string Module, string Text, int color, string ch) {
+	bool next = RunPrintFunction(Text, "Unknown", Module, "", color, ch);
+	if (next) {
+		Print(ConvertTextToConsoleLogMessage(Text, Module, ch), color);
+	}
 }
 /*Отправить обычное сообщение*/
 void PP(string Text) {
-	Print(ConvertTextToConsoleLogMessage(Text,"PRINT",'*'),7);
+	bool next = RunPrintFunction(Text, "Print", "PRINT", "", 7, "*");
+	if (next) {
+		Print(ConvertTextToConsoleLogMessage(Text, "PRINT", "*"), 7);
+	}
 }
 /*Отправить ошибку*/
 void PE(string Text,string ErrorCode) {
-	ErrorsCount++;
-	Print(ConvertTextToConsoleLogMessage(Text+" - "+ErrorCode, "ERROR", '!'), 12);
-	if (ErrorsCount >= 10) {
-		LogsErrors();
+	bool next = RunPrintFunction(Text, "Error", "ERROR", ErrorCode, 12, "!");
+	if (next) {
+		ErrorsCount++;
+		Print(ConvertTextToConsoleLogMessage(Text + " - " + ErrorCode, "ERROR", "!"), 12);
+		if (ErrorsCount >= 10) {
+			LogsErrors();
+		}
 	}
 }
 /*Отправить предупреждение*/
 void PW(string Text,string Code) {
-	Print(ConvertTextToConsoleLogMessage(Text+" - "+Code, "WARN", '?'), 14);
+	bool next = RunPrintFunction(Text, "Warning", "WARN", Code, 14, "?");
+	if (next) {
+		Print(ConvertTextToConsoleLogMessage(Text + " - " + Code, "WARN", "?"), 14);
+	}
 }
 /*Отправить фатальую ошибку*/
 void PF(string Text,string Code, bool DontPrint) {
-	if (!DontPrint) { Print(ConvertTextToConsoleLogMessage(Text+" - "+Code, "FATAL", '#'), 4); }
+	RunPrintFunction(Text, "Fatal", "FATAL", Code, 4, "*");
+	if (!DontPrint) { Print(ConvertTextToConsoleLogMessage(Text+" - "+Code, "FATAL", "#"), 4); }
 	MessageBoxFatal(Text,Code,DontPrint);
 	Exit();
 }

@@ -1,3 +1,5 @@
-﻿  ldo.c
-  lvm.c
+﻿  lapi.c
+  lcode.c
+  lfunc.c
+  lua.c
   Lua.vcxproj -> F:\woowzengine\WoowzEngine\Build\Lua\Release\Lua.lib

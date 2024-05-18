@@ -133,16 +133,17 @@ void GameInstall() {
 void Install(string ev) {
 	BaseInstall(SGamePath);
 
-	for (auto& p : std::filesystem::recursive_directory_iterator(GetSessionInfo("SourcePath"))) {
-		if (!OnlyASCII(p.path().filename().string())) {
-			MessageBoxFatal("Files and folders accept only ASCII characters! [" + p.path().string() + "]", "C0024",true);
+	if (HasDirectory(SGamePath + "game")) {
+		for (auto& p : std::filesystem::recursive_directory_iterator(SGamePath + "game")) {
+			if (!OnlyASCII(p.path().filename().string())) {
+				MessageBoxFatal("Files and folders accept only ASCII characters! [" + p.path().string() + "]", "C0024", true);
+			}
 		}
 	}
-
 	CheckFiles(ev);
 	LoggerInstall();
 
-	P("ENGINE", "WoowzEngine ["+GetSessionInfo("Version") + "] started!");
+	P("ENGINE", "WoowzEngine [" + GetSessionInfo("Version") + "] started!");
 	P("ENGINE", "Start game ["+GetGameInfo("Name") + " ("+GetGameInfo("Version") + ")] by [" + GetGameInfo("Author") + "] ");
 	if (SafeMode()) {
 		P("SAVEMOD", "Safe mode enabled!",10);

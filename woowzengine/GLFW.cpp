@@ -19,6 +19,7 @@
 #include "GLFW.h"
 #include "Base.h"
 #include "Easyer.h"
+#include "WindowsElements.h"
 #include "LuaCompile.h"
 #include "OpenGame.h"
 #include "Files.h"
@@ -144,9 +145,14 @@ void GLFWInstall() {
 	glfwMakeContextCurrent(window);
 	int version = gladLoadGL((GLADloadfunc)glfwGetProcAddress);
 	P("OpenGL", "OpenGL Loaded! (minor-" + to_string(GLAD_VERSION_MINOR(version)) + ",major-" + to_string(GLAD_VERSION_MAJOR(version)) + ")");
-	glDebugMessageCallback(PE_OPENGL, nullptr);
+	if(SupportedWindowsVersion()){
+		glDebugMessageCallback(PE_OPENGL, nullptr);
+	}
+	else {
+		P("OpenGL","OpenGL errors will not be displayed on <= Windows 7!");
+	}
 
-	Window window_ = Window("",window);
+	Window window_ = Window("", window);
 	CreateBuffers(window_);
 	Windows[""] = window_;
 	Windows_2[window_.glfw] = "";
@@ -463,7 +469,7 @@ void Render() {
 l_Sprite GetSprite(string sceneid, string id) {
 	Scene scene = GetScene(sceneid);
 	if (scene.sprites.find(id) == scene.sprites.end()) {
-		PF("No sprite found! GetSprite('"+sceneid+"','"+id+"')","C0027");
+		PE("No sprite found! GetSprite('"+sceneid+"','"+id+"')","E0022");
 		return l_Sprite("");
 	}
 	else {
@@ -473,7 +479,7 @@ l_Sprite GetSprite(string sceneid, string id) {
 
 Scene GetScene(string id) {
 	if (Scenes.find(id) == Scenes.end()) {
-		PF("No scene found! GetScene('"+id+"')","C0026");
+		PE("No scene found! GetScene('"+id+"')","E0021");
 		return Scene("");
 	}
 	else {
@@ -628,7 +634,7 @@ Window GetWindowByID(string id) {
 		return it->second;
 	}
 	else {
-		PF("Window not found! GetWindowByID('" + id + "')", "C0019");
+		PE("Window not found! GetWindowByID('" + id + "')", "E0020");
 		return Window();
 	}
 }
@@ -640,7 +646,7 @@ string GetIDByWindow(GLFWwindow* window) {
 		return it->second;
 	}
 	else {
-		PF("Window not found! GetIDByWindow()", "C0019");
+		PE("Window not found! GetIDByWindow()", "E0020");
 		return "";
 	}
 }
@@ -708,6 +714,14 @@ void SetWindowScale(string id, float scale) {
 		w.scale = scale;
 		Windows[id] = w;
 	}
+}
+
+/*Установить прозрачность окна*/
+void SetWindowTransparency(string id, int alpha) {
+	Window w = GetWindowByID(id);
+	w.Transparency = alpha;
+	glfwSetWindowOpacity(w.glfw, float(alpha) / 255);
+	Windows[id] = w;
 }
 
 /*Запретить менять размер окна или нет*/
@@ -854,6 +868,7 @@ Window CreateWindowGLFW(string id, int sizex, int sizey, string title) {
 	else {
 		if (sizex<=121 || sizey <= 0) { PF("Window size cannot be x<=121, y<=0! CreateWindow('" + id + "'," + to_string(sizex) + "," + to_string(sizey) + ",'" + title + "')", "C0022"); return Window(); }
 		else {
+			glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
 			GLFWwindow* window = glfwCreateWindow(sizex, sizey, StringToConstChar(title), NULL, NULL);
 			if (!window) {
 				PF("Window could not be created! CreateWindow('" + id + "'," + to_string(sizex) + "," + to_string(sizey) + ",'" + title + "')", "C0018");

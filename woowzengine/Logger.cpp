@@ -14,6 +14,13 @@ string LogsType = "log";
 bool LogsSystem = true;
 bool LogsFatal_ = false;
 
+string ms, w, y, m, s, h, mn, d;
+string LogFormat;
+
+string GetLogName(string replaceFtoThat) {
+	return ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(LogFormat, "%ms", ms), "%w", w), "%y", y), "%mn", mn), "%d", d), "%h", h), "%m", m), "%s", s), "%f", replaceFtoThat);
+}
+
 /*Установка логов*/
 void LoggerInstall() {
 	LogsSystem = StringToBool(GetEngineInfo("Logs"));
@@ -29,10 +36,18 @@ void LoggerInstall() {
 		MessageBoxFatal("LogFatal (engine.json) contains illegal characters in windows (\\ / : * ? \" < > | + .)", "C0015", true);
 	}
 
-	string LogFormat = GetEngineInfo("LogFormat");
+	LogFormat = GetEngineInfo("LogFormat");
 	if(StringEmpty(LogFormat)){ MessageBoxFatal("LogsFormat (engine.json) can't be empty!", "C0012", true); }
 	if(!NameWindowsAccept(LogFormat)){ MessageBoxFatal("LogFormat (engine.json) contains illegal characters in windows (\\ / : * ? \" < > | + .)", "C0013", true); }
-	string LogName = ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(LogFormat, "%ms", GetTime("ms")), "%w", GetTime("w")), "%y", GetTime("y")), "%mn", GetTime("mn")), "%d", GetTime("d")), "%h", GetTime("h")), "%m", GetTime("m")), "%s", GetTime("s"));
+	ms = GetTime("ms");
+	s = GetTime("s");
+	m = GetTime("m");
+	h = GetTime("h");
+	d = GetTime("d");
+	mn = GetTime("mn");
+	w = GetTime("w");
+	y = GetTime("y");
+	string LogName = GetLogName("");
 	CreateLog(LogName);
 }
 
@@ -69,7 +84,7 @@ void LogsFatal() {
 		LogsFatal_ = true;
 		P("LOGGER","Log set type FATAL!");
 		string oldlogname = GetSessionInfo("GamePath") + LogsPath + NowLog + "." + LogsType;
-		NowLog = ReplaceString(ReplaceString(NowLog, GetEngineInfo("LogErrors"), "%f"), "%f", GetEngineInfo("LogFatal"));
+		NowLog = GetLogName(GetEngineInfo("LogFatal"));
 		string newlogname = GetSessionInfo("GamePath") + LogsPath + NowLog + "." + LogsType;
 		SetSessionInfo("Log", newlogname);
 		RenameFile(oldlogname, newlogname);
@@ -83,7 +98,7 @@ void LogsErrors() {
 		LogsErrorsRenamed = true;
 		P("LOGGER", "Log set type ERRORS!");
 		string oldlogname = GetSessionInfo("GamePath") + LogsPath + NowLog + "." + LogsType;
-		NowLog = ReplaceString(NowLog, "%f", GetEngineInfo("LogErrors"));
+		NowLog = GetLogName(GetEngineInfo("LogErrors"));
 		string newlogname = GetSessionInfo("GamePath") + LogsPath + NowLog + "." + LogsType;
 		SetSessionInfo("Log", newlogname);
 		RenameFile(oldlogname, newlogname);

@@ -6,12 +6,37 @@
 #include <string>
 #include <locale>
 #include <codecvt>
+#include <sol/sol.hpp>
 #include "Console.h"
 #include "Easyer.h"
 #include "fcntl.h"
 #include "io.h"
 
 using namespace std;
+
+sol::function PrintFunction;
+
+void SetPrintFunction(sol::function f) {
+	PrintFunction = f;
+}
+
+bool RunPrintFunction(string text, string type, string module, string code, int color, string c) {
+	if (PrintFunction.valid()) {
+		sol::object obj = PrintFunction(text,type,module,code,color,c);
+		sol::type type = obj.get_type();
+
+		switch (type) {
+		case sol::type::nil:
+			return true;
+			break;
+		case sol::type::boolean:
+			return obj.as<bool>();
+			break;
+		}
+		return false;
+	}
+	return true;
+}
 
 int DefaultConsoleColor = 8;
 

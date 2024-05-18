@@ -82,3 +82,4 @@ bool PointOutside_(l_Vector2 vec, string windowid);
 
 void SetSpriteSize(string sceneid, string id, l_Vector2 size);
 void SetSpriteCorner(string sceneid, string id, l_Vector2 pos, bool left, bool top);
+void SetWindowTransparency(string id, int alpha);

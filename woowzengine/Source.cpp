@@ -15,7 +15,7 @@
 
 using namespace std;
 
-string EngineVersion = "0.0.2a";
+string EngineVersion = "0.0.2b";
 bool DebugVersion = false;
 
 void StartEngine(string GamePath) {
@@ -24,28 +24,52 @@ void StartEngine(string GamePath) {
 
 int main(int argc, char** argv)
 {
+    auto PathToExe = argv[0];
     if (!DebugVersion) { ::ShowWindow(::GetConsoleWindow(), SW_HIDE); }
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 8);
     ConsoleInstall();
     SetConsoleTitle(StringToLPCWSTR("WoowzEngine Console"));
     cout << "WoowzEngine realization..." << "\n";
+    cout << "Engine version: " << EngineVersion << "\n";
     if (DebugVersion) { cout << "Debug mode enabled!" << "\n"; }
 
+    if (argc > 1) {
+        if (string(argv[1]) != "run") {
+            MessageBoxFatal("Error in run.bat file! Notify Woowz11!", "OTHER", true);
+        }
+    }
+    else {
+        cout << argv[0] << "\n";
+        argc = 2;
+        argv = new char*[argc];
+        argv[0] = PathToExe;
+        argv[1] = "run";
+    }
+
     string GamePath = "F:\\woowzengine\\example_game\\";
-    if (argv[1] != NULL) {
-        GamePath = string(argv[1]);
+    if (argc > 2) {
+        GamePath = "";
+        int i = 2;
+        while (argv[i] != nullptr) {
+            GamePath = GamePath + string(argv[i]) + " ";
+            i++;
+        }
+        GamePath = GamePath.substr(0, GamePath.length() - 1);
+        GamePath = GamePath + "\\";
     }
     else {
         if (!HasDirectory(StringToPath(GamePath))) {
-            MessageBoxFatal("So far the engine does not support opening games through a dialog box, stick this exe file in an empty folder and run .bat file!\nLook https://woowz11.github.io/woowzsite/woowzengine.html","0",true);
+            MessageBoxFatal("So far the engine does not support opening games through a dialog box, stick this exe file in an empty folder and run.bat file!\nLook https://woowz11.github.io/woowzsite/woowzengine.html","C0019",true);
         }
     }
 
-    cout << "Engine version: " << EngineVersion << "\n";
     cout << "Game opening: " << GamePath << "\n";
+    if (!SupportedWindowsVersion()) {
+        cout << "Unsupported version of Windows! Possible errors. [Supported 10, 11]" << "\n";
+    }
     cout << "[]==============[Log]==============[]" << "\n";
     SetConsoleCtrlHandler((PHANDLER_ROUTINE)StopEngine, true);
-    StartEngine(GamePath);
+    StartEngine(StringToPath(GamePath));
     std::cin.get();
     return EXIT_SUCCESS;
 }

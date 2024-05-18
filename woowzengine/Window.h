@@ -14,6 +14,7 @@ public:
 	string scene = "";
 	float scale = 1;
 	int StartSizeX = -1; int StartSizeY = -1;
+	int Transparency = 255;
 	bool AutoResize = false;
 	unsigned int Buffer = 0;
 	unsigned int Arrays = 0;

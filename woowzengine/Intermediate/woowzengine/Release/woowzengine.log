@@ -1,56 +1,4 @@
-﻿  Base.cpp
-F:\woowzengine\WoowzEngine\l_Color.h(17,13): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
-  (компиляция исходного файла "Base.cpp")
-  
-F:\woowzengine\WoowzEngine\l_Color.h(19,13): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
-  (компиляция исходного файла "Base.cpp")
-  
-F:\woowzengine\WoowzEngine\l_Color.h(21,13): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
-  (компиляция исходного файла "Base.cpp")
-  
-F:\woowzengine\WoowzEngine\l_Color.h(23,13): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
-  (компиляция исходного файла "Base.cpp")
-  
-F:\woowzengine\WoowzEngine\Base.cpp(86,11): warning C4244: return: преобразование "double" в "float", возможна потеря данных
-F:\woowzengine\WoowzEngine\Base.cpp(103,11): warning C4244: инициализация: преобразование "__int64" в "int", возможна потеря данных
-F:\woowzengine\WoowzEngine\Base.cpp(219,17): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
-F:\woowzengine\WoowzEngine\Base.cpp(392,14): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
-  Cycles.cpp
-F:\woowzengine\WoowzEngine\l_Color.h(17,13): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
-  (компиляция исходного файла "Cycles.cpp")
-  
-F:\woowzengine\WoowzEngine\l_Color.h(19,13): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
-  (компиляция исходного файла "Cycles.cpp")
-  
-F:\woowzengine\WoowzEngine\l_Color.h(21,13): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
-  (компиляция исходного файла "Cycles.cpp")
-  
-F:\woowzengine\WoowzEngine\l_Color.h(23,13): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
-  (компиляция исходного файла "Cycles.cpp")
-  
-  Files.cpp
-  GLFW.cpp
-F:\woowzengine\WoowzEngine\l_Color.h(17,13): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
-  (компиляция исходного файла "GLFW.cpp")
-  
-F:\woowzengine\WoowzEngine\l_Color.h(19,13): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
-  (компиляция исходного файла "GLFW.cpp")
-  
-F:\woowzengine\WoowzEngine\l_Color.h(21,13): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
-  (компиляция исходного файла "GLFW.cpp")
-  
-F:\woowzengine\WoowzEngine\l_Color.h(23,13): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
-  (компиляция исходного файла "GLFW.cpp")
-  
-F:\woowzengine\WoowzEngine\GLFW.cpp(256,87): warning C4244: аргумент: преобразование "int" в "GLfloat", возможна потеря данных
-F:\woowzengine\WoowzEngine\GLFW.cpp(259,79): warning C4244: аргумент: преобразование "double" в "GLfloat", возможна потеря данных
-F:\woowzengine\WoowzEngine\GLFW.cpp(289,10): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
-F:\woowzengine\WoowzEngine\GLFW.cpp(290,10): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
-F:\woowzengine\WoowzEngine\GLFW.cpp(417,50): warning C4244: аргумент: преобразование "float" в "GLsizei", возможна потеря данных
-F:\woowzengine\WoowzEngine\GLFW.cpp(417,28): warning C4244: аргумент: преобразование "float" в "GLsizei", возможна потеря данных
-F:\woowzengine\WoowzEngine\GLFW.cpp(577,19): warning C4244: аргумент: преобразование "double" в "float", возможна потеря данных
-F:\woowzengine\WoowzEngine\GLFW.cpp(577,17): warning C4244: аргумент: преобразование "double" в "float", возможна потеря данных
-  LuaCompile.cpp
+﻿  LuaCompile.cpp
 F:\woowzengine\WoowzEngine\l_Color.h(17,13): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
   (компиляция исходного файла "LuaCompile.cpp")
   
@@ -63,54 +11,28 @@ F:\woowzengine\WoowzEngine\l_Color.h(21,13): warning C4244: инициализа
 F:\woowzengine\WoowzEngine\l_Color.h(23,13): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
   (компиляция исходного файла "LuaCompile.cpp")
   
-F:\woowzengine\WoowzEngine\LuaCompile.cpp(282,14): warning C4244: return: преобразование "float" в "int", возможна потеря данных
-F:\woowzengine\WoowzEngine\LuaCompile.cpp(287,13): warning C4244: return: преобразование "float" в "int", возможна потеря данных
-F:\woowzengine\WoowzEngine\LuaCompile.cpp(403,35): warning C4244: аргумент: преобразование "float" в "int", возможна потеря данных
-F:\woowzengine\WoowzEngine\LuaCompile.cpp(403,14): warning C4244: return: преобразование "float" в "int", возможна потеря данных
-F:\woowzengine\WoowzEngine\LuaCompile.cpp(470,38): warning C4267: return: преобразование из "size_t" в "int"; возможна потеря данных
-F:\woowzengine\WoowzEngine\LuaCompile.cpp(560,81): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
-F:\woowzengine\WoowzEngine\LuaCompile.cpp(560,32): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
-F:\woowzengine\WoowzEngine\LuaCompile.cpp(565,51): warning C4244: аргумент: преобразование "float" в "int", возможна потеря данных
-F:\woowzengine\WoowzEngine\LuaCompile.cpp(566,50): warning C4244: аргумент: преобразование "float" в "int", возможна потеря данных
-F:\woowzengine\WoowzEngine\LuaCompile.cpp(652,42): warning C4244: return: преобразование "float" в "int", возможна потеря данных
-F:\woowzengine\WoowzEngine\LuaCompile.cpp(653,27): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
-F:\woowzengine\WoowzEngine\LuaCompile.cpp(653,22): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
-F:\woowzengine\WoowzEngine\LuaCompile.cpp(653,14): warning C4244: return: преобразование "float" в "int", возможна потеря данных
-F:\woowzengine\WoowzEngine\LuaCompile.cpp(658,48): warning C4244: аргумент: преобразование "float" в "int", возможна потеря данных
-F:\woowzengine\WoowzEngine\LuaCompile.cpp(659,48): warning C4244: аргумент: преобразование "float" в "int", возможна потеря данных
-F:\woowzengine\WoowzEngine\LuaCompile.cpp(664,88): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
-F:\woowzengine\WoowzEngine\LuaCompile.cpp(664,36): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
-F:\woowzengine\WoowzEngine\LuaCompile.cpp(669,27): warning C4244: аргумент: преобразование "float" в "int", возможна потеря данных
-F:\woowzengine\WoowzEngine\LuaCompile.cpp(1152,15): warning C4244: инициализация: преобразование "__int64" в "int", возможна потеря данных
-  OpenGame.cpp
-F:\woowzengine\WoowzEngine\l_Color.h(17,13): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
-  (компиляция исходного файла "OpenGame.cpp")
-  
-F:\woowzengine\WoowzEngine\l_Color.h(19,13): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
-  (компиляция исходного файла "OpenGame.cpp")
-  
-F:\woowzengine\WoowzEngine\l_Color.h(21,13): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
-  (компиляция исходного файла "OpenGame.cpp")
-  
-F:\woowzengine\WoowzEngine\l_Color.h(23,13): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
-  (компиляция исходного файла "OpenGame.cpp")
-  
-  Source.cpp
-F:\woowzengine\WoowzEngine\l_Color.h(17,13): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
-  (компиляция исходного файла "Source.cpp")
-  
-F:\woowzengine\WoowzEngine\l_Color.h(19,13): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
-  (компиляция исходного файла "Source.cpp")
-  
-F:\woowzengine\WoowzEngine\l_Color.h(21,13): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
-  (компиляция исходного файла "Source.cpp")
-  
-F:\woowzengine\WoowzEngine\l_Color.h(23,13): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
-  (компиляция исходного файла "Source.cpp")
-  
+F:\woowzengine\WoowzEngine\LuaCompile.cpp(284,14): warning C4244: return: преобразование "float" в "int", возможна потеря данных
+F:\woowzengine\WoowzEngine\LuaCompile.cpp(289,13): warning C4244: return: преобразование "float" в "int", возможна потеря данных
+F:\woowzengine\WoowzEngine\LuaCompile.cpp(405,35): warning C4244: аргумент: преобразование "float" в "int", возможна потеря данных
+F:\woowzengine\WoowzEngine\LuaCompile.cpp(405,14): warning C4244: return: преобразование "float" в "int", возможна потеря данных
+F:\woowzengine\WoowzEngine\LuaCompile.cpp(472,38): warning C4267: return: преобразование из "size_t" в "int"; возможна потеря данных
+F:\woowzengine\WoowzEngine\LuaCompile.cpp(562,81): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
+F:\woowzengine\WoowzEngine\LuaCompile.cpp(562,32): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
+F:\woowzengine\WoowzEngine\LuaCompile.cpp(567,51): warning C4244: аргумент: преобразование "float" в "int", возможна потеря данных
+F:\woowzengine\WoowzEngine\LuaCompile.cpp(568,50): warning C4244: аргумент: преобразование "float" в "int", возможна потеря данных
+F:\woowzengine\WoowzEngine\LuaCompile.cpp(654,42): warning C4244: return: преобразование "float" в "int", возможна потеря данных
+F:\woowzengine\WoowzEngine\LuaCompile.cpp(655,27): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
+F:\woowzengine\WoowzEngine\LuaCompile.cpp(655,22): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
+F:\woowzengine\WoowzEngine\LuaCompile.cpp(655,14): warning C4244: return: преобразование "float" в "int", возможна потеря данных
+F:\woowzengine\WoowzEngine\LuaCompile.cpp(660,48): warning C4244: аргумент: преобразование "float" в "int", возможна потеря данных
+F:\woowzengine\WoowzEngine\LuaCompile.cpp(661,48): warning C4244: аргумент: преобразование "float" в "int", возможна потеря данных
+F:\woowzengine\WoowzEngine\LuaCompile.cpp(666,88): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
+F:\woowzengine\WoowzEngine\LuaCompile.cpp(666,36): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
+F:\woowzengine\WoowzEngine\LuaCompile.cpp(671,27): warning C4244: аргумент: преобразование "float" в "int", возможна потеря данных
+F:\woowzengine\WoowzEngine\LuaCompile.cpp(1165,15): warning C4244: инициализация: преобразование "__int64" в "int", возможна потеря данных
   Создание кода
-  18 of 14175 functions ( 0.1%) were compiled, the rest were copied from previous compilation.
-    7 functions were new in current compilation
-    206 functions had inline decision re-evaluated but remain unchanged
+  0 of 14230 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
   Создание кода завершено
   woowzengine.vcxproj -> F:\woowzengine\WoowzEngine\Build\woowzengine\Release\woowzengine.exe

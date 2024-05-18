@@ -7,3 +7,4 @@ void CreateLog(string LogName);
 void PrintToLog(string Text); 
 void LogsFatal();
 void LogsErrors();
+string GetLogName(string replaceFtoThat);

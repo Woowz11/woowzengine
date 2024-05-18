@@ -40,6 +40,8 @@ string EmptyWindow = "New Window";
 string EmptyScene = "New Scene";
 string EmptySprite = "New Sprite";
 
+l_Color ErrorColor = l_Color(255,0,255,254);
+
 /*Проверяет работает ли lua или нет*/
 void l_CheckLua() {
 	DiscordTest();
@@ -117,16 +119,16 @@ void l_PrintCustom(sol::object module, sol::object text, sol::object firstsymbol
 			if (color == 0) { color_ = 8; }
 			if (color == 8) { color_ = 0; }
 			else {
-				char chr = ' ';
+				string chr = " ";
 				if (firstsymbol!=sol::nil) {
 					if (!StringEmpty(ToString(firstsymbol))) {
 						if (ToString(firstsymbol).size() > 1) {
-							PW("Length of the first character '" + ToString(firstsymbol) + "' is >1 in PrintCustom('" + Uppercase(ToString(module)) + "','" + ToString(text) + "')!", "LW0000");
+							PW("Length of the first character '" + ToString(firstsymbol) + "' is > 1 in PrintCustom('" + Uppercase(ToString(module)) + "','" + ToString(text) + "')!", "LW0000");
 						}
 						chr = ToString(firstsymbol).at(0);
 					}
 				}
-				Print(ConvertTextToConsoleLogMessage(ToString(text), ToString(module), chr), color_);
+				P(ToString(module), ToString(text), color_, chr);
 			}
 		}
 }
@@ -139,17 +141,17 @@ void l_Print(sol::object text) {
 /*Отправляет предупреждение в консоль*/
 void l_Warn(sol::object text, sol::object code) {
 	
-	PW(ToString(text),"GW"+FillString(ToString(code,"0000"), 4, '0', true));
+	PW(ToString(text),"GW"+FillString(ToString(code,"_EMPTY"), 4, '0', true));
 }
 
 /*Отправляет ошибку в консоль*/
 void l_Error(sol::object text, sol::object code) {
-	PE(ToString(text), "GE" + FillString(ToString(code, "0000"), 4, '0', true));
+	PE(ToString(text), "GE" + FillString(ToString(code, "_EMPTY"), 4, '0', true));
 }
 
 /*Отправляет фатальную ошибку в консоль*/
 void l_Fatal(sol::object text, sol::object code) {
-	PF(ToString(text), "GF" + FillString(ToString(code, "0000"), 4, '0', true));
+	PF(ToString(text), "GF" + FillString(ToString(code, "_EMPTY"), 4, '0', true));
 }
 
 /*Отправляет сообщение в консоль (без формата лога)*/
@@ -1008,25 +1010,40 @@ void l_SetFPSTarget(int fpstarget) {
 	SetTargetFPS(fpstarget);
 }
 
+/*Вызывает функцию каждый раз когда отправляется сообщение*/
+void l_SetEventPrint(sol::function f) {
+	if (f.valid()) {
+		SetPrintFunction(f);
+	}
+}
+
+/*Установить прозрачность окна*/
+void l_SetWindowTransparency(sol::object window, int i) {
+	string w = ToString(window, EmptyWindow);
+	if (i < 0 || i>255) {
+		PE("Transparency cannot be < 0 or > 255! SetWindowTransparency('"+w+"'," + to_string(i) + ")", "L0029");
+	}
+	else {
+		if (SafeMode() && i < 50) { PW("Function [SetWindowTransparency("+to_string(i) + ")] cannot be started in SafeMode!", "LW0028"); }
+		else {
+			SetWindowTransparency(w, i);
+		}
+	}
+}
+
 /*Зона woowzengine*/
 
 l_Color ObjToColor(sol::object obj) {
 	string type = GetObjectType(obj);
 	if (type == "color") {
-		if (obj.is<sol::userdata>()) {
-			return obj.as<sol::userdata>().as<l_Color>();
-		}
-		else {
-			PE("That not color! ObjToColor()", "?");
-			return l_Color(0, 0, 0, 255);
-		}
+		return obj.as<sol::userdata>().as<l_Color>();
 	}
 	else if (type == "nil") {
 		return l_Color(0, 0, 0, 255);
 	}
 	else {
 		PE("Failed to convert the object [" + ToString(obj) + "] to color!", "L0015");
-		return l_Color(255,0,255,255);
+		return ErrorColor;
 	}
 }
 
@@ -1441,6 +1458,8 @@ void LuaCompile() {
 	lua.set_function("SetSpriteRTCorner", &l_SetSpriteRTCorner);
 	lua.set_function("SetSpriteRBCorner", &l_SetSpriteRBCorner);
 	lua.set_function("SetFPSTarget", &l_SetFPSTarget);
+	lua.set_function("SetEventPrint", &l_SetEventPrint);
+	lua.set_function("SetWindowTransparency", &l_SetWindowTransparency);
 
 	P("LUA", "Lua functions and etc. are loaded!");
 	P("LUA", "Start start.lua script...");
