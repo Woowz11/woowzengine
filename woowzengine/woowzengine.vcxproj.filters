@@ -266,8 +266,5 @@
     <None Include="l_Sound.h">
       <Filter>Исходные файлы\Elements\Lua</Filter>
     </None>
-    <None Include="LIBS\DISCORD\discord_game_sdk.dll">
-      <Filter>Файлы ресурсов</Filter>
-    </None>
   </ItemGroup>
 </Project>

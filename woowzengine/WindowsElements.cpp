@@ -125,3 +125,8 @@ map<int,string> ProgramsLaunched() {
 	CloseHandle(snapshot);
 	return result;
 }
+
+void OpenFile(string path_) {
+	wstring path = StringToWString(path_);
+	ShellExecute(NULL, L"open", path.c_str(), NULL, NULL, SW_SHOWNORMAL);
+}

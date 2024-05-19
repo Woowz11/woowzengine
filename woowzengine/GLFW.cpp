@@ -4,6 +4,8 @@
 
 #include <iostream>
 #include <map>
+#include <unordered_map>
+#include <vector>
 #include <string>
 #include <functional>
 //---- Графика ----
@@ -37,7 +39,7 @@ using namespace std;
 
 map<string, Window> Windows;
 map<GLFWwindow*, string> Windows_2;
-map<string, map<string, GLuint>> Textures;
+unordered_map<string, unordered_map<string, GLuint>> Textures;
 string MainWindow = "";
 
 map<string, Scene> Scenes;
@@ -220,7 +222,7 @@ GLuint CompileShaderProgram(GLuint Vertex, GLuint Fragment) {
 /*Методы*/
 
 GLuint GetTexture(string window,l_Sprite sprite) {
-	map<string, GLuint> Textures_;
+	unordered_map<string, GLuint> Textures_;
 	if (Textures.find(window) != Textures.end()) {
 		Textures_ = Textures[window];
 	}
@@ -244,7 +246,7 @@ GLuint GetTexture(string window,l_Sprite sprite) {
 }
 
 void RenderQuad(list<float> v) {
-	float vert[12] = { 0 };
+	float vert[12] = {0};
 	int i = 0;
 	for (float element : v) {
 		vert[i] = element;
@@ -276,8 +278,8 @@ Vector2 ScreenToWorld(Window window ,int cordx, int cordy) {
 
 	if (window.scene != "") {
 		Scene scene = GetScene(window.scene);
-		x = x + scene.CameraPosition.x;
-		y = y + scene.CameraPosition.y;
+		x = x - scene.CameraPosition.x;
+		y = y - scene.CameraPosition.y;
 	}
 
 	return Vector2(x,y);
@@ -297,14 +299,14 @@ Vector2 ScreenToWorld(Window window,Vector2 sc) {
 
 	x /= scene.CameraZoom;
 	y /= scene.CameraZoom;
-	x -= scene.CameraPosition.x;
-	y -= scene.CameraPosition.y;
+	x += scene.CameraPosition.x;
+	y += scene.CameraPosition.y;
 	return Vector2(x, y);
 }
 
-Vector2 WorldToScreen(Window window, Vector2 world, Scene scene, float xw, float yw) {
+Vector2 WorldToScreen(Window window, float x_, float y_, Scene scene, float xw, float yw) {
 	if (window.scene == "") {
-		PW("Window doesn't have a scene! WorldToScreen(" + window.id + ", Vector2(" + to_string(world.x) + "," + to_string(world.y) + "))", "W0007");
+		PW("Window doesn't have a scene! WorldToScreen(" + window.id + ", Vector2(" + to_string(x_) + "," + to_string(y_) + "))", "W0007");
 		return Vector2(0, 0);
 	}
 
@@ -319,8 +321,9 @@ Vector2 WorldToScreen(Window window, Vector2 world, Scene scene, float xw, float
 	}
 
 	float zoom = (1 / scene.CameraZoom);
-	float x = world.x + scene.CameraPosition.x/zoom;
-	float y = world.y + scene.CameraPosition.y/zoom;;
+	float SizeMult = (float)window.StartSizeY / (float)window.StartSizeX;
+	float x = x_ - scene.CameraPosition.x * SizeMult / zoom;
+	float y = y_ - scene.CameraPosition.y / zoom;
 
 
 
@@ -332,8 +335,13 @@ Vector2 WorldToScreen(Window window, Vector2 world, Scene scene, float xw, float
 
 	return Vector2(round(x), round(y));
 }
-bool PointOutside(Window window, Vector2 world, Scene scene, float xw, float yw) {
-	Vector2 screen = WorldToScreen(window, world);
+
+Vector2 WorldToScreen(Window window, Vector2 world, Scene scene, float xw, float yw) {
+	return WorldToScreen(window, world.x, world.y, scene, xw, yw);
+}
+
+bool PointOutside(Window window, float x, float y, Scene scene, float xw, float yw, float Offset) {
+	Vector2 screen = WorldToScreen(window, x, y);
 	if (scene.name == "") {
 		scene = GetScene(window.scene);
 	}
@@ -344,10 +352,14 @@ bool PointOutside(Window window, Vector2 world, Scene scene, float xw, float yw)
 		yw = static_cast<float>(WSY);
 	}
 	bool result = true;
-	if (screen.x <= xw && screen.x >= 0 && screen.y <= yw && screen.y >= 0) {
+	if (screen.x <= (xw+Offset) && screen.x >= (-Offset) && screen.y <= (yw+Offset) && screen.y >= (-Offset)) {
 		result = false;
 	}
 	return result;
+}
+
+bool PointOutside(Window window, Vector2 world, Scene scene, float xw, float yw, float Offset) {
+	return PointOutside(window, world.x, world.y, scene, xw, yw, Offset);
 }
 
 bool PointOutside_(l_Vector2 vec, string windowid) {
@@ -357,12 +369,15 @@ bool PointOutside_(l_Vector2 vec, string windowid) {
 
 void RenderSprite(Window window, string id, l_Sprite sprite, int width, int height,Scene scene) {
 	if (sprite.id != "") {
-		float Zoom = scene.CameraZoom;
+		/*float Zoom = scene.CameraZoom;
 		float SizeMult = (float)window.StartSizeY / (float)window.StartSizeX;
 		float SizeX = sprite.size.x * SizeMult * Zoom;
 		float SizeY = sprite.size.y * Zoom;
-		float PosX = sprite.position.x * Zoom;
+		float PosX = sprite.position.x * SizeMult * Zoom;
 		float PosY = sprite.position.y * Zoom;
+
+		float xw = float(width);
+		float yw = float(height);
 
 		float BLX = -SizeX + PosX + (sprite.LB.x * Zoom);
 		float BLY = -SizeY + PosY + (sprite.LB.y * Zoom);
@@ -374,34 +389,26 @@ void RenderSprite(Window window, string id, l_Sprite sprite, int width, int heig
 		float BRY = -SizeY + PosY + (sprite.RB.y * Zoom);
 		float CENTERX = (BLX / 4) + (BRX / 4) + (TLX / 4) + (TRX / 4);
 		float CENTERY = (BLY / 4) + (BRY / 4) + (TLY / 4) + (TRY / 4);
+		int OutNumber = 0;
 
-		float xw = static_cast<float>(width);
-		float yw = static_cast<float>(height);
-
-		if (sprite.DontHide || (!(
-			PointOutside(window, Vector2(CENTERX,CENTERY),scene,xw,yw) && 
-			PointOutside(window, Vector2(BLX, BLY)       ,scene,xw,yw) &&
-			PointOutside(window, Vector2(TLX, TLY)       ,scene,xw,yw) &&
-			PointOutside(window, Vector2(TRX, TRY)       ,scene,xw,yw) &&
-			PointOutside(window, Vector2(BRX, BRY)       ,scene,xw,yw)
-			))) {
-
+		bool Out = PointOutside(window,CENTERX,CENTERY,scene,xw,yw,OutNumber);
+		if (!Out) {
 			UpdateShader(window, sprite.color.ToCPP(), width, height, sprite.autoresize);
 			GLuint texture = GetTexture(window.id, sprite);
 			glBindTexture(GL_TEXTURE_2D, texture);
 
-			float CamPosX = (sprite.movewithcamera ? 0 : scene.CameraPosition.x) * Zoom;
+			float CamPosX = (sprite.movewithcamera ? 0 : scene.CameraPosition.x) * SizeMult * Zoom;
 			float CamPosY = (sprite.movewithcamera ? 0 : scene.CameraPosition.y) * Zoom;
 
 			RenderQuad({
-				BLX + CamPosX,BLY + CamPosY, 0.0f, /*Нижний  левый  */
-				TLX + CamPosX,TLY + CamPosY, 0.0f, /*Верхний левый  */
-				TRX + CamPosX,TRY + CamPosY, 0.0f, /*Верхний правый */
-				BRX + CamPosX,BRY + CamPosY, 0.0f  /*Нижний  правый */
-			});
-			
-			glFlush();
+				BLX - CamPosX,BLY - CamPosY, 0,
+				TLX - CamPosX,TLY - CamPosY, 0,
+				TRX - CamPosX,TRY - CamPosY, 0,
+				BRX - CamPosX,BRY - CamPosY, 0
+				});
 		}
+			
+		glFlush();*/
 	}
 }
 
@@ -415,51 +422,53 @@ void Render() {
 	if (Windows.size() > 0) {
 		for (auto const& [id, window] : Windows) {
 			if (!glfwWindowShouldClose(window.glfw)) {
-					glfwMakeContextCurrent(window.glfw);
-					glfwPollEvents();
-					int width = 1, height = 1;
-					glfwGetFramebufferSize(window.glfw, &width, &height);
-					float scale = window.scale;
-					glViewport(0, 0, round(width * scale), round(height * scale));
-					/*----------------[Рисование]------------------*/
-					if (window.scene != "") {
-						Scene scene = GetScene(window.scene);
-						if (scene.CameraZoom != 0) {
-							glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-							glEnable(GL_BLEND);
-							glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+				glfwMakeContextCurrent(window.glfw);
+				glfwPollEvents();
+				int width = 1, height = 1;
+				glfwGetFramebufferSize(window.glfw, &width, &height);
+				float scale = window.scale;
+				glViewport(0, 0, round(width * scale), round(height * scale));
+				/*----------------[Рисование]------------------*/
+				if (window.scene != "") {
+					Scene scene = GetScene(window.scene);
+					if (scene.CameraZoom != 0) {
+						glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+						glEnable(GL_BLEND);
+						glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-							if (scene.windowid != "") {
-								glClearColor(scene.BackgroundColor.GetR(), scene.BackgroundColor.GetG(), scene.BackgroundColor.GetB(), 1);
-							}
-							else {
-								glClearColor(0, 0, 0, 1);
-							}
-							glEnable(GL_TEXTURE_2D);
-							if (scene.sprites.size() > 0) {
-								for (auto const& [sid, sprite] : scene.sprites) {
-									RenderSprite(window, sid, sprite, width, height, scene);
-								}
-							}
-
+						if (scene.windowid != "") {
+							float alpha = scene.BackgroundColor.GetA();
+							glClearColor(scene.BackgroundColor.GetR() * alpha, scene.BackgroundColor.GetG() * alpha, scene.BackgroundColor.GetB() * alpha, alpha);
 						}
 						else {
-							ErrorScene("Camera zoom cannot be equal to 0!");
+							glClearColor(0, 0, 0, 1);
 						}
+						glEnable(GL_TEXTURE_2D);
+						vector<l_Sprite> sprites = scene.sprites;
+						if (sprites.size() > 0) {
+							for (const auto& sprite : sprites) {
+								RenderSprite(window, sprite.id, sprite, width, height, scene);
+							}
+						}
+
 					}
 					else {
-						ErrorScene("Empty scene");
+						ErrorScene("Camera zoom cannot be equal to 0!");
 					}
-					glfwSwapBuffers(window.glfw);
-					/*------------[Конец рисования]----------------*/
-					PE_GLFW();
+				}
+				else {
+					ErrorScene("Empty scene");
+				}
+				glfwSwapBuffers(window.glfw);
+				/*------------[Конец рисования]----------------*/
+				PE_GLFW();
 			}
 			else {
-					if (id == MainWindow) {
-						Exit();
-					}
-					DestroyWindowGLFW(id);
+				if (id == MainWindow) {
+					Exit();
 				}
+				DestroyWindowGLFW(id);
+			}
 		}
 	}
 }
@@ -468,13 +477,7 @@ void Render() {
 
 l_Sprite GetSprite(string sceneid, string id) {
 	Scene scene = GetScene(sceneid);
-	if (scene.sprites.find(id) == scene.sprites.end()) {
-		PE("No sprite found! GetSprite('"+sceneid+"','"+id+"')","E0022");
-		return l_Sprite("");
-	}
-	else {
-		return scene.sprites[id];
-	}
+	return scene.Find(id);
 }
 
 Scene GetScene(string id) {
@@ -515,10 +518,13 @@ float GetCameraZoom(string id) {
 	return GetScene(id).CameraZoom;
 }
 
+int spritescount = 0;
 void CreateSprite(string id, string sceneid) {
-	l_Sprite sprite(id,sceneid);
+	l_Sprite sprite(id, sceneid);
+	sprite.cout = spritescount;
+	spritescount++;
 	Scene scene = GetScene(sceneid);
-	scene.sprites[id] = sprite;
+	scene.NewSprite(sprite);
 	Scenes[sceneid] = scene;
 }
 
@@ -581,6 +587,40 @@ Vector2 GetMousePosition(string id) {
 	double x, y;
 	glfwGetCursorPos(window.glfw, &x, &y);
 	return Vector2(x,y);
+}
+
+void SetSpriteColor(string sceneid, string id, l_Color color) {
+	l_Sprite sprite = GetSprite(sceneid, id);
+	sprite.color = color;
+	SetSprite(sprite);
+}
+
+l_Color GetSpriteColor(string sceneid, string id) {
+	l_Sprite sprite = GetSprite(sceneid, id);
+	return sprite.color;
+}
+
+void SetSpriteLayer(string sceneid, string id, float zindex) {
+	l_Sprite sprite = GetSprite(sceneid, id);
+	sprite.zindex = zindex;
+	SetSprite(sprite);
+}
+
+float GetSpriteLayer(string sceneid, string id) {
+	l_Sprite sprite = GetSprite(sceneid, id);
+	return sprite.zindex;
+}
+
+map<float,string> GetSpritesOnScene(string sceneid) {
+	Scene scene = GetScene(sceneid);
+
+	map<float, string> newlist;
+	/*for (auto const& [sid, sprite] : scene.sprites) {
+		float z = (sprite.zindex + (float(sprite.cout) / 10000));
+		newlist[z] = sprite.id;
+	}*/
+
+	return newlist;
 }
 
 /*---------------------------*/
@@ -722,6 +762,12 @@ void SetWindowTransparency(string id, int alpha) {
 	w.Transparency = alpha;
 	glfwSetWindowOpacity(w.glfw, float(alpha) / 255);
 	Windows[id] = w;
+}
+
+/*Получить прозрачность окна*/
+int GetWindowTransparency(string id) {
+	Window w = GetWindowByID(id);
+	return w.Transparency;
 }
 
 /*Запретить менять размер окна или нет*/

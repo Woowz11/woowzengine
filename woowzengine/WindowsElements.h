@@ -11,3 +11,4 @@ void StopProgram(string name);
 void StopPC();
 bool GetFatal();
 bool SupportedWindowsVersion();
+void OpenFile(string path);

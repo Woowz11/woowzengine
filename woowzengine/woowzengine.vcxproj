@@ -176,7 +176,6 @@
     <Image Include="..\resources\icon.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="LIBS\DISCORD\discord_game_sdk.dll" />
     <None Include="l_Sound.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

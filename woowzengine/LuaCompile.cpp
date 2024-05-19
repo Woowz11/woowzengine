@@ -705,7 +705,12 @@ void l_OpenLink(sol::object html_) {
 	string html = ToString(html_, "https://woowz11.github.io/woowzsite/woowzengine.html");
 	if (SafeMode()) { PW("Function [OpenLink('" + html + "')] cannot be started in SafeMode!", "LW0019"); }
 	else {
-		system(StringToConstChar("start \"\" " + html));
+		if (CheckInternet()) {
+			system(StringToConstChar("start \"\" " + html));
+		}
+		else {
+			PW("Need inernet to use OpenLink('"+html+"')!","LW0029");
+		}
 	}
 }
 
@@ -1029,6 +1034,77 @@ void l_SetWindowTransparency(sol::object window, int i) {
 			SetWindowTransparency(w, i);
 		}
 	}
+}
+
+/*Получить прозрачность окна*/
+int l_GetWindowTransparency(sol::object window) {
+	return GetWindowTransparency(ToString(window));
+}
+
+/*Открыть файл*/
+void l_OpenFile(sol::object path_) {
+	string path = StringToPath(ToString(path_));
+	if (SafeMode()) { PW("Function [OpenFile('" + path + "')] cannot be started in SafeMode!", "LW0030"); }
+	else {
+		if (HasDirectory(path)) {
+			OpenFile(path);
+		}
+		else {
+			PE("File not found! OpenFile('"+path+"')", "L0030");
+		}
+	}
+}
+
+/*Установить цвет спрайту*/
+void l_SetSpriteColor(sol::object sceneid, sol::object id, l_Color color) {
+	SetSpriteColor(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), color);
+}
+
+/*Получить цвет спрайта*/
+l_Color l_GetSpriteColor(sol::object sceneid, sol::object id) {
+	return GetSpriteColor(ToString(sceneid, EmptyScene), ToString(id, EmptySprite));
+}
+
+/*Установить слой текстуре*/
+void l_SetSpriteLayer(sol::object sceneid, sol::object id, float zindex) {
+	SetSpriteLayer(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), zindex);
+}
+
+/*Получить слой текстуры*/
+float l_GetSpriteLayer(sol::object sceneid, sol::object id) {
+	return GetSpriteLayer(ToString(sceneid, EmptyScene), ToString(id, EmptySprite));
+}
+
+/*Вернуть случайное число от 0 до 1 (без сохранения сида)*/
+float l_FRandom(float min, float max) {
+	if (min == 0 && max == 0) { return Random(true); }
+	return Random(min, max, true);
+}
+
+/*Вернуть случайное число от 0 до 1 (Целое) (без сохранения сида)*/
+int l_FRRandom(int min, int max) {
+	if (min == 0 && max == 0) { return round(Random(true)); }
+	return round(Random(min, max,true));
+}
+
+/*Получить список спрайтов на сцене*/
+sol::table l_GetSprites(sol::object sceneid) {
+	map<float,string> sprites_ = GetSpritesOnScene(ToString(sceneid, EmptyScene));
+	list<string> sprites;
+	map<float, string> sprites__(sprites_.begin(),sprites_.end());
+	for (const auto& pair : sprites__) {
+		sprites.push_back(pair.second);
+	}
+	sol::table tbl = lua.create_table();
+	for (const auto& sprite : sprites) {
+		tbl.add(sprite);
+	}
+	return tbl;
+}
+
+/*Запускает функцию в новом потоке*/
+void l_NoWait(sol::function func) {
+	InOtherThread(func);
 }
 
 /*Зона woowzengine*/
@@ -1460,8 +1536,20 @@ void LuaCompile() {
 	lua.set_function("SetFPSTarget", &l_SetFPSTarget);
 	lua.set_function("SetEventPrint", &l_SetEventPrint);
 	lua.set_function("SetWindowTransparency", &l_SetWindowTransparency);
-
+	lua.set_function("GetWindowTransparency", &l_GetWindowTransparency);
+	lua.set_function("OpenFile", &l_OpenFile);
+	lua.set_function("HasFile", &l_HasDirectory);
+	lua.set_function("OpenDirectory", &l_OpenFile);
+	lua.set_function("SetSpriteColor", &l_SetSpriteColor);
+	lua.set_function("GetSprtieColor", &l_GetSpriteColor);
+	lua.set_function("SetSpriteLayer", &l_SetSpriteLayer);
+	lua.set_function("GetSpriteLayer", &l_GetSpriteLayer);
+	lua.set_function("FRandom", &l_FRandom);
+	lua.set_function("FRRandom", &l_FRRandom);
+	lua.set_function("GetSprites", &l_GetSprites);
+	lua.set_function("NoWait", &l_NoWait);
+	
 	P("LUA", "Lua functions and etc. are loaded!");
-	P("LUA", "Start start.lua script...");
+	P("LUA", "Start 'start.lua' script...");
 	CompileScript(GetSessionInfo("SourcePath") + "start.lua");
 }

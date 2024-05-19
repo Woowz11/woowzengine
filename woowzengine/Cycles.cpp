@@ -118,6 +118,24 @@ void SetCycleFunction(sol::function func, int milisec) {
 	thread.detach();
 }
 
+void InOtherThread(sol::function func) {
+	auto nowait = [func]() {
+			try
+			{
+				{
+					std::unique_lock<std::mutex> lock(mtx);
+					func();
+				}
+			}
+			catch (const sol::error& e) { /*Получение ошибок из lua скриптов*/
+				string what = e.what();
+				PE(what, "LUA");
+			}
+		};
+	std::thread thread(nowait);
+	thread.detach();
+}
+
 void SetRepeatFunction(sol::function func,int count, int milisec) {
 	auto cycle = [func, count, milisec]() {
 		int i = 1;
@@ -126,7 +144,7 @@ void SetRepeatFunction(sol::function func,int count, int milisec) {
 			try {
 				{
 					std::unique_lock<std::mutex> lock(mtx);
-					func(i);
+					func(i,count);
 				}
 			}
 			catch (const sol::error& e) { /*Получение ошибок из lua скриптов*/

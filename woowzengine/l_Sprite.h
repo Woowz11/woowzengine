@@ -15,6 +15,7 @@ public:
 	l_Vector2 origin = l_Vector2(0.5, 0.5);
 	l_Color color = l_Color(255,255,255,255);
 	float zindex = 0;
+	int cout = 0;
 	l_Vector2 size = l_Vector2(1,1);
 	bool movewithcamera = false;
 	bool autoresize = false;

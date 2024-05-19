@@ -30,6 +30,7 @@ int main(int argc, char** argv)
     ConsoleInstall();
     SetConsoleTitle(StringToLPCWSTR("WoowzEngine Console"));
     cout << "WoowzEngine realization..." << "\n";
+    cout << "Engine path: " << PathToExe << "\n";
     cout << "Engine version: " << EngineVersion << "\n";
     if (DebugVersion) { cout << "Debug mode enabled!" << "\n"; }
 
@@ -39,7 +40,6 @@ int main(int argc, char** argv)
         }
     }
     else {
-        cout << argv[0] << "\n";
         argc = 2;
         argv = new char*[argc];
         argv[0] = PathToExe;
@@ -63,9 +63,12 @@ int main(int argc, char** argv)
         }
     }
 
-    cout << "Game opening: " << GamePath << "\n";
+    cout << "Game path: " << GamePath << "\n";
     if (!SupportedWindowsVersion()) {
         cout << "Unsupported version of Windows! Possible errors. [Supported 10, 11]" << "\n";
+    }
+    if (!CheckInternet()) {
+        cout << "Engine without internet!" << "\n";
     }
     cout << "[]==============[Log]==============[]" << "\n";
     SetConsoleCtrlHandler((PHANDLER_ROUTINE)StopEngine, true);

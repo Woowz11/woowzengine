@@ -87,21 +87,26 @@ float GetFractionalPart(int i) {
 }
 
 /*Установить сид*/
-void SetRandomSeed(int seed) {
+void SetRandomSeed(int seed, bool dontsaveseed) {
 	srand(seed);
-	SetSessionInfo("Seed", to_string(seed));
+	if (!dontsaveseed) { SetSessionInfo("Seed", to_string(seed)); }
 }
 
 /*Получить случайное число*/
-float Random(float min,float max) {
+float Random(float min,float max,bool dontsaveseed) {
 	if (min > max) { PE("Minimum number cannot be > maximum number! Random(" + to_string(min) + "," + to_string(max) + ")", "E0004"); return -1; }
 	else {
-		return (Random() * (max - min)) + min;
+		return (Random(dontsaveseed) * (max - min)) + min;
 	}
 }
-float Random() {
-	int seed = StringToInt(GetSessionInfo("Seed")) + 6278312124078 + StringToInt(GetSessionInfo("Seed"))*53;
-	SetRandomSeed(seed);
+int fastseed = (int)std::time(nullptr);
+float Random(bool dontsaveseed) {
+	int seed_ = (dontsaveseed?fastseed:StringToInt(GetSessionInfo("Seed")));
+	int seed = ((seed_ + 693206737) ^ (seed_ << 13) ^ (seed_ >> 17)) % 100000000 + (rand()/RAND_MAX)*100000000;
+	SetRandomSeed(seed, dontsaveseed);
+	if (dontsaveseed) {
+		fastseed = seed;
+	}
 	return (float)static_cast<double>(rand()) / RAND_MAX;
 }
 
@@ -119,12 +124,14 @@ void BaseInstall(string GamePath_) {
 
 #pragma region ConsoleZone
 /*Отправка сообщения в консоль и остальное*/
-void Print(string Text, int Color) {
-	PrintToConsole(Text, Color);
+void Print(string Text, int Color, bool OnlyLog) {
+	if (!OnlyLog) {
+		PrintToConsole(Text, Color);
+	}
 	PrintToLog(Text);
 }
-void Print(int Text, int Color) {
-	Print(to_string(Text),Color);
+void Print(int Text, int Color, bool OnlyLog) {
+	Print(to_string(Text),Color, OnlyLog);
 }
 
 /*Делает символы в строке большими*/
@@ -148,34 +155,26 @@ string ConvertTextToConsoleLogMessage(string Text, string Module, string c) {
 /*Отправить сообщение*/
 void P(string Module, string Text, int color, string ch) {
 	bool next = RunPrintFunction(Text, "Unknown", Module, "", color, ch);
-	if (next) {
-		Print(ConvertTextToConsoleLogMessage(Text, Module, ch), color);
-	}
+	Print(ConvertTextToConsoleLogMessage(Text, Module, ch), color, !next);
 }
 /*Отправить обычное сообщение*/
 void PP(string Text) {
 	bool next = RunPrintFunction(Text, "Print", "PRINT", "", 7, "*");
-	if (next) {
-		Print(ConvertTextToConsoleLogMessage(Text, "PRINT", "*"), 7);
-	}
+	Print(ConvertTextToConsoleLogMessage(Text, "PRINT", "*"), 7, !next);
 }
 /*Отправить ошибку*/
 void PE(string Text,string ErrorCode) {
 	bool next = RunPrintFunction(Text, "Error", "ERROR", ErrorCode, 12, "!");
-	if (next) {
-		ErrorsCount++;
-		Print(ConvertTextToConsoleLogMessage(Text + " - " + ErrorCode, "ERROR", "!"), 12);
-		if (ErrorsCount >= 10) {
-			LogsErrors();
-		}
+	ErrorsCount++;
+	Print(ConvertTextToConsoleLogMessage(Text + " - " + ErrorCode, "ERROR", "!"), 12, !next);
+	if (ErrorsCount >= 10) {
+		LogsErrors();
 	}
 }
 /*Отправить предупреждение*/
 void PW(string Text,string Code) {
 	bool next = RunPrintFunction(Text, "Warning", "WARN", Code, 14, "?");
-	if (next) {
-		Print(ConvertTextToConsoleLogMessage(Text + " - " + Code, "WARN", "?"), 14);
-	}
+	Print(ConvertTextToConsoleLogMessage(Text + " - " + Code, "WARN", "?"), 14, !next);
 }
 /*Отправить фатальую ошибку*/
 void PF(string Text,string Code, bool DontPrint) {
@@ -208,7 +207,7 @@ bool GetOrCreateFile(string Dir) {
 void Wait(int Milliseconds) {
 	if (Milliseconds <= 0) { PE("Wait(" + to_string(Milliseconds) + ") function only accepts a number >0!", "E0000"); }
 	else {
-		std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(Milliseconds)));
+		std::this_thread::sleep_for(std::chrono::milliseconds(Milliseconds));
 	}
 }
 
