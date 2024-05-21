@@ -8,13 +8,15 @@
 #include <codecvt>
 #include <sol/sol.hpp>
 #include "Console.h"
-#include "Easyer.h"
 #include "fcntl.h"
 #include "io.h"
+#include "Cycles.h"
+#include "Easyer.h"
 
 using namespace std;
 
 sol::function PrintFunction;
+HANDLE hConsole;
 
 void SetPrintFunction(sol::function f) {
 	PrintFunction = f;
@@ -38,12 +40,10 @@ bool RunPrintFunction(string text, string type, string module, string code, int 
 	return true;
 }
 
-int DefaultConsoleColor = 8;
-
 void ConsoleInstall() {
     HWND console = GetConsoleWindow();
 
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
     CONSOLE_FONT_INFOEX fontInfo;
     fontInfo.cbSize = sizeof(fontInfo);
@@ -58,19 +58,18 @@ void ConsoleInstall() {
 
 /*Отправка сообщения в консоль*/
 int PrintToConsole(string Text, int Color) {
-	setlocale(LC_ALL, "");
-	HANDLE  hConsole;
-	hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-
 	/*Установка цвета в консоли*/
 	if (Color != -1) {
 		SetConsoleTextAttribute(hConsole, Color);
 	}
 	else {
-		SetConsoleTextAttribute(hConsole, DefaultConsoleColor);
+		SetConsoleTextAttribute(hConsole, 8);
 	}
 
 	_setmode(_fileno(stdout), _O_U16TEXT);
-	wcout << StringToWString(Text) << "\n";
+	std::wstring wideText = StringToWString(Text);
+	wcout << wideText << L"\n";
+
 	return 0;
 }
+

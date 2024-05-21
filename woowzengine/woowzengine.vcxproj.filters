@@ -188,9 +188,6 @@
     <ClInclude Include="l_Vector4.h">
       <Filter>Исходные файлы\Elements\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="l_Texture.h">
-      <Filter>Исходные файлы\Elements\Lua</Filter>
-    </ClInclude>
     <ClInclude Include="l_Element.h">
       <Filter>Исходные файлы\Elements\Old</Filter>
     </ClInclude>

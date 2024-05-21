@@ -21,6 +21,8 @@ int Time = 0;
 int FPS = -1;
 int FPS_ = -1;
 
+bool Started = false;
+
 void SetDTFunction(sol::function func) {
 	DTFunction = func;
 }
@@ -37,6 +39,7 @@ void StopCycleEngine() {
 }
 
 void StartCycleEngine() {
+	Started = true;
 	SetCycleEngine();
 }
 
@@ -100,12 +103,17 @@ void CyclePerSecond() {
 
 void SetCycleFunction(sol::function func, int milisec) {
 	auto cycle = [func, milisec]() {
+		while (!Started) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		}
 		while (!GetFatal()) {
 			try {
+
 				{
 					std::unique_lock<std::mutex> lock(mtx);
 					func();
 				}
+
 			}
 			catch (const sol::error& e) { /*Получение ошибок из lua скриптов*/
 				string what = e.what();
@@ -120,6 +128,9 @@ void SetCycleFunction(sol::function func, int milisec) {
 
 void InOtherThread(sol::function func) {
 	auto nowait = [func]() {
+		while (!Started) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		}
 			try
 			{
 				{
@@ -138,6 +149,9 @@ void InOtherThread(sol::function func) {
 
 void SetRepeatFunction(sol::function func,int count, int milisec) {
 	auto cycle = [func, count, milisec]() {
+		while (!Started) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		}
 		int i = 1;
 		while (i < (count + 1)) {
 			if (milisec > 0) { std::this_thread::sleep_for(std::chrono::milliseconds(milisec)); }

@@ -26,6 +26,7 @@
 #include "OpenGame.h"
 #include "Files.h"
 #include "Cycles.h"
+#include "Texture.h"
 
 #include "Color.h"
 #include "Vector2.h"
@@ -39,21 +40,30 @@ using namespace std;
 
 map<string, Window> Windows;
 map<GLFWwindow*, string> Windows_2;
-unordered_map<string, unordered_map<string, GLuint>> Textures;
+unordered_map<string, GLuint> Textures;
+unordered_map<string, unordered_map<string, string>> Textures_Info;
 string MainWindow = "";
 
+unordered_map <string, vector <l_Sprite>> SceneSprites;
+
 map<string, Scene> Scenes;
+
+string NowWindow;
 
 string DefaultShaderVertex = R"(
 #version 330 core
 layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec2 aTexCoord;
 
 uniform vec2 scale;
+
+out vec2 TexCoord;
 
 void main()
 {
 	vec2 NewPosition = aPos.xy * scale;
 	gl_Position = vec4(NewPosition, 0, 1);
+	TexCoord = aTexCoord;
 }
 )";
 
@@ -62,10 +72,13 @@ string DefaultShaderFragment = R"(
 out vec4 FragColor;
 
 uniform vec4 color;
+uniform sampler2D sprite;
+
+in vec2 TexCoord;
 
 void main()
 {
-    FragColor = color;
+    FragColor = texture(sprite, TexCoord) * color;
 } 
 )";
 
@@ -88,15 +101,29 @@ unsigned char* LoadTexture(string path, int* x, int* y, int* numchannel) {
 	return texture;
 }
 
+string GetTextureID(Texture texture) {
+	string result = texture.path;
+
+	if (texture.Linear) {
+		result = result + " [LINEAR]";
+	}
+
+	return result;
+}
+
 GLuint LoadSprite(string path, l_Sprite spritedata) {
 	int x, y, numchan;
 	unsigned char* imagedata = LoadTexture(path, &x, &y, &numchan);
 	GLuint sprite;
 	glGenTextures(1, &sprite);
 	glBindTexture(GL_TEXTURE_2D, sprite);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (spritedata.Linear? GL_LINEAR : GL_NEAREST));
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (spritedata.Linear ? GL_LINEAR : GL_NEAREST));
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (spritedata.texture.Linear? GL_LINEAR : GL_NEAREST));
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (spritedata.texture.Linear ? GL_LINEAR : GL_NEAREST));
 	glTexImage2D(GL_TEXTURE_2D, 0, (numchan==3? GL_RGB : GL_RGBA), x, y, 0, (numchan == 3 ? GL_RGB : GL_RGBA), GL_UNSIGNED_BYTE, imagedata);
+
+	string textureid = GetTextureID(spritedata.texture);
+	Textures_Info[textureid]["x"] = to_string(x);
+	Textures_Info[textureid]["y"] = to_string(y);
 
 	stbi_image_free(imagedata);
 
@@ -118,6 +145,7 @@ void CreateBuffers(Window& window) {
 	GLuint Shader = CompileShaderProgram(VertexShader, FragmentShader);
 	string ShaderID = "default";
 	map<string, map<string, int>> Uniforms = {};
+	Uniforms[ShaderID]["sprite"] = glGetUniformLocation(Shader,"sprite");
 	Uniforms[ShaderID]["time"] = glGetUniformLocation(Shader, "time");
 	Uniforms[ShaderID]["random"] = glGetUniformLocation(Shader, "random");
 	Uniforms[ShaderID]["scale"] = glGetUniformLocation(Shader, "scale");
@@ -221,46 +249,45 @@ GLuint CompileShaderProgram(GLuint Vertex, GLuint Fragment) {
 
 /*Ìועמהû*/
 
-GLuint GetTexture(string window,l_Sprite sprite) {
-	unordered_map<string, GLuint> Textures_;
-	if (Textures.find(window) != Textures.end()) {
-		Textures_ = Textures[window];
-	}
-	else {
-		Textures_ = {};
-	}
+GLuint GetTexture(l_Sprite sprite) {
+	unordered_map<string, GLuint> Textures_ = Textures;
+	string textureid = GetTextureID(sprite.texture);
 
 	GLuint result;
-	if (Textures_.find(sprite.id) != Textures_.end()) {
-		result = Textures_[sprite.id];
+	if (Textures_.find(textureid) != Textures_.end()) {
+		result = Textures_[textureid];
 	}
 	else {
-		GLuint texture = LoadSprite(sprite.texture, sprite);
-		Textures_[sprite.id] = texture;
+		GLuint texture = LoadSprite(sprite.texture.path, sprite);
+		Textures_[textureid] = texture;
 		result = texture;
 	}
 
-	Textures[window] = Textures_;
+	Textures = Textures_;
 
 	return result;
 }
 
-void RenderQuad(list<float> v) {
-	float vert[12] = {0};
+void RenderQuad(list<float> v_uv) {
+	const int size = 20;
+	float vert[size] = { 0 };
 	int i = 0;
-	for (float element : v) {
+	for (float element : v_uv) {
 		vert[i] = element;
 		i++;
 	}
-	glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(float), vert, GL_DYNAMIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glBufferData(GL_ARRAY_BUFFER, 20 * sizeof(float), vert, GL_DYNAMIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 	glDrawArrays(GL_QUADS, 0, 4);
 }
 
-void UpdateShader(Window window,Color color, int width, int height, bool autosize) {
+void UpdateShader(Window window, Color color, int width, int height, bool autosize) {
 	GLuint Shader = GetFromMap(window.Shaders, "default");
 	glUseProgram(Shader);
+	glUniform1i(GetFromMap(GetFromMap(window.Uniforms, "default"), "sprite"), 0);
 	glUniform1f(GetFromMap(GetFromMap(window.Uniforms, "default"), "time"), GetActiveTime());
 	glUniform2f(GetFromMap(GetFromMap(window.Uniforms, "default"), "scale"), (window.AutoResize||autosize ? (float)1 : (float)window.StartSizeX / (float)width), (window.AutoResize||autosize ? (float)1 : (float)window.StartSizeY / (float)height));
 	hash<std::string> hasher;
@@ -367,14 +394,38 @@ bool PointOutside_(l_Vector2 vec, string windowid) {
 	return PointOutside(window, vec.ToCPP(), GetScene(window.scene));
 }
 
+float lerp(float b, float a, float t) {
+	return a + t * (b - a);
+}
+
+float PI = 3.1415926535;
+float DegToRad(float deg) {
+	return deg * (PI / 180);
+}
+
+float RadToDeg(float rad) {
+	return rad * (180 / PI);
+}
+
+l_Vector2 RotatePoint(l_Vector2 point, l_Vector2 center, float angle_) {
+	float angle = DegToRad(angle_);
+	float x = center.x + (point.x - center.x) * cos(angle) - (point.y - center.y) * sin(angle);
+	float y = center.y + (point.x - center.x) * sin(angle) + (point.y - center.y) * cos(angle);
+	return l_Vector2(x, y);
+}
+
 void RenderSprite(Window window, string id, l_Sprite sprite, int width, int height,Scene scene) {
 	if (sprite.id != "") {
-		/*float Zoom = scene.CameraZoom;
+		float Zoom = scene.CameraZoom;
+		float Angle = sprite.angle;
 		float SizeMult = (float)window.StartSizeY / (float)window.StartSizeX;
-		float SizeX = sprite.size.x * SizeMult * Zoom;
-		float SizeY = sprite.size.y * Zoom;
-		float PosX = sprite.position.x * SizeMult * Zoom;
-		float PosY = sprite.position.y * Zoom;
+		float AngleCos = (cos(DegToRad(Angle) * 2) + 1) / 2;
+		float SizeMultX = lerp(SizeMult, 1, AngleCos);
+		float SizeMultY = lerp(1, SizeMult, AngleCos);
+		float SizeX = sprite.size.x     * SizeMultX * Zoom;
+		float SizeY = sprite.size.y     * SizeMultY * Zoom;
+		float PosX  = sprite.position.x * SizeMult * Zoom;
+		float PosY  = sprite.position.y * Zoom;
 
 		float xw = float(width);
 		float yw = float(height);
@@ -387,28 +438,47 @@ void RenderSprite(Window window, string id, l_Sprite sprite, int width, int heig
 		float TRY =  SizeY + PosY + (sprite.RT.y * Zoom);
 		float BRX =  SizeX + PosX + (sprite.RB.x * Zoom);
 		float BRY = -SizeY + PosY + (sprite.RB.y * Zoom);
-		float CENTERX = (BLX / 4) + (BRX / 4) + (TLX / 4) + (TRX / 4);
-		float CENTERY = (BLY / 4) + (BRY / 4) + (TLY / 4) + (TRY / 4);
-		int OutNumber = 0;
+
+		float CENTERX = (BLX + TLX + TRX + BRX) / 4 + sprite.origin.x;
+		float CENTERY = (BLY + TLY + TRY + BRY) / 4 + sprite.origin.y;
+		int OutNumber = 200;
 
 		bool Out = PointOutside(window,CENTERX,CENTERY,scene,xw,yw,OutNumber);
 		if (!Out) {
-			UpdateShader(window, sprite.color.ToCPP(), width, height, sprite.autoresize);
-			GLuint texture = GetTexture(window.id, sprite);
+
+			l_Vector2 RotCenter = l_Vector2(CENTERX, CENTERY);
+
+			l_Vector2 LB = RotatePoint(l_Vector2(BLX, BLY), RotCenter, Angle);
+			l_Vector2 LT = RotatePoint(l_Vector2(TLX, TLY), RotCenter, Angle);
+			l_Vector2 RB = RotatePoint(l_Vector2(BRX, BRY), RotCenter, Angle);
+			l_Vector2 RT = RotatePoint(l_Vector2(TRX, TRY), RotCenter, Angle);
+
+			GLuint texture = GetTexture(sprite);
 			glBindTexture(GL_TEXTURE_2D, texture);
+			UpdateShader(window, sprite.color.ToCPP(), width, height, sprite.autoresize);
 
 			float CamPosX = (sprite.movewithcamera ? 0 : scene.CameraPosition.x) * SizeMult * Zoom;
 			float CamPosY = (sprite.movewithcamera ? 0 : scene.CameraPosition.y) * Zoom;
 
+			float flipx = 1;
+			if (sprite.FlipX) {
+				flipx = -1;
+			}
+			float flipy = 1;
+			if (sprite.FlipY) {
+				flipy = -1;
+			}
+
 			RenderQuad({
-				BLX - CamPosX,BLY - CamPosY, 0,
-				TLX - CamPosX,TLY - CamPosY, 0,
-				TRX - CamPosX,TRY - CamPosY, 0,
-				BRX - CamPosX,BRY - CamPosY, 0
-				});
+			/* [ Corners                    ]   [ UV                                    ] */
+				LB.x-CamPosX,LB.y-CamPosY, 0,    sprite.UVLB.x*flipx,sprite.UVLB.y*flipy,
+				LT.x-CamPosX,LT.y-CamPosY, 0,    sprite.UVLT.x*flipx,sprite.UVLT.y*flipy,
+				RT.x-CamPosX,RT.y-CamPosY, 0,    sprite.UVRT.x*flipx,sprite.UVRT.y*flipy,
+				RB.x-CamPosX,RB.y-CamPosY, 0,    sprite.UVRB.x*flipx,sprite.UVRB.y*flipy
+			});
 		}
 			
-		glFlush();*/
+		glFlush();
 	}
 }
 
@@ -421,6 +491,7 @@ void ErrorScene(string text) {
 void Render() {
 	if (Windows.size() > 0) {
 		for (auto const& [id, window] : Windows) {
+			NowWindow = id;
 			if (!glfwWindowShouldClose(window.glfw)) {
 				glfwMakeContextCurrent(window.glfw);
 				glfwPollEvents();
@@ -444,8 +515,9 @@ void Render() {
 							glClearColor(0, 0, 0, 1);
 						}
 						glEnable(GL_TEXTURE_2D);
-						vector<l_Sprite> sprites = scene.sprites;
+						vector<l_Sprite> sprites = SceneSprites["scene"];
 						if (sprites.size() > 0) {
+
 							for (const auto& sprite : sprites) {
 								RenderSprite(window, sprite.id, sprite, width, height, scene);
 							}
@@ -475,9 +547,63 @@ void Render() {
 
 /*---------------------------*/
 
-l_Sprite GetSprite(string sceneid, string id) {
+void UpdateLayers(string sceneid) {
+	vector<l_Sprite> sprites = SceneSprites[sceneid];
+	for (auto& sprite : sprites) {
+		sprite.zindex_code = sprite.zindex + (float(sprite.cout)/10000);
+	}
+	std::sort(sprites.begin(), sprites.end(), [](const l_Sprite& a, const l_Sprite& b) {
+		return a.zindex_code < b.zindex_code;
+	});
+	SceneSprites[sceneid].clear();
+	SceneSprites[sceneid] = sprites;
+}
+
+bool HasSprite(string sceneid, string id) {
 	Scene scene = GetScene(sceneid);
-	return scene.Find(id);
+	vector<l_Sprite> sprites = SceneSprites[sceneid];
+	auto it = find_if(sprites.begin(), sprites.end(), [&](const l_Sprite& sprite_) {
+		return sprite_.id == id;
+		});
+
+	if (it != sprites.end()) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+GLuint GetTextureT(Texture texture) {
+	string id = GetTextureID(texture);
+	if (Textures.find(id) != Textures.end()) {
+		return Textures[id];
+	}
+	else {
+		l_Sprite sprite = GetSprite(texture.sceneid, texture.spriteid,true);
+		return GetTexture(sprite);
+	}
+}
+
+l_Sprite GetSprite(string sceneid, string id, bool textureerror) {
+	Scene scene = GetScene(sceneid);
+	vector<l_Sprite> sprites = SceneSprites[sceneid];
+	auto it = find_if(sprites.begin(), sprites.end(), [&](const l_Sprite& sprite_) {
+		return sprite_.id == id;
+	});
+	
+	if (it != sprites.end()) {
+		return *it;
+	}
+	else {
+		if (textureerror) {
+			PF("The texture was not loaded into the sprite! GetSprite('" + sceneid + "','" + id + "')", "C0026");
+		}
+		else {
+			PE("No sprite found! GetSprite('" + sceneid + "','" + id + "')", "E0022");
+		}
+		return l_Sprite("");
+	}
 }
 
 Scene GetScene(string id) {
@@ -492,8 +618,13 @@ Scene GetScene(string id) {
 
 void SetSprite(l_Sprite sprite) {
 	Scene scene = GetScene(sprite.sceneid);
-	scene.SetSprite(sprite);
-	Scenes[sprite.sceneid] = scene;
+	vector<l_Sprite> sprites = SceneSprites[sprite.sceneid];
+	auto it = find_if(sprites.begin(), sprites.end(), [&](const l_Sprite& sprite_) {
+		return sprite_.id == sprite.id;
+	});
+	*it = sprite;
+	SceneSprites[sprite.sceneid].clear();
+	SceneSprites[sprite.sceneid] = sprites;
 }
 
 void CreateScene(string id) {
@@ -520,12 +651,17 @@ float GetCameraZoom(string id) {
 
 int spritescount = 0;
 void CreateSprite(string id, string sceneid) {
-	l_Sprite sprite(id, sceneid);
-	sprite.cout = spritescount;
-	spritescount++;
-	Scene scene = GetScene(sceneid);
-	scene.NewSprite(sprite);
-	Scenes[sceneid] = scene;
+	if (!HasSprite(sceneid, id)) {
+		l_Sprite sprite(id, sceneid);
+		sprite.cout = spritescount;
+		spritescount++;
+		Scene scene = GetScene(sceneid);
+		SceneSprites[sceneid].push_back(sprite);
+		UpdateLayers(sceneid);
+	}
+	else {
+		PE("Such a sprite is already on the scene! CreateSprite('"+id+"','"+sceneid+"')","E0023");
+	}
 }
 
 void SetSpritePosition(string sceneid, string id, l_Vector2 pos) {
@@ -534,10 +670,42 @@ void SetSpritePosition(string sceneid, string id, l_Vector2 pos) {
 	SetSprite(sprite);
 }
 
+void SetSpriteCenter(string sceneid, string id, l_Vector2 pos) {
+	l_Sprite sprite = GetSprite(sceneid, id);
+	sprite.origin = pos;
+	SetSprite(sprite);
+}
+
 void SetSpriteSize(string sceneid, string id, l_Vector2 size) {
 	l_Sprite sprite = GetSprite(sceneid, id);
 	sprite.size = size;
 	SetSprite(sprite);
+}
+
+void SetSpriteOrientation(string sceneid, string id, float deg) {
+	l_Sprite sprite = GetSprite(sceneid, id);
+	sprite.angle = deg;
+	SetSprite(sprite);
+}
+
+l_Vector2 GetSpriteSize(string sceneid, string id) {
+	l_Sprite sprite = GetSprite(sceneid, id);
+	return sprite.size;
+}
+
+l_Vector2 GetSpriteCenter(string sceneid, string id) {
+	l_Sprite sprite = GetSprite(sceneid, id);
+	return sprite.origin;
+}
+
+float GetSpriteRotation(string sceneid, string id) {
+	l_Sprite sprite = GetSprite(sceneid, id);
+	return sprite.angle;
+}
+
+l_Vector2 GetSpritePosition(string sceneid, string id) {
+	l_Sprite sprite = GetSprite(sceneid, id);
+	return sprite.position;
 }
 
 void SetSpriteCorner(string sceneid, string id, l_Vector2 pos, bool left, bool top) {
@@ -556,6 +724,27 @@ void SetSpriteCorner(string sceneid, string id, l_Vector2 pos, bool left, bool t
 		}
 		else {
 			sprite.RB = pos;
+		}
+	}
+	SetSprite(sprite);
+}
+
+void SetSpriteCornerUV(string sceneid, string id, l_Vector2 pos, bool left, bool top) {
+	l_Sprite sprite = GetSprite(sceneid, id);
+	if (left) {
+		if (top) {
+			sprite.UVLT = pos;
+		}
+		else {
+			sprite.UVLB = pos;
+		}
+	}
+	else {
+		if (top) {
+			sprite.UVRT = pos;
+		}
+		else {
+			sprite.UVRB = pos;
 		}
 	}
 	SetSprite(sprite);
@@ -600,10 +789,55 @@ l_Color GetSpriteColor(string sceneid, string id) {
 	return sprite.color;
 }
 
+Texture SetSpriteTexture(string sceneid, string id, Texture texture) {
+	l_Sprite sprite = GetSprite(sceneid, id);
+	sprite.texture = texture;
+	sprite.texture.SetID(sceneid, id);
+	SetSprite(sprite);
+	return sprite.texture;
+}
+
+l_Vector2 GetTextureSize(Texture texture) {
+	GLuint t = GetTextureT(texture);
+	string id = GetTextureID(texture);
+	int x = StringToInt(Textures_Info[id]["x"]);
+	int y = StringToInt(Textures_Info[id]["y"]);
+	return l_Vector2(x,y);
+}
+
+void SetSpriteSizeByTexture(string sceneid, string id, float se) {
+	l_Sprite sprite = GetSprite(sceneid, id);
+	l_Vector2 size = GetTextureSize(sprite.texture);
+	float div = 32 * se;
+	SetSpriteSize(sceneid, id, l_Vector2(size.x/div,size.y/div));
+}
+
 void SetSpriteLayer(string sceneid, string id, float zindex) {
 	l_Sprite sprite = GetSprite(sceneid, id);
 	sprite.zindex = zindex;
 	SetSprite(sprite);
+	UpdateLayers(sceneid);
+}
+
+void SetSpriteMirror(string sceneid, string id, bool ThatX, bool b) {
+	l_Sprite sprite = GetSprite(sceneid, id);
+	if (ThatX) {
+		sprite.FlipX = b;
+	}
+	else {
+		sprite.FlipY = b;
+	}
+	SetSprite(sprite);
+}
+
+bool GetSpriteMirror(string sceneid, string id, bool ThatX) {
+	l_Sprite sprite = GetSprite(sceneid, id);
+	if (ThatX) {
+		return sprite.FlipX;
+	}
+	else {
+		return sprite.FlipY;
+	}
 }
 
 float GetSpriteLayer(string sceneid, string id) {
@@ -611,16 +845,59 @@ float GetSpriteLayer(string sceneid, string id) {
 	return sprite.zindex;
 }
 
-map<float,string> GetSpritesOnScene(string sceneid) {
+vector<string> GetSpritesOnScene(string sceneid) {
 	Scene scene = GetScene(sceneid);
 
 	map<float, string> newlist;
-	/*for (auto const& [sid, sprite] : scene.sprites) {
-		float z = (sprite.zindex + (float(sprite.cout) / 10000));
-		newlist[z] = sprite.id;
-	}*/
+	for (auto const& sprite : SceneSprites[sceneid]) {
+		newlist[sprite.zindex_code] = sprite.id;
+	}
 
-	return newlist;
+	std::vector<float> keys;
+	for (const auto& pair : newlist) {
+		keys.push_back(pair.first);
+	}
+	std::sort(keys.begin(), keys.end());
+
+	vector<string> sortedList;
+	for (const auto& key : keys) {
+		sortedList.push_back(newlist[key]);
+	}
+
+	return sortedList;
+}
+
+vector<string> GetWindows() {
+	vector<string> result;
+	for (const auto& pair : Windows) {
+		if (pair.first != "") {
+			result.push_back(pair.first);
+		}
+	}
+
+	return result;
+}
+
+string GetSceneByWindow(string windowid) {
+	Window window = GetWindowByID(windowid);
+	if (window.scene == "") {
+		PE("No scene found in the window! GetSceneByWindow('"+windowid+"')","E0024");
+		return "";
+	}
+	else {
+		return window.scene;
+	}
+}
+
+string GetWindowByScene(string sceneid) {
+	Scene scene = GetScene(sceneid);
+	if (scene.windowid == "") {
+		PE("No window found in the scene! GetWindowByScene('" + sceneid + "')", "E0025");
+		return "";
+	}
+	else {
+		return scene.windowid;
+	}
 }
 
 /*---------------------------*/

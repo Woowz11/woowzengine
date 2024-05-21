@@ -12,3 +12,8 @@ void StopPC();
 bool GetFatal();
 bool SupportedWindowsVersion();
 void OpenFile(string path);
+string GetSystemLanguage();
+string GetLanguage();
+void SetDesktopBackground(string img);
+void SetVolume(int volume);
+int GetVolume();

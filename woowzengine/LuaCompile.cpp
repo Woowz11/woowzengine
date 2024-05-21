@@ -20,12 +20,12 @@
 #include "Vector2.h"
 #include "Vertex.h"
 #include "RenderElement.h"
+#include "Texture.h"
 
 #include "l_Color.h"
 #include "l_Vector2.h"
 #include "l_Vector3.h"
 #include "l_Vector4.h"
-#include "l_Texture.h"
 #include "l_Sound.h"
 #include "l_Vertex.h"
 #include "l_Sprite.h"
@@ -39,6 +39,7 @@ sol::state lua{};
 string EmptyWindow = "New Window";
 string EmptyScene = "New Scene";
 string EmptySprite = "New Sprite";
+string EmptyImage;
 
 l_Color ErrorColor = l_Color(255,0,255,254);
 
@@ -1089,12 +1090,7 @@ int l_FRRandom(int min, int max) {
 
 /*Получить список спрайтов на сцене*/
 sol::table l_GetSprites(sol::object sceneid) {
-	map<float,string> sprites_ = GetSpritesOnScene(ToString(sceneid, EmptyScene));
-	list<string> sprites;
-	map<float, string> sprites__(sprites_.begin(),sprites_.end());
-	for (const auto& pair : sprites__) {
-		sprites.push_back(pair.second);
-	}
+	vector<string> sprites = GetSpritesOnScene(ToString(sceneid, EmptyScene));
 	sol::table tbl = lua.create_table();
 	for (const auto& sprite : sprites) {
 		tbl.add(sprite);
@@ -1105,6 +1101,176 @@ sol::table l_GetSprites(sol::object sceneid) {
 /*Запускает функцию в новом потоке*/
 void l_NoWait(sol::function func) {
 	InOtherThread(func);
+}
+
+/*Получает установленый язык в системе*/
+string l_GetSystemLanguage() {
+	return GetSystemLanguage();
+}
+
+/*Получает выбраный язык*/
+string l_GetLanguage() {
+	return GetLanguage();
+}
+
+/*Проверяет есть ли такой спрайт на сцене*/
+bool l_HasSprite(sol::object sceneid, sol::object id) {
+	return HasSprite(ToString(sceneid, EmptyScene), ToString(id, EmptySprite));
+}
+
+/*Устанавливает текстуру спрайту*/
+void l_SetSpriteTexture(sol::object sceneid, sol::object id, Texture& texture) {
+	texture = SetSpriteTexture(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), texture);
+}
+
+/*Устанавливает размер как у текстуры*/
+void l_SetSpriteSizeByTexture(sol::object sceneid, sol::object id, float sizeextra) {
+	if (sizeextra == 0) { sizeextra = 1; }
+	SetSpriteSizeByTexture(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), 1/sizeextra);
+}
+
+/*Получить размер текстуры*/
+l_Vector2 l_GetTextureSize(Texture texture) {
+	return GetTextureSize(texture);
+}
+
+/*Получить размер спрайта*/
+l_Vector2 l_GetSpriteSize(sol::object sceneid, sol::object id) {
+	return GetSpriteSize(ToString(sceneid, EmptyScene), ToString(id, EmptySprite));
+}
+
+/*Получить позицию спрайта*/
+l_Vector2 l_GetSpritePosition(sol::object sceneid, sol::object id) {
+	return GetSpritePosition(ToString(sceneid, EmptyScene), ToString(id, EmptySprite));
+}
+
+/*Отеркалить спрайт по X*/
+void l_SetSpriteMirrorX(sol::object sceneid, sol::object id, bool b) {
+	SetSpriteMirror(ToString(sceneid, EmptyScene), ToString(id, EmptySprite),true,b);
+}
+
+/*Отеркалить спрайт по Y*/
+void l_SetSpriteMirrorY(sol::object sceneid, sol::object id, bool b) {
+	SetSpriteMirror(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), false, b);
+}
+
+/*Получить отзеркаливание по X*/
+bool l_GetSpriteMirrorX(sol::object sceneid, sol::object id) {
+	return GetSpriteMirror(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), true);
+}
+
+/*Получить отзеркаливание по Y*/
+bool l_GetSpriteMirrorY(sol::object sceneid, sol::object id) {
+	return GetSpriteMirror(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), false);
+}
+
+/*Установить позицию левого верхнего угла UV*/
+void l_SetSpriteUVLTCorner(sol::object sceneid, sol::object id, l_Vector2 pos) {
+	SetSpriteCornerUV(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), pos, true, true);
+}
+
+/*Установить позицию левого нижнего угла UV*/
+void l_SetSpriteUVLBCorner(sol::object sceneid, sol::object id, l_Vector2 pos) {
+	SetSpriteCornerUV(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), pos, true, false);
+}
+
+/*Установить позицию правого верхнего угла UV*/
+void l_SetSpriteUVRTCorner(sol::object sceneid, sol::object id, l_Vector2 pos) {
+	SetSpriteCornerUV(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), pos, false, true);
+}
+
+/*Установить позицию правого нижнего угла UV*/
+void l_SetSpriteUVRBCorner(sol::object sceneid, sol::object id, l_Vector2 pos) {
+	SetSpriteCornerUV(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), pos, false, false);
+}
+
+/*Установить поворот спрайта*/
+void l_SetSpriteOrientation(sol::object sceneid, sol::object id, float deg) {
+	SetSpriteOrientation(ToString(sceneid, EmptyScene), ToString(id, EmptySprite),deg);
+}
+
+/*Получить поворот спрайта*/
+float l_GetSpriteRotation(sol::object sceneid, sol::object id) {
+	return GetSpriteRotation(ToString(sceneid, EmptyScene), ToString(id, EmptySprite));
+}
+
+/*Берёт число между двумя числами по t*/
+float l_Lerp(float a, float b, float t) {
+	return lerp(a, b, t);
+}
+
+/*Градусы в радианы*/
+float l_ToRad(float deg) {
+	return DegToRad(deg);
+}
+
+/*Радианы в градусы*/
+float l_ToDeg(float rad) {
+	return RadToDeg(rad);
+}
+
+/*Установить центр спрайта*/
+void l_SetSpriteCenter(sol::object sceneid, sol::object id, l_Vector2 pos) {
+	SetSpriteCenter(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), pos);
+}
+
+/*Получить центр спрайта*/
+l_Vector2 l_GetSpriteCenter(sol::object sceneid, sol::object id) {
+	return GetSpriteCenter(ToString(sceneid, EmptyScene), ToString(id, EmptySprite));
+}
+
+/*Получить список окон*/
+sol::table l_GetWindows() {
+	vector<string> windowslist = GetWindows();
+	sol::table tbl = lua.create_table();
+	for (const auto& sprite : windowslist) {
+		tbl.add(sprite);
+	}
+	return tbl;
+}
+
+/*Получить окно по сцене*/
+string l_GetWindow(sol::object sceneid) {
+	return GetWindowByScene(ToString(sceneid, EmptyScene));
+}
+
+/*Получить сцену по окну*/
+string l_GetScene(sol::object windowid) {
+	return GetSceneByWindow(ToString(windowid, EmptyWindow));
+}
+
+/*Установить фотографию на рабочий стол*/
+void l_SetDesktopBackground(sol::object path_) {
+	string path = StringToPath(ToString(path_, EmptyImage));
+	if (SafeMode()) {
+		PW("Function [SetDesktopBackground('" + path + "')] cannot be started in SafeMode!", "LW0031");
+	}
+	else {
+		if (HasDirectory(path)) {
+			SetDesktopBackground(path);
+		}
+		else {
+			PE("File not found! SetDesktopBackground('" + path + "')","L0031");
+		}
+	}
+}
+
+int l_GetVolume() {
+	return GetVolume();
+}
+
+void l_SetVolume(int v) {
+	if (SafeMode()) {
+		PW("Function [SetVolume(" + to_string(v) + ")] cannot be started in SafeMode!", "LW0032");
+	}
+	else {
+		if (v > 100 || v < 0) {
+			PE("Volume must be > 0 and < 100! SetVolume("+to_string(v) + ")", "L0032");
+		}
+		else {
+			SetVolume(v);
+		}
+	}
 }
 
 /*Зона woowzengine*/
@@ -1299,6 +1465,8 @@ void LuaCompile() {
 	P("LUA", "Start Lua compile...");
 	lua.open_libraries(sol::lib::package);
 
+	EmptyImage = GetSessionInfo("SourcePath") + "engine/default.png";
+
 	/*Загрузка скриптов из игры*/
 	const string package_path_ = lua["package"]["path"];
 	lua["package"]["path"] = package_path_ + (!package_path_.empty() ? ";" : "") + GetSessionInfo("SourcePath") + "?.lua";
@@ -1314,10 +1482,16 @@ void LuaCompile() {
 	/*Конструкторы*/
 	lua.new_usertype<l_Color>("Color",
 		sol::constructors<l_Color(), l_Color(int, int, int, int), l_Color(int, int, int), l_Color(int, int), l_Color(int)>(),
-		"r", &l_Color::r,
-		"g", &l_Color::g,
-		"b", &l_Color::b,
-		"a", &l_Color::a
+		"SetR", &l_Color::SetR,
+		"SetG", &l_Color::SetG,
+		"SetB", &l_Color::SetB,
+		"SetA", &l_Color::SetA,
+		"GetR", &l_Color::GetR,
+		"GetG", &l_Color::GetG,
+		"GetB", &l_Color::GetB,
+		"GetA", &l_Color::GetA,
+		"Invert", &l_Color::Invert,
+		"InvertAll", &l_Color::InvertAll
 	);
 
 	lua.new_usertype<l_Vector2>("Vector2",
@@ -1341,8 +1515,11 @@ void LuaCompile() {
 		"w", &l_Vector4::w
 	);
 
-	lua.new_usertype<l_Texture>("Texture",
-		sol::constructors<l_Texture()>()
+	lua.new_usertype<Texture>("Texture",
+		sol::constructors<Texture(string)>(),
+		"GetPath", &Texture::GetPath,
+		"GetBlur", &Texture::GetBlur,
+		"SetBlur", &Texture::SetBlur
 	);
 
 	lua.new_usertype<l_Sound>("Sound",
@@ -1541,14 +1718,43 @@ void LuaCompile() {
 	lua.set_function("HasFile", &l_HasDirectory);
 	lua.set_function("OpenDirectory", &l_OpenFile);
 	lua.set_function("SetSpriteColor", &l_SetSpriteColor);
-	lua.set_function("GetSprtieColor", &l_GetSpriteColor);
+	lua.set_function("GetSpriteColor", &l_GetSpriteColor);
 	lua.set_function("SetSpriteLayer", &l_SetSpriteLayer);
 	lua.set_function("GetSpriteLayer", &l_GetSpriteLayer);
 	lua.set_function("FRandom", &l_FRandom);
 	lua.set_function("FRRandom", &l_FRRandom);
 	lua.set_function("GetSprites", &l_GetSprites);
 	lua.set_function("NoWait", &l_NoWait);
-	
+	lua.set_function("GetLanguage", &l_GetLanguage);
+	lua.set_function("GetSystemLanguage", &l_GetSystemLanguage);
+	lua.set_function("HasSprite", &l_HasSprite);
+	lua.set_function("SetSpriteTexture", &l_SetSpriteTexture);
+	lua.set_function("SetSpriteSizeByTexture", &l_SetSpriteSizeByTexture);
+	lua.set_function("GetTextureSize", &l_GetTextureSize);
+	lua.set_function("GetSpriteSize", &l_GetSpriteSize);
+	lua.set_function("GetSpritePosition", &l_GetSpritePosition);
+	lua.set_function("SetSpriteMirrorX", &l_SetSpriteMirrorX);
+	lua.set_function("SetSpriteMirrorY", &l_SetSpriteMirrorY);
+	lua.set_function("GetSpriteMirrorX", &l_GetSpriteMirrorX);
+	lua.set_function("GetSpriteMirrorY", &l_GetSpriteMirrorY);
+	lua.set_function("SetSpriteUVLTCorner", &l_SetSpriteUVLTCorner);
+	lua.set_function("SetSpriteUVLBCorner", &l_SetSpriteUVLBCorner);
+	lua.set_function("SetSpriteUVRTCorner", &l_SetSpriteUVRTCorner);
+	lua.set_function("SetSpriteUVRBCorner", &l_SetSpriteUVRBCorner);
+	lua.set_function("SetSpriteRotation", &l_SetSpriteOrientation);
+	lua.set_function("Lerp", &l_Lerp);
+	lua.set_function("ToRad", &l_ToRad);
+	lua.set_function("ToDeg", &l_ToDeg);
+	lua.set_function("GetSpriteRotation", &l_GetSpriteRotation);
+	lua.set_function("SetSpriteCenter", &l_SetSpriteCenter);
+	lua.set_function("GetSpriteCenter", &l_GetSpriteCenter);
+	lua.set_function("GetWindows", &l_GetWindows);
+	lua.set_function("GetWindow", &l_GetWindow);
+	lua.set_function("GetScene", &l_GetScene);
+	lua.set_function("SetDesktopBackground", &l_SetDesktopBackground);
+	lua.set_function("GetVolume", &l_GetVolume);
+	lua.set_function("SetVolume", &l_SetVolume);
+
 	P("LUA", "Lua functions and etc. are loaded!");
 	P("LUA", "Start 'start.lua' script...");
 	CompileScript(GetSessionInfo("SourcePath") + "start.lua");

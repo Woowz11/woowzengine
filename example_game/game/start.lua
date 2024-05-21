@@ -37,29 +37,47 @@ function CameraMovement()
 end
 SetCameraZoom("scene",0.25)
 
+local add = 2.5
+
+local make = false
 CycleRender(function() 
 	CameraMovement() 
 end)
 Cycle(function() SetWindowTitle("window","New Window! ("..GetFPS()..")") end,1000)
-
-local add = 2.5
-local x = -add
-local y = 0
-function test(i)
-	local sprite = "sprite"..i
-	CreateSprite(sprite,"scene")
-
-	--[[x = x + add
-	if(x>(10*add))then
-		x = add
-		y = y + add
+ 
+--[[local x = 0
+ local y = 0
+ local height = 33
+ local count = height*height
+ local addthis = 2
+ for i=-1,count do
+ 
+	x = x + 1
+	if(x>height)then
+		x = 0
+		y = y + 1
 	end
+ 
+	CreateSprite("sprite"..i,"scene")
+	SetSpriteColor("scene","sprite"..i,Color.new(Round((x/height)*255),Round(((height-x)/height)*255),Round((y/(count/height))*255)))
+	SetSpritePosition("scene","sprite"..i,Vector2.new(x*addthis,y*addthis))
+	SetSpriteRotation("scene","sprite"..i,FRRandom(0,380))
+	
+	local texturemap = {"default","error","test"}
+	
+	SetSpriteTexture("scene","sprite"..i,Texture.new("F:/woowzengine/example_game/game/engine/"..texturemap[FRRandom(1,#texturemap)]..".png"))
+ end]]
+ 
+ --[[Cycle(function()
+    Pairs(GetSprites("scene"),function(key,value,index) 
+        SetSpriteColor("scene",value,GetSpriteColor("scene",value):Invert())
+		local pos = GetSpritePosition("scene",value)
+		SetSpritePosition("scene",value,Vector2.new(pos.x + FRandom(-0.25,0.25),pos.y + FRandom(-0.25,0.25)))
+    end)
+ end,1000)]]
+ 
+CreateSprite("sprite","scene")
+SetSpriteTexture("scene","sprite",Texture.new("F:/woowzengine/example_game/game/engine/error.png"))
 
-	SetSpritePosition("scene",sprite,Vector2.new(x,y))
-	SetCameraPosition("scene",Vector2.new(x,y))]]
-	PrintFast(i.." | "..x.." | "..y)
-end
-
- Repeat(function(i,total)
-	test(i)
- end,1000,50)
+Print(GetVolume())
+--SetVolume(0)

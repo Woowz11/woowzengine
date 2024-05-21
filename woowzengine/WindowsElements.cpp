@@ -13,6 +13,11 @@
 #include "Easyer.h"
 #include "Base.h"
 #include "Logger.h"
+#include "ShlObj.h"
+#include "vector"
+#include "fstream"
+#include <mmdeviceapi.h>
+#include <endpointvolume.h>
 
 using namespace std;
 
@@ -129,4 +134,66 @@ map<int,string> ProgramsLaunched() {
 void OpenFile(string path_) {
 	wstring path = StringToWString(path_);
 	ShellExecute(NULL, L"open", path.c_str(), NULL, NULL, SW_SHOWNORMAL);
+}
+
+string GetSystemLanguage() {
+	LCID langId = GetUserDefaultLCID();
+	WCHAR language[6];
+	GetLocaleInfo(langId, LOCALE_SISO639LANGNAME, language, 6);
+	return ConstWCharToString(language);
+}
+
+string GetLanguage() { /*Я без понятия хули оно не обновляется*/
+	HKL keyboardLayout = GetKeyboardLayout(0);
+	LANGID langId = LOWORD(keyboardLayout);
+	WCHAR language[6];
+	GetLocaleInfo(langId, LOCALE_SISO639LANGNAME, language, 6);
+	return ConstWCharToString(language);
+}
+
+void SetDesktopBackground(string img) {
+	SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, StringToLPWSTR(img), SPIF_UPDATEINIFILE);
+	P("DESKTOP","New background desktop image installed!");
+}
+
+void SetVolume(int volume) {
+	IMMDeviceEnumerator* deviceEnumerator = nullptr;
+	CoInitialize(nullptr);
+	CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL, IID_PPV_ARGS(&deviceEnumerator));
+
+	IMMDevice* device = nullptr;
+	deviceEnumerator->GetDefaultAudioEndpoint(eRender, eConsole, &device);
+
+	IAudioEndpointVolume* audioEndpointVolume = nullptr;
+	device->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_ALL, nullptr, reinterpret_cast<void**>(&audioEndpointVolume));
+
+	audioEndpointVolume->SetMasterVolumeLevel(-64*(1-(float(volume)/100)), nullptr);
+
+	audioEndpointVolume->Release();
+	device->Release();
+	deviceEnumerator->Release();
+	CoUninitialize();
+}
+
+int GetVolume() {
+	IMMDeviceEnumerator* deviceEnumerator = nullptr;
+	CoInitialize(nullptr);
+	CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL, IID_PPV_ARGS(&deviceEnumerator));
+
+	IMMDevice* device = nullptr;
+	deviceEnumerator->GetDefaultAudioEndpoint(eRender, eConsole, &device);
+
+	IAudioEndpointVolume* audioEndpointVolume = nullptr;
+	device->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_ALL, nullptr, reinterpret_cast<void**>(&audioEndpointVolume));
+
+	float volumeLevel;
+	audioEndpointVolume->GetMasterVolumeLevel(&volumeLevel);
+
+	audioEndpointVolume->Release();
+	device->Release();
+	deviceEnumerator->Release();
+	CoUninitialize();
+
+	float volumePercentage = volumeLevel; /*Я короче пока-что хз как децибелы нормальн в проценты конвертировать*/
+	return int(round(volumePercentage));
 }

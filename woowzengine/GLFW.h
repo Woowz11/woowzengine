@@ -11,6 +11,7 @@
 #include "Vertex.h"
 #include "Window.h"
 #include "Scene.h"
+#include "Texture.h"
 #include "Color.h"
 #include "RenderElement.h"
 #include "l_Sprite.h"
@@ -18,8 +19,8 @@
 #pragma once
 using namespace std; 
 
-void UpdateShader(Window window,Color color,int width, int height, bool autosize = false);
-void RenderQuad(list<float> v);
+void UpdateShader(Window window, Color color,int width, int height, bool autosize = false);
+void RenderQuad(list<float> v_uv);
 void SetWindowTitle(string id, string title);
 void SetWindowSize(string id, bool thatY, int size);
 int GetWindowSize(string id, bool thatY);
@@ -56,7 +57,7 @@ void SetWindowScene(string id, string b, bool DontPrint = false);
 map<string, int> GetPressedKeys();
 GLuint CompileShader(string shadercode, bool ThatVertex);
 GLuint CompileShaderProgram(GLuint Vertex, GLuint Fragment);
-GLuint GetTexture(string window, l_Sprite sprite);
+GLuint GetTexture(l_Sprite sprite);
 unsigned char* LoadTexture(string path, int* x, int* y, int* numchannel);
 GLuint LoadSprite(string path, l_Sprite spritedata);
 void CreateBuffers(Window& window);
@@ -66,12 +67,13 @@ void SetWindowPosition(string id, int pos, bool ThatX);
 void SetCameraZoom(string id, float f);
 float GetCameraZoom(string id);
 void SetSprite(l_Sprite sprite);
-l_Sprite GetSprite(string sceneid, string id);
+l_Sprite GetSprite(string sceneid, string id, bool = false);
 Scene GetScene(string id);
 void CreateScene(string id);
 void CreateSprite(string id, string sceneid);
 void SetSceneBackgroundColor(string id, Color color);
 void SetSpritePosition(string sceneid, string id, l_Vector2 pos);
+void SetSpriteCenter(string sceneid, string id, l_Vector2 pos);
 void SetCameraPosition(string id, float pos, bool thatX);
 float GetCameraPosition(string id, bool thatX);
 Vector2 GetMousePosition(string id);
@@ -84,10 +86,32 @@ bool PointOutside_(l_Vector2 vec, string windowid);
 
 void SetSpriteSize(string sceneid, string id, l_Vector2 size);
 void SetSpriteCorner(string sceneid, string id, l_Vector2 pos, bool left, bool top);
+void SetSpriteCornerUV(string sceneid, string id, l_Vector2 pos, bool left, bool top);
 void SetWindowTransparency(string id, int alpha);
 int GetWindowTransparency(string id);
 void SetSpriteColor(string sceneid, string id, l_Color color);
 l_Color GetSpriteColor(string sceneid, string id);
 void SetSpriteLayer(string sceneid, string id, float zindex);
 float GetSpriteLayer(string sceneid, string id);
-map<float, string> GetSpritesOnScene(string sceneid);
+vector<string> GetSpritesOnScene(string sceneid);
+string GetTextureID(Texture sprite);
+void UpdateLayers(string sceneid);
+bool HasSprite(string sceneid, string id);
+Texture SetSpriteTexture(string sceneid, string id, Texture texture);
+GLuint GetTextureT(Texture texture);
+void SetSpriteSizeByTexture(string sceneid, string id, float sizeextra = 1);
+l_Vector2 GetTextureSize(Texture texture);
+l_Vector2 GetSpriteSize(string sceneid, string id);
+l_Vector2 GetSpritePosition(string sceneid, string id);
+l_Vector2 GetSpriteCenter(string sceneid, string id);
+void SetSpriteMirror(string sceneid, string id, bool ThatX, bool b);
+bool GetSpriteMirror(string sceneid, string id, bool ThatX);
+void SetSpriteOrientation(string sceneid, string id, float deg);
+l_Vector2 RotatePoint(l_Vector2 point, l_Vector2 center, float angle);
+float DegToRad(float deg);
+float RadToDeg(float rad);
+float lerp(float, float, float);
+float GetSpriteRotation(string sceneid, string id);
+vector<string> GetWindows();
+string GetSceneByWindow(string sceneid);
+string GetWindowByScene(string windowid);

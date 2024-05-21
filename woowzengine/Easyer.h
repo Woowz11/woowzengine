@@ -27,3 +27,6 @@ LPCWSTR WStringToLPCWSTR(wstring str);
 LPCWSTR ConstCharToLPCWSTR(const char* charString);
 LPCWSTR StringToLPCWSTR(string Str);
 LPWSTR StringToLPWSTR(string str);
+string LPVOIDToString(LPVOID lpData);
+LPCTSTR StringToLPCTSTR(string str);
+PVOID StringToPVOID(string str);

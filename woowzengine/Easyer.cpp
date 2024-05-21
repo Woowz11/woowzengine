@@ -172,6 +172,23 @@ const char* StringToConstChar(string Str) {
 	return result;
 }
 
+/*Превращает LPVOID в строку*/
+string LPVOIDToString(LPVOID lpData) {
+	char* pData = reinterpret_cast<char*>(lpData);
+	std::string strData(pData);
+	return strData;
+}
+
+/*Превращает строку в LPCTSTR*/
+LPCTSTR StringToLPCTSTR(string str) {
+	return (LPCTSTR)StringToConstChar(str);
+}
+
+/*Превращает строку в PVOID*/
+PVOID StringToPVOID(string str) {
+	return (PVOID)(str.c_str());
+}
+
 /*Превращает строку в путь ( заменяет "\" на "/" )*/
 string StringToPath(string Str) {
 	return ReplaceString(Str, "\\", "/");

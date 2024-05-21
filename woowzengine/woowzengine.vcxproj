@@ -155,7 +155,6 @@
     <ClInclude Include="l_Color.h" />
     <ClInclude Include="l_Element.h" />
     <ClInclude Include="l_Sprite.h" />
-    <ClInclude Include="l_Texture.h" />
     <ClInclude Include="l_Vector2.h" />
     <ClInclude Include="l_Vector4.h" />
     <ClInclude Include="l_Vertex.h" />
