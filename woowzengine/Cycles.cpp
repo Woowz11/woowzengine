@@ -10,6 +10,7 @@
 #include "Cycles.h"
 #include "OpenGame.h"
 #include "GLFW.h"
+#include "Easyer.h"
 #include "WindowsElements.h"
 
 using namespace std;
@@ -20,6 +21,8 @@ sol::function DTFunction;
 int Time = 0;
 int FPS = -1;
 int FPS_ = -1;
+
+string ConsoleTitle;
 
 bool Started = false;
 
@@ -95,6 +98,9 @@ void CyclePerSecond() {
 			std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 			FPS = FPS_;
 			FPS_ = 0;
+			if (ConsoleTitle == "WoowzEngine Console") {
+				SetConsoleTitle(StringToLPCWSTR("WoowzEngine Console (" + to_string(FPS) + ")"));
+			}
 		}
 		};
 	std::thread thread(cycle);
@@ -170,4 +176,9 @@ void SetRepeatFunction(sol::function func,int count, int milisec) {
 		};
 	std::thread thread(cycle);
 	thread.detach();
+}
+
+void SetConsoleTitle_(string title) {
+	ConsoleTitle = title;
+	SetConsoleTitle(StringToLPCWSTR(title));
 }

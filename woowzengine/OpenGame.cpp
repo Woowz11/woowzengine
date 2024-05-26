@@ -19,6 +19,7 @@
 #include "GLFW.h"
 #include "Cycles.h"
 #include "Discord.h"
+#include "WConst.h"
 
 using namespace std;
 
@@ -84,7 +85,29 @@ void CheckFiles(string ev) {
 	WriteToFile(SessionInfoPath, ConvertToJSON(SessionInfoInfo));
 
 	GetOrCreateFolder(OurGamePath);
-	GetOrCreateFolder(OurGamePath+"/engine");
+
+	string EnginePath = OurGamePath + "/engine";
+	GetOrCreateFolder(EnginePath);
+	if (!HasDirectory(EnginePath + "/default.png")) {
+		CreateFile(EnginePath + "/default.png");
+		WriteImage(EnginePath + "/default.png", 32, 32, DefaultImage);
+	}
+	if (!HasDirectory(EnginePath + "/error.png")) {
+		CreateFile(EnginePath + "/error.png");
+		WriteImage(EnginePath + "/error.png", 32, 32, ErrorImage);
+	}
+
+	string ShadersPath = EnginePath + "/shaders";
+	GetOrCreateFolder(ShadersPath);
+	if (!HasDirectory(ShadersPath + "/default.v")) {
+		CreateFile(ShadersPath + "/default.v");
+		WriteToFile(ShadersPath + "/default.v", ShaderVertex);
+	}
+	if (!HasDirectory(ShadersPath + "/default.f")) {
+		CreateFile(ShadersPath + "/default.f");
+		WriteToFile(ShadersPath + "/default.f", ShaderFragment);
+	}
+
 	GetOrCreateFile(JEngine);
 	if (!JSONValid(JEngine)) {
 		WriteToFile(JEngine, "{}");

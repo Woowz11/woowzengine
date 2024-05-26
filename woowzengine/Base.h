@@ -1,5 +1,6 @@
 #include <string>
 #include <map>
+#include <unordered_map>
 #include <chrono>
 #include <list>
 #include <glad/gl.h>
@@ -49,7 +50,9 @@ string Trim(string s);
 string GetFileName(string Path);
 template <typename K, typename V>
 V GetFromMapExtra(const map<K, V>& m, const K& key);
-GLuint GetFromMap(map<string, GLuint> map, string id);
+template <typename K, typename V>
+V GetFromMapExtra(const unordered_map<K, V>& m, const K& key);
+GLuint GetFromMap(unordered_map<string, GLuint> map, string id);
 int GetFromMap(map<string, int> map, string id);
 map<string, int> GetFromMap(map<string, map<string, int>> map, string id);
 template <typename T>

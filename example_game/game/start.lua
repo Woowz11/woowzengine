@@ -1,7 +1,7 @@
 CreateWindow("window","")
 SetWindowMain("window")
 CreateScene("scene")
-SetSceneBackgroundColor("scene",Color.new(128,0,0,0))
+SetSceneBackgroundColor("scene",Color.new(0,0,0,255))
 SetWindowScene("window","scene")
  
 function CameraMovement()
@@ -11,6 +11,10 @@ function CameraMovement()
 	
 	if(PK["shift"])then
 		CameraSpeed = 0.2
+	end
+	
+	if(PK["ctrl"])then
+		CameraSpeed = 0.005
 	end
 	
 	local X = 0
@@ -32,25 +36,50 @@ function CameraMovement()
 	
 	if (X~=0 or Y~=0) then
 		local CameraPosition = GetCameraPosition("scene")
-		SetCameraPosition("scene",Vector2.new(CameraPosition.x + X,CameraPosition.y + Y))
+		SetCameraPosition("scene",Vector2.new(CameraPosition.x + (X/GetCameraZoom("scene")),CameraPosition.y + (Y/GetCameraZoom("scene"))))
+	end
+	
+	local ZoomSpeed = 0.05
+	local Zoom = 1
+	
+	if(PK["plus"])then
+		Zoom = Zoom + ZoomSpeed
+	end
+	if(PK["minus"])then
+		Zoom = Zoom - ZoomSpeed
+	end
+	
+	if(Zoom~=1)then
+		SetCameraZoom("scene",GetCameraZoom("scene") * Zoom)
 	end
 end
-SetCameraZoom("scene",0.25)
+SetCameraZoom("scene",1)
+
+CycleRender(function() 
+	CameraMovement() 
+	--SetSpriteRotation("scene","sprite",ToDeg(ActiveTime()/10))
+end)
 
 local add = 2.5
 
 local make = false
-CycleRender(function() 
-	CameraMovement() 
-end)
-Cycle(function() SetWindowTitle("window","New Window! ("..GetFPS()..")") end,1000)
  
---[[local x = 0
- local y = 0
- local height = 33
- local count = height*height
- local addthis = 2
- for i=-1,count do
+local x = 0
+local y = 0
+local height = 20
+local count = height*height
+local addthis = 2
+
+LoadTexture("texture","F:/woowzengine/example_game/game/test.png")
+SetTextureBlur("texture",true)
+LoadTexture("texture1","F:/woowzengine/example_game/game/test1.png")
+SetTextureBlur("texture1",true)
+LoadTexture("texture2","F:/woowzengine/example_game/game/test2.png")
+SetTextureBlur("texture2",true)
+
+local textures = {"texture","texture1","texture2"}
+
+for i=0,count do
  
 	x = x + 1
 	if(x>height)then
@@ -59,25 +88,30 @@ Cycle(function() SetWindowTitle("window","New Window! ("..GetFPS()..")") end,100
 	end
  
 	CreateSprite("sprite"..i,"scene")
-	SetSpriteColor("scene","sprite"..i,Color.new(Round((x/height)*255),Round(((height-x)/height)*255),Round((y/(count/height))*255)))
-	SetSpritePosition("scene","sprite"..i,Vector2.new(x*addthis,y*addthis))
-	SetSpriteRotation("scene","sprite"..i,FRRandom(0,380))
+	SetSpritePosition("scene","sprite"..i,Vector2.new(FRandom(-1,1)*10000000,FRandom(-1,1)*10000000))
 	
-	local texturemap = {"default","error","test"}
-	
-	SetSpriteTexture("scene","sprite"..i,Texture.new("F:/woowzengine/example_game/game/engine/"..texturemap[FRRandom(1,#texturemap)]..".png"))
- end]]
+	--if(FRRandom(0,1)==1)then
+		--SetSpriteShader("scene","sprite"..i,"test")
+		--SetSpriteLayer("scene","sprite"..i,2)
+		SetSpriteTexture("scene","sprite"..i,textures[FRRandom(1,#textures)])
+		SetSpriteRotation("scene","sprite"..i,FRRandom(0,360))
+		local size = FRandom(1000,100000)
+		SetSpriteColor("scene","sprite"..i,Color.new(FRRandom(128,255),FRRandom(128,255),FRRandom(128,255)))
+		SetSpriteSize("scene","sprite"..i,Vector2.new(size,size))
+		SetSpriteHeight("scene","sprite"..i,FRandom(-5,5))
+	--end
+end
  
- --[[Cycle(function()
-    Pairs(GetSprites("scene"),function(key,value,index) 
-        SetSpriteColor("scene",value,GetSpriteColor("scene",value):Invert())
-		local pos = GetSpritePosition("scene",value)
-		SetSpritePosition("scene",value,Vector2.new(pos.x + FRandom(-0.25,0.25),pos.y + FRandom(-0.25,0.25)))
-    end)
- end,1000)]]
+--[[LoadTexture("texturebase","F:/woowzengine/example_game/game/engine/test.png",true)
+
+local colors = GetTextureColors("texturebase")
+for i=1,#colors do
+	colors[i] = colors[i]:Invert()
+end
  
 CreateSprite("sprite","scene")
-SetSpriteTexture("scene","sprite",Texture.new("F:/woowzengine/example_game/game/engine/error.png"))
 
-Print(GetVolume())
---SetVolume(0)
+local size = GetTextureSize("texturebase")
+
+CreateTexture("texture",size.x,size.y,colors)
+SetSpriteTexture("scene","sprite","texture")]]

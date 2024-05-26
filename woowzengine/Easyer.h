@@ -7,6 +7,8 @@
 #include <list>
 using namespace std;
 
+unsigned char* StringToUnsignedChar(string str);
+char* StringToCharArray(string& str);
 LPCSTR StringToLPCSTR(string str);
 string ConstWCharToString(const wchar_t* wchar);
 const wchar_t* ConstCharToConstWChar(const char* str);

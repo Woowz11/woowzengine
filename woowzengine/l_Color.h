@@ -54,6 +54,14 @@ public:
 		return l_Color(255 - r, 255 - g, 255 - b, 255 - a);
 	}
 
+	l_Color Gray() {
+		float r_ = (float(r) / 255) * 0.299f;
+		float g_ = (float(g) / 255) * 0.587f;
+		float b_ = (float(b) / 255) * 0.114f;
+		int c = int(round((r_+g_+b_)*255));
+		return l_Color(c,c,c,a);
+	}
+
 	int GetR() {
 		return r;
 	}

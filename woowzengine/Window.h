@@ -18,8 +18,6 @@ public:
 	bool AutoResize = false;
 	unsigned int Buffer = 0;
 	unsigned int Arrays = 0;
-	map<string, GLuint> Shaders = {};
-	map<string, map<string, int>> Uniforms = {};
 	sol::function WindowClosed = sol::nil;
 	sol::function WindowKeyPress = sol::nil;
 	sol::function WindowKeyRelease = sol::nil;
@@ -27,6 +25,9 @@ public:
 	sol::function WindowMousePress = sol::nil;
 	sol::function WindowMouseRelease = sol::nil;
 	sol::function WindowMouseRepeat = sol::nil;
+
+	unordered_map<string, GLuint> Shaders = {};
+	unordered_map<string, unordered_map<string, int>> Uniforms = {};
 
 	Window(string id = "new window", GLFWwindow* glfw = nullptr) : id(id), glfw(glfw) {}
 };

@@ -9,11 +9,11 @@ using namespace std;
 struct l_Sprite {
 public:
 	string id = "";
-	Texture texture = Texture(GetSessionInfo("SourcePath") + "engine/default.png");
+	string texture = "default";
 	string shader = "default";
 	l_Vector2 position = l_Vector2(0,0);
 	float angle = 0;
-	l_Vector2 origin = l_Vector2(0.5, 0.5);
+	l_Vector2 origin = l_Vector2(0, 0);
 	l_Color color = l_Color(255,255,255,255);
 	float zindex = 0;
 	float zindex_code = 0;
@@ -24,6 +24,8 @@ public:
 	bool FlipX = false;
 	bool FlipY = false;
 	bool DontHide = false;
+	bool Visible = true;
+	float Height = 0;
 
 	l_Vector2 LT = l_Vector2(0, 0);
 	l_Vector2 LB = l_Vector2(0, 0);

@@ -1,3 +1,6 @@
+#pragma warning(disable : 4244)
+#pragma warning(disable : 4267)
+
 #include <lua/lua.hpp>
 #include <sol/sol.hpp>
 #include <filesystem>
@@ -15,6 +18,7 @@
 #include "Console.h"
 #include "Discord.h"
 #include "WindowsElements.h"
+#include "WConst.h"
 
 #include "Color.h"
 #include "Vector2.h"
@@ -39,9 +43,9 @@ sol::state lua{};
 string EmptyWindow = "New Window";
 string EmptyScene = "New Scene";
 string EmptySprite = "New Sprite";
+string EmptyTexture = "New Texture";
+string EmptyShader = "default";
 string EmptyImage;
-
-l_Color ErrorColor = l_Color(255,0,255,254);
 
 /*Проверяет работает ли lua или нет*/
 void l_CheckLua() {
@@ -317,7 +321,7 @@ float l_Div(float f, float f2) {
 }
 
 /*Минимальное < число < максимальное*/
-float l_Clamp(float min_, float f, float max_) {
+float l_Clamp(float f, float min_, float max_) {
 	return fmax(fmin(f, max_), min_);
 }
 
@@ -987,8 +991,15 @@ string l_GetFileType(sol::object dir_) {
 }
 
 /*Установить размер спрайта*/
-void l_SetSpriteSize(sol::object sceneid, sol::object id, l_Vector2 size) {
-	SetSpriteSize(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), size);
+void l_SetSpriteSize(sol::object sceneid_, sol::object id_, l_Vector2 size) {
+	string sceneid = ToString(sceneid_, EmptyScene);
+	string id = ToString(id_, EmptySprite);
+	if (size.x <= 0 || size.y <= 0) {
+		PW("Sprite size cannot be <= 0 SetSpriteSize('"+sceneid+"','"+id+"',Vector2("+to_string(size.x) + ","+to_string(size.y) + "))", "LW0034");
+	}
+	else {
+		SetSpriteSize(sceneid, id, size);
+	}
 }
 
 /*Установить позицию левого верхнего угла*/
@@ -1119,8 +1130,8 @@ bool l_HasSprite(sol::object sceneid, sol::object id) {
 }
 
 /*Устанавливает текстуру спрайту*/
-void l_SetSpriteTexture(sol::object sceneid, sol::object id, Texture& texture) {
-	texture = SetSpriteTexture(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), texture);
+void l_SetSpriteTexture(sol::object sceneid, sol::object id, sol::object texture) {
+	SetSpriteTexture(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), ToString(texture,EmptyTexture));
 }
 
 /*Устанавливает размер как у текстуры*/
@@ -1130,8 +1141,8 @@ void l_SetSpriteSizeByTexture(sol::object sceneid, sol::object id, float sizeext
 }
 
 /*Получить размер текстуры*/
-l_Vector2 l_GetTextureSize(Texture texture) {
-	return GetTextureSize(texture);
+l_Vector2 l_GetTextureSize(sol::object texture) {
+	return GetTextureSize(ToString(texture,EmptyTexture));
 }
 
 /*Получить размер спрайта*/
@@ -1196,7 +1207,13 @@ float l_GetSpriteRotation(sol::object sceneid, sol::object id) {
 
 /*Берёт число между двумя числами по t*/
 float l_Lerp(float a, float b, float t) {
-	return lerp(a, b, t);
+	if (t < 0 || t > 1) {
+		PW("The interpolation value cannot be < 0 or > 1! Lerp("+to_string(a) + ","+to_string(b) + ","+to_string(t) + ")", "LW0033");
+		return -1;
+	}
+	else {
+		return lerp(a, b, t);
+	}
 }
 
 /*Градусы в радианы*/
@@ -1255,10 +1272,12 @@ void l_SetDesktopBackground(sol::object path_) {
 	}
 }
 
+/*Получить громкость компьютера*/
 int l_GetVolume() {
 	return GetVolume();
 }
 
+/*Установить громкость компьютера*/
 void l_SetVolume(int v) {
 	if (SafeMode()) {
 		PW("Function [SetVolume(" + to_string(v) + ")] cannot be started in SafeMode!", "LW0032");
@@ -1271,6 +1290,104 @@ void l_SetVolume(int v) {
 			SetVolume(v);
 		}
 	}
+}
+
+/*Создать текстуру*/
+void l_LoadTexture(sol::object id_, sol::object path_, bool savecolors) {
+	string path = StringToPath(ToString(path_));
+	string id = ToString(id_, EmptyTexture);
+	if (HasDirectory(path)) {
+		CreateTexture(id, path, savecolors);
+	}
+	else {
+		PE("File not found! LoadTexture('"+id+"','"+path+"')","L0033");
+	}
+}
+
+/*Установить видимость спрайта*/
+void l_SetSpriteVisible(sol::object sceneid, sol::object id, bool visible) {
+	SetSpriteVisible(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), visible);
+}
+
+/*Получить видимость спрайта*/
+bool l_GetSpriteVisible(sol::object sceneid, sol::object id) {
+	return GetSpriteVisible(ToString(sceneid, EmptyScene), ToString(id, EmptySprite));
+}
+
+/*Установить размытие текстуре*/
+void l_SetTextureBlur(sol::object id, bool blur) {
+	SetTextureBlur(ToString(id, EmptyTexture), blur);
+}
+
+/*Получить массив цветов в текстуре*/
+sol::table l_GetTextureColors(sol::object id) {
+	vector<l_Color> colors = GetTextureColors(ToString(id, EmptyTexture));
+	sol::table tbl = lua.create_table();
+	for (const auto& color : colors) {
+		tbl.add(color);
+	}
+	return tbl;
+}
+
+/*Установить название консоли*/
+void l_SetConsoleTitle(sol::object title) {
+	SetConsoleTitle_(ToString(title, "New Console Title"));
+}
+
+/*Создать текстуру*/
+void l_CreateTexture(sol::object id_, int sizex, int sizey, sol::table colors, bool savecolors) {
+	string id = ToString(id_, EmptyTexture);
+	if (sizex <= 0 || sizey <= 0) {
+		PE("Size of the created texture cannot be <= 0 CreateTexture('"+id+"',"+to_string(sizex) + ","+to_string(sizey) + ")", "L0034");
+	}
+	else {
+		if (sizex * sizey != colors.size()) {
+			PW("Size of the array with colors does not match the size of the created texture. "+to_string(colors.size()) + " ~= " + to_string(sizex * sizey) + " CreateTexture('" + id + "'," + to_string(sizex) + "," + to_string(sizey) + ")", "LW0035");
+		}
+		vector<l_Color> colors_result;
+		int size = colors.size();
+		for (size_t i = 1; i <= size; i++) {
+			colors_result.push_back(ObjToColor(colors[i]));
+		}
+		CreateTextureByArray(id, sizex, sizey, colors_result, savecolors);
+	}
+}
+
+/*Записывает данные в изображение файл*/
+void l_WriteImage(sol::object path_,int sizex, int sizey, sol::table colors) {
+	string path = ToString(path_);
+	if (SafeMode()) { PW("Function [WriteImage('" + path + "'," + to_string(sizex) + ","+to_string(sizey) + ")] cannot be started in SafeMode!", "LW0036"); }
+	else {
+		if (HasDirectory(path)) {
+			if (sizex <= 0 || sizey <= 0) {
+				PE("Size of the created texture cannot be <= 0 WriteImage('" + path + "'," + to_string(sizex) + "," + to_string(sizey) + ")", "L0036");
+			}
+			else {
+				if (sizex * sizey != colors.size()) {
+					PW("Size of the array with colors does not match the size of the created texture. " + to_string(colors.size()) + " ~= " + to_string(sizex * sizey) + " WriteImage('" + path + "'," + to_string(sizex) + "," + to_string(sizey) + ")", "LW0037");
+				}
+				vector<l_Color> colors_result;
+				int size = colors.size();
+				for (size_t i = 1; i <= size; i++) {
+					colors_result.push_back(ObjToColor(colors[i]));
+				}
+				WriteImage(path, sizex, sizey, colors_result);
+			}
+		}
+		else {
+			PE("File not found! WriteImage('" + path + "'," + to_string(sizex) + "," + to_string(sizey) + ")","L0035");
+		}
+	}
+}
+
+/*Загрузка шейдера в спрайт*/
+void l_SetSpriteShader(sol::object sceneid, sol::object id, sol::object shaderid) {
+	SetSpriteShader(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), ToString(shaderid, EmptyShader));
+}
+
+/*Установить высоту спрайта*/
+void l_SetSpriteHeight(sol::object sceneid, sol::object id, float height) {
+	SetSpriteHeight(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), height);
 }
 
 /*Зона woowzengine*/
@@ -1491,7 +1608,8 @@ void LuaCompile() {
 		"GetB", &l_Color::GetB,
 		"GetA", &l_Color::GetA,
 		"Invert", &l_Color::Invert,
-		"InvertAll", &l_Color::InvertAll
+		"InvertAll", &l_Color::InvertAll,
+		"Gray", &l_Color::Gray
 	);
 
 	lua.new_usertype<l_Vector2>("Vector2",
@@ -1513,13 +1631,6 @@ void LuaCompile() {
 		"y", &l_Vector4::y,
 		"z", &l_Vector4::z,
 		"w", &l_Vector4::w
-	);
-
-	lua.new_usertype<Texture>("Texture",
-		sol::constructors<Texture(string)>(),
-		"GetPath", &Texture::GetPath,
-		"GetBlur", &Texture::GetBlur,
-		"SetBlur", &Texture::SetBlur
 	);
 
 	lua.new_usertype<l_Sound>("Sound",
@@ -1562,13 +1673,16 @@ void LuaCompile() {
 	lua["Black"] = sol::as_table(l_Color(0, 0, 0, 255));
 	lua["Gray"] = sol::as_table(l_Color(125, 125, 125, 255));
 	lua["Orange"] = sol::as_table(l_Color(255, 125, 0, 255));
-	lua["Purple"] = sol::as_table(l_Color(0, 125, 255, 255));
-	lua["Cyan"] = sol::as_table(l_Color(125, 125, 255, 255));
+	lua["Purple"] = sol::as_table(l_Color(255, 0, 255, 255));
+	lua["Cyan"] = sol::as_table(l_Color(0, 125, 255, 255));
 	lua["Transparent"] = sol::as_table(l_Color(0, 0, 0, 0));
 	lua["Up"] = sol::as_table(l_Vector2(0, 1));
 	lua["Down"] = sol::as_table(l_Vector2(0, -1));
 	lua["Right"] = sol::as_table(l_Vector2(1, 0));
 	lua["Left"] = sol::as_table(l_Vector2(-1, 0));
+	lua["Front"] = sol::as_table(l_Vector3(0, 0, 1));
+	lua["Back"] = sol::as_table(l_Vector3(0, 0, -1));
+	lua["ErrorColor"] = sol::as_table(ErrorColor);
 
 	/*Функции*/
 	lua.set_function("CheckLua", &l_CheckLua);
@@ -1687,12 +1801,11 @@ void LuaCompile() {
 	lua.set_function("SetWindowEventMouseRelease", &l_SetWindowEventMouseRelease);
 	lua.set_function("SetWindowEventMouseHold", &l_SetWindowEventMouseHold);
 	lua.set_function("Sign", &l_Sign);
-
 	lua.set_function("SetDiscordActivityTitle", &l_SetDiscordActivityTitle);
 	lua.set_function("SetDiscordActivityDescription", &l_SetDiscordActivityDescription);
 	lua.set_function("GetUserName", &l_GetUserName);
 	lua.set_function("CheckInternet", &l_CheckInternet);
-	lua.set_function("StringToBool", &l_StringToBool);
+	lua.set_function("ToBool", &l_StringToBool);
 	lua.set_function("RunLua", &l_RunLua);
 	lua.set_function("Repeat", &l_Repeat);
 	lua.set_function("ProgramLaunched", &l_ProgramLaunched);
@@ -1754,6 +1867,17 @@ void LuaCompile() {
 	lua.set_function("SetDesktopBackground", &l_SetDesktopBackground);
 	lua.set_function("GetVolume", &l_GetVolume);
 	lua.set_function("SetVolume", &l_SetVolume);
+
+	lua.set_function("LoadTexture", &l_LoadTexture);
+	lua.set_function("SetSpriteVisible", &l_SetSpriteVisible);
+	lua.set_function("GetSpriteVisible", &l_GetSpriteVisible);
+	lua.set_function("SetTextureBlur", &l_SetTextureBlur);
+	lua.set_function("GetTextureColors", &l_GetTextureColors);
+	lua.set_function("SetConsoleTitle", &l_SetConsoleTitle);
+	lua.set_function("CreateTexture", &l_CreateTexture);
+	lua.set_function("WriteImage", &l_WriteImage);
+	lua.set_function("SetSpriteShader", &l_SetSpriteShader);
+	lua.set_function("SetSpriteHeight", &l_SetSpriteHeight);
 
 	P("LUA", "Lua functions and etc. are loaded!");
 	P("LUA", "Start 'start.lua' script...");

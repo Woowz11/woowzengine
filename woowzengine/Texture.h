@@ -5,6 +5,8 @@ using namespace std;
 
 struct Texture {
 public:
+	string id = "";
+	string TextureID;
 	string path;
 	bool Linear = false;
 

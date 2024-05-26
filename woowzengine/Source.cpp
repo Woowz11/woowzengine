@@ -11,11 +11,12 @@
 #include "WindowsElements.h"
 #include "base.h"
 #include "Console.h"
+#include "Cycles.h"
 #include "GLFW.h"
 
 using namespace std;
 
-string EngineVersion = "0.0.2c";
+string EngineVersion = "0.0.2d";
 bool DebugVersion = false;
 
 void StartEngine(string GamePath) {
@@ -28,7 +29,7 @@ int main(int argc, char** argv)
     if (!DebugVersion) { ::ShowWindow(::GetConsoleWindow(), SW_HIDE); }
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 8);
     ConsoleInstall();
-    SetConsoleTitle(StringToLPCWSTR("WoowzEngine Console"));
+    SetConsoleTitle_("WoowzEngine Console");
     cout << "WoowzEngine realization..." << "\n";
     cout << "Engine path: " << PathToExe << "\n";
     cout << "Engine version: " << EngineVersion << "\n";

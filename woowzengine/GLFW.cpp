@@ -1,3 +1,7 @@
+#pragma warning(disable : 4244)
+#pragma warning(disable : 4305)
+#pragma warning(disable : 4267)
+
 #define NOMINMAX 1
 #define byte win_byte_override
 #include <Windows.h>
@@ -15,7 +19,9 @@
 #include <glfw3native.h>
 #include <glm.hpp>
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include "lib/stb_image.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "lib/stb_image_write.h"
 //-----------------
 
 #include "GLFW.h"
@@ -27,6 +33,7 @@
 #include "Files.h"
 #include "Cycles.h"
 #include "Texture.h"
+#include "WConst.h"
 
 #include "Color.h"
 #include "Vector2.h"
@@ -41,46 +48,15 @@ using namespace std;
 map<string, Window> Windows;
 map<GLFWwindow*, string> Windows_2;
 unordered_map<string, GLuint> Textures;
+unordered_map<string, Texture> Textures_;
 unordered_map<string, unordered_map<string, string>> Textures_Info;
 string MainWindow = "";
 
 unordered_map <string, vector <l_Sprite>> SceneSprites;
 
-map<string, Scene> Scenes;
+unordered_map<string, Scene> Scenes;
 
 string NowWindow;
-
-string DefaultShaderVertex = R"(
-#version 330 core
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec2 aTexCoord;
-
-uniform vec2 scale;
-
-out vec2 TexCoord;
-
-void main()
-{
-	vec2 NewPosition = aPos.xy * scale;
-	gl_Position = vec4(NewPosition, 0, 1);
-	TexCoord = aTexCoord;
-}
-)";
-
-string DefaultShaderFragment = R"(
-#version 330 core
-out vec4 FragColor;
-
-uniform vec4 color;
-uniform sampler2D sprite;
-
-in vec2 TexCoord;
-
-void main()
-{
-    FragColor = texture(sprite, TexCoord) * color;
-} 
-)";
 
 void StopGLFW() {
 	glfwTerminate();
@@ -103,6 +79,9 @@ unsigned char* LoadTexture(string path, int* x, int* y, int* numchannel) {
 
 string GetTextureID(Texture texture) {
 	string result = texture.path;
+	if (result == "") {
+		result = texture.id;
+	}
 
 	if (texture.Linear) {
 		result = result + " [LINEAR]";
@@ -111,23 +90,134 @@ string GetTextureID(Texture texture) {
 	return result;
 }
 
-GLuint LoadSprite(string path, l_Sprite spritedata) {
+GLuint LoadSprite(string path, l_Sprite spritedata, bool savecolors) {
 	int x, y, numchan;
-	unsigned char* imagedata = LoadTexture(path, &x, &y, &numchan);
+	unsigned char* colors = LoadTexture(path, &x, &y, &numchan);
+	return LoadSprite_(path, GetTextureByID(spritedata.texture), colors, x, y, numchan, savecolors);
+}
+
+GLuint LoadSprite(string path, Texture texture, bool savecolors) {
+	int x, y, numchan;
+	unsigned char* colors = LoadTexture(path, &x, &y, &numchan);
+	return LoadSprite_(path, texture, colors, x, y, numchan, savecolors);
+}
+
+GLuint LoadSprite_(string path, Texture texture, unsigned char* colors, int x, int y, int numchan, bool savecolors) {
+	unsigned char* imagedata = colors;
 	GLuint sprite;
 	glGenTextures(1, &sprite);
 	glBindTexture(GL_TEXTURE_2D, sprite);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (spritedata.texture.Linear? GL_LINEAR : GL_NEAREST));
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (spritedata.texture.Linear ? GL_LINEAR : GL_NEAREST));
-	glTexImage2D(GL_TEXTURE_2D, 0, (numchan==3? GL_RGB : GL_RGBA), x, y, 0, (numchan == 3 ? GL_RGB : GL_RGBA), GL_UNSIGNED_BYTE, imagedata);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (texture.Linear? GL_LINEAR : GL_NEAREST));
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (texture.Linear ? GL_LINEAR : GL_NEAREST));
+	glTexImage2D(GL_TEXTURE_2D, 0, (numchan > 3? GL_RGBA : GL_RGB), x, y, 0, (numchan > 3 ? GL_RGBA : GL_RGB), GL_UNSIGNED_BYTE, imagedata);
 
-	string textureid = GetTextureID(spritedata.texture);
+	string textureid = GetTextureID(texture);
 	Textures_Info[textureid]["x"] = to_string(x);
 	Textures_Info[textureid]["y"] = to_string(y);
+	Textures_Info[textureid]["hasalpha"] = (numchan > 3 ? "true" : "false");
+
+	int size = x * y * numchan;
+
+	if (savecolors) {
+		string ColorsR = "";
+		string ColorsG = "";
+		string ColorsB = "";
+		string ColorsA = "";
+		int i = 0;
+		int colorid = 1;
+		for (i = 0; i < (size); i++) {
+			switch (colorid) {
+			case 1:
+				ColorsR = ColorsR + to_string(imagedata[i]) + ",";
+				break;
+			case 2:
+				ColorsG = ColorsG + to_string(imagedata[i]) + ",";
+				break;
+			case 3:
+				ColorsB = ColorsB + to_string(imagedata[i]) + ",";
+				break;
+			case 4:
+				ColorsA = ColorsA + to_string(imagedata[i]) + ",";
+				break;
+			}
+			colorid++;
+			if (colorid > numchan) {
+				colorid = 1;
+			}
+		}
+
+		ColorsR.pop_back();
+		ColorsG.pop_back();
+		ColorsB.pop_back();
+		if (StringToBool(Textures_Info[textureid]["hasalpha"])) { ColorsA.pop_back(); };
+		Textures_Info[textureid]["r"] = ColorsR;
+		Textures_Info[textureid]["g"] = ColorsG;
+		Textures_Info[textureid]["b"] = ColorsB;
+		Textures_Info[textureid]["a"] = ColorsA;
+	}
+	else {
+		Textures_Info[textureid]["r"] = "";
+		Textures_Info[textureid]["g"] = "";
+		Textures_Info[textureid]["b"] = "";
+		Textures_Info[textureid]["a"] = "";
+	}
 
 	stbi_image_free(imagedata);
 
 	return sprite;
+}
+
+unordered_map<string,bool> Shaders;
+Window CreateShaders(Window window, string shaderpath) {
+	string ShaderID = ReplaceString(GetFileName(shaderpath), "." + GetFileType(shaderpath), "");
+	if (window.id == "") {
+		if (!Shaders[ShaderID]) {
+			P("SHADER", "Shader [" + ShaderID + "] compiled!");
+			Shaders[ShaderID] = true;
+		}
+	}
+	else {
+		string Folder = ReplaceString(shaderpath, GetFileName(shaderpath), "");
+		if (!window.Shaders[ShaderID]) {
+			bool hasvertex = HasDirectory(Folder + ShaderID + ".v");
+			bool hasfragment = HasDirectory(Folder + ShaderID + ".f");
+
+			string vertex = "";
+			string fragment = "";
+
+			if (hasvertex) {
+				vertex = ReadFile(Folder + ShaderID + ".v");
+			}
+			else {
+				vertex = ReadFile(Folder + "default.v");
+			}
+
+			if (hasfragment) {
+				fragment = ReadFile(Folder + ShaderID + ".f");
+			}
+			else {
+				fragment = ReadFile(Folder + "default.f");
+			}
+
+			GLuint VertexShader = CompileShader(vertex, true);
+			GLuint FragmentShader = CompileShader(fragment, false);
+
+			GLuint Shader = CompileShaderProgram(VertexShader, FragmentShader);
+			unordered_map<string, int> U = {};
+			U["sprite"] = glGetUniformLocation(Shader, "sprite");
+			U["time"] = glGetUniformLocation(Shader, "time");
+			U["random"] = glGetUniformLocation(Shader, "random");
+			U["scale"] = glGetUniformLocation(Shader, "scale");
+			U["color"] = glGetUniformLocation(Shader, "color");
+			U["height"] = glGetUniformLocation(Shader, "height");
+
+			window.Shaders[ShaderID] = Shader;
+			window.Uniforms[ShaderID] = U;
+
+			if (window.id == "") { P("SHADER", "Shader [" + ShaderID + "] compiled!"); }
+		}
+	}
+	return window;
 }
 
 void CreateBuffers(Window& window) {
@@ -139,20 +229,12 @@ void CreateBuffers(Window& window) {
 	glBindVertexArray(window.Arrays);
 	glBindBuffer(GL_ARRAY_BUFFER, window.Buffer);
 
-	GLuint VertexShader = CompileShader(DefaultShaderVertex, true);
-	GLuint FragmentShader = CompileShader(DefaultShaderFragment, false);
-
-	GLuint Shader = CompileShaderProgram(VertexShader, FragmentShader);
-	string ShaderID = "default";
-	map<string, map<string, int>> Uniforms = {};
-	Uniforms[ShaderID]["sprite"] = glGetUniformLocation(Shader,"sprite");
-	Uniforms[ShaderID]["time"] = glGetUniformLocation(Shader, "time");
-	Uniforms[ShaderID]["random"] = glGetUniformLocation(Shader, "random");
-	Uniforms[ShaderID]["scale"] = glGetUniformLocation(Shader, "scale");
-	Uniforms[ShaderID]["color"] = glGetUniformLocation(Shader, "color");
-
-	window.Shaders[ShaderID] = Shader;
-	window.Uniforms = Uniforms;
+	for (auto path : GetFilesFromDirectory(GetSessionInfo("SourcePath") + "/engine/shaders")) {
+		string typ = Lowercase(GetFileType(path.second));
+		if (typ == "v" || typ == "f") {
+			window = CreateShaders(window, path.second);
+		}
+	}
 }
 
 void GLAPIENTRY PE_OPENGL(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
@@ -189,6 +271,9 @@ void GLFWInstall() {
 	if (!StringToBool(GetSessionInfo("Debug"))) { glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE); }
 
 	SetSessionInfo("MainWindow", "");
+
+	CreateTexture("default", GetSessionInfo("SourcePath") + "engine/default.png");
+	CreateTexture("error", GetSessionInfo("SourcePath") + "engine/error.png");
 }
 
 void PE_GLFW() {
@@ -251,14 +336,14 @@ GLuint CompileShaderProgram(GLuint Vertex, GLuint Fragment) {
 
 GLuint GetTexture(l_Sprite sprite) {
 	unordered_map<string, GLuint> Textures_ = Textures;
-	string textureid = GetTextureID(sprite.texture);
+	string textureid = GetTextureID(GetTextureByID(sprite.texture));
 
 	GLuint result;
 	if (Textures_.find(textureid) != Textures_.end()) {
 		result = Textures_[textureid];
 	}
 	else {
-		GLuint texture = LoadSprite(sprite.texture.path, sprite);
+		GLuint texture = LoadSprite(GetTextureByID(sprite.texture).path, sprite);
 		Textures_[textureid] = texture;
 		result = texture;
 	}
@@ -284,15 +369,28 @@ void RenderQuad(list<float> v_uv) {
 	glDrawArrays(GL_QUADS, 0, 4);
 }
 
-void UpdateShader(Window window, Color color, int width, int height, bool autosize) {
-	GLuint Shader = GetFromMap(window.Shaders, "default");
+void UpdateShader(Window window, string shaderid, l_Color color, int width, int height, bool autosize, float z) {
+	GLuint Shader = window.Shaders[shaderid];
 	glUseProgram(Shader);
-	glUniform1i(GetFromMap(GetFromMap(window.Uniforms, "default"), "sprite"), 0);
-	glUniform1f(GetFromMap(GetFromMap(window.Uniforms, "default"), "time"), GetActiveTime());
-	glUniform2f(GetFromMap(GetFromMap(window.Uniforms, "default"), "scale"), (window.AutoResize||autosize ? (float)1 : (float)window.StartSizeX / (float)width), (window.AutoResize||autosize ? (float)1 : (float)window.StartSizeY / (float)height));
-	hash<std::string> hasher;
-	glUniform1f(GetFromMap(GetFromMap(window.Uniforms, "default"), "random"), abs(sin(GetActiveTime() * hasher(window.id) / ((521673 - GetActiveTime()) + 0.5))));
-	glUniform4f(GetFromMap(GetFromMap(window.Uniforms, "default"), "color"), (float)color.r / 255, (float)color.g / 255, (float)color.b / 255, (float)color.a / 255);
+	if (window.Uniforms[shaderid]["sprite"] != -1) {
+		glUniform1i(window.Uniforms[shaderid]["sprite"], 0);
+	}
+	if (window.Uniforms[shaderid]["time"] != -1) {
+		glUniform1f(window.Uniforms[shaderid]["time"], GetActiveTime());
+	}
+	if (window.Uniforms[shaderid]["scale"] != -1) {
+		glUniform2f(window.Uniforms[shaderid]["scale"], (window.AutoResize || autosize ? (float)1 : (float)window.StartSizeX / (float)width), (window.AutoResize || autosize ? (float)1 : (float)window.StartSizeY / (float)height));
+	}
+	if (window.Uniforms[shaderid]["random"] != -1) {
+		hash<std::string> hasher;
+		glUniform1f(window.Uniforms[shaderid]["random"], abs(sin(GetActiveTime() * hasher(window.id) / ((521673 - GetActiveTime()) + 0.5))));
+	}
+	if (window.Uniforms[shaderid]["color"] != -1) {
+		glUniform4f(window.Uniforms[shaderid]["color"], (float)color.r / 255, (float)color.g / 255, (float)color.b / 255, (float)color.a / 255);
+	}
+	if (window.Uniforms[shaderid]["height"] != -1) {
+		glUniform1f(window.Uniforms[shaderid]["height"], pow(2, -z));
+	}
 }
 
 Vector2 ScreenToWorld(Window window ,int cordx, int cordy) {
@@ -328,6 +426,7 @@ Vector2 ScreenToWorld(Window window,Vector2 sc) {
 	y /= scene.CameraZoom;
 	x += scene.CameraPosition.x;
 	y += scene.CameraPosition.y;
+	DebugPrint_(to_string(sc.x) + " = "+to_string(x) + " | "+to_string(sc.y) + " = "+to_string(y));
 	return Vector2(x, y);
 }
 
@@ -394,7 +493,7 @@ bool PointOutside_(l_Vector2 vec, string windowid) {
 	return PointOutside(window, vec.ToCPP(), GetScene(window.scene));
 }
 
-float lerp(float b, float a, float t) {
+float lerp(float a, float b, float t) {
 	return a + t * (b - a);
 }
 
@@ -418,14 +517,13 @@ void RenderSprite(Window window, string id, l_Sprite sprite, int width, int heig
 	if (sprite.id != "") {
 		float Zoom = scene.CameraZoom;
 		float Angle = sprite.angle;
-		float SizeMult = (float)window.StartSizeY / (float)window.StartSizeX;
-		float AngleCos = (cos(DegToRad(Angle) * 2) + 1) / 2;
-		float SizeMultX = lerp(SizeMult, 1, AngleCos);
-		float SizeMultY = lerp(1, SizeMult, AngleCos);
-		float SizeX = sprite.size.x     * SizeMultX * Zoom;
-		float SizeY = sprite.size.y     * SizeMultY * Zoom;
-		float PosX  = sprite.position.x * SizeMult * Zoom;
-		float PosY  = sprite.position.y * Zoom;
+		float SizeX = sprite.size.x * Zoom;
+		float SizeY = sprite.size.y * Zoom;
+		float PosX = sprite.position.x * Zoom;
+		float PosY = sprite.position.y * Zoom;
+
+		float CamPosX = (sprite.movewithcamera ? 0 : scene.CameraPosition.x) * Zoom;
+		float CamPosY = (sprite.movewithcamera ? 0 : scene.CameraPosition.y) * Zoom;
 
 		float xw = float(width);
 		float yw = float(height);
@@ -433,18 +531,20 @@ void RenderSprite(Window window, string id, l_Sprite sprite, int width, int heig
 		float BLX = -SizeX + PosX + (sprite.LB.x * Zoom);
 		float BLY = -SizeY + PosY + (sprite.LB.y * Zoom);
 		float TLX = -SizeX + PosX + (sprite.LT.x * Zoom);
-		float TLY =  SizeY + PosY + (sprite.LT.y * Zoom);
-		float TRX =  SizeX + PosX + (sprite.RT.x * Zoom);
-		float TRY =  SizeY + PosY + (sprite.RT.y * Zoom);
-		float BRX =  SizeX + PosX + (sprite.RB.x * Zoom);
+		float TLY = SizeY + PosY + (sprite.LT.y * Zoom);
+		float TRX = SizeX + PosX + (sprite.RT.x * Zoom);
+		float TRY = SizeY + PosY + (sprite.RT.y * Zoom);
+		float BRX = SizeX + PosX + (sprite.RB.x * Zoom);
 		float BRY = -SizeY + PosY + (sprite.RB.y * Zoom);
 
 		float CENTERX = (BLX + TLX + TRX + BRX) / 4 + sprite.origin.x;
 		float CENTERY = (BLY + TLY + TRY + BRY) / 4 + sprite.origin.y;
-		int OutNumber = 200;
-
-		bool Out = PointOutside(window,CENTERX,CENTERY,scene,xw,yw,OutNumber);
-		if (!Out) {
+		float HeightScale = (pow(2, -sprite.Height));
+		float OutNumber = 400 * Zoom * HeightScale * max(sprite.size.x+(abs(sprite.LB.x) + abs(sprite.LT.x) + abs(sprite.RB.x) + abs(sprite.RT.x)), sprite.size.y+(abs(sprite.LB.y) + abs(sprite.LT.y) + abs(sprite.RB.y) + abs(sprite.RT.y)));
+		float HeightOffsetX = (CamPosX - CENTERX);
+		float HeightOffsetY = (CamPosY - CENTERY);
+		bool Out = PointOutside(window,CENTERX+HeightOffsetX,CENTERY+HeightOffsetY,scene,xw,yw,FloatToInt(OutNumber));
+		if (!Out){
 
 			l_Vector2 RotCenter = l_Vector2(CENTERX, CENTERY);
 
@@ -455,10 +555,7 @@ void RenderSprite(Window window, string id, l_Sprite sprite, int width, int heig
 
 			GLuint texture = GetTexture(sprite);
 			glBindTexture(GL_TEXTURE_2D, texture);
-			UpdateShader(window, sprite.color.ToCPP(), width, height, sprite.autoresize);
-
-			float CamPosX = (sprite.movewithcamera ? 0 : scene.CameraPosition.x) * SizeMult * Zoom;
-			float CamPosY = (sprite.movewithcamera ? 0 : scene.CameraPosition.y) * Zoom;
+			UpdateShader(window, sprite.shader, sprite.color, width, height, sprite.autoresize, sprite.Height);
 
 			float flipx = 1;
 			if (sprite.FlipX) {
@@ -505,7 +602,7 @@ void Render() {
 					if (scene.CameraZoom != 0) {
 						glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 						glEnable(GL_BLEND);
-						glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+						glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
 						if (scene.windowid != "") {
 							float alpha = scene.BackgroundColor.GetA();
@@ -514,15 +611,18 @@ void Render() {
 						else {
 							glClearColor(0, 0, 0, 1);
 						}
+
+
 						glEnable(GL_TEXTURE_2D);
-						vector<l_Sprite> sprites = SceneSprites["scene"];
+						vector<l_Sprite> sprites = SceneSprites[window.scene];
 						if (sprites.size() > 0) {
 
 							for (const auto& sprite : sprites) {
-								RenderSprite(window, sprite.id, sprite, width, height, scene);
+								if (sprite.Visible) {
+									RenderSprite(window, sprite.id, sprite, width, height, scene);
+								}
 							}
 						}
-
 					}
 					else {
 						ErrorScene("Camera zoom cannot be equal to 0!");
@@ -550,7 +650,7 @@ void Render() {
 void UpdateLayers(string sceneid) {
 	vector<l_Sprite> sprites = SceneSprites[sceneid];
 	for (auto& sprite : sprites) {
-		sprite.zindex_code = sprite.zindex + (float(sprite.cout)/10000);
+		sprite.zindex_code = sprite.zindex + (float(sprite.cout)/10000) + (sprite.Height*100000);
 	}
 	std::sort(sprites.begin(), sprites.end(), [](const l_Sprite& a, const l_Sprite& b) {
 		return a.zindex_code < b.zindex_code;
@@ -580,8 +680,123 @@ GLuint GetTextureT(Texture texture) {
 		return Textures[id];
 	}
 	else {
-		l_Sprite sprite = GetSprite(texture.sceneid, texture.spriteid,true);
+		l_Sprite sprite = GetSprite(texture.sceneid, texture.spriteid, true);
 		return GetTexture(sprite);
+	}
+}
+
+void GetTextureTT(Texture texture, bool savecolors) {
+	string id = GetTextureID(texture);
+	if (Textures_.find(id) == Textures_.end()) {
+		unordered_map<string, GLuint> Textures_ = Textures;
+		GLuint texture_ = LoadSprite(texture.path, texture, savecolors);
+		Textures_[id] = texture_;
+		Textures = Textures_;
+
+	}
+}
+
+unsigned char* VectorColorsToChars(vector<l_Color> colors, int sizex, int sizey, int* numchan) {
+	*numchan = 3;
+	for (const auto c : colors) {
+		if (c.a != 255) {
+			*numchan = 4;
+		}
+	}
+	int size = colors.size();
+	if (size < (sizex * sizey)) {
+		bool invert = false;
+		int j = 0;
+		int i = 0;
+		for (int i = 0; i < (sizex * sizey); i++) {
+			if (i >= size) {
+				l_Color color = (invert ? l_Color(0, 0, 0) : ErrorColor);
+				if (i % 2 == 0) {
+					color = (invert ? ErrorColor : l_Color(0, 0, 0));
+				}
+				colors.push_back(color);
+			}
+
+			j++;
+			if (j >= sizex) {
+				j = 0;
+				invert = !invert;
+			}
+		}
+	}
+	unsigned char* colors_result = new unsigned char[sizex * sizey * *numchan];
+	int i = 0;
+	int j = 0;
+	int j_ = 0;
+	for (int i = 0; i < (sizex * sizey * *numchan); i++) {
+		if (*numchan == 4) {
+			switch (j) {
+			case 0:
+				colors_result[i] = colors[j_].r;
+				break;
+			case 1:
+				colors_result[i] = colors[j_].g;
+				break;
+			case 2:
+				colors_result[i] = colors[j_].b;
+				break;
+			case 3:
+				colors_result[i] = colors[j_].a;
+				break;
+			}
+		}
+		else {
+			switch (j) {
+			case 0:
+				colors_result[i] = colors[j_].r;
+				break;
+			case 1:
+				colors_result[i] = colors[j_].g;
+				break;
+			case 2:
+				colors_result[i] = colors[j_].b;
+				break;
+			}
+		}
+
+		j++;
+		if (j >= *numchan) {
+			j = 0;
+			j_++;
+		}
+	}
+	return colors_result;
+}
+
+void GetTextureTTT(Texture texture, int sizex, int sizey, vector<l_Color> colors, bool savecolors) {
+	string id = GetTextureID(texture);
+	if (Textures_.find(id) != Textures_.end()) {
+		unordered_map<string, GLuint> Textures_ = Textures;
+		int numchan;
+		unsigned char* colors_result = VectorColorsToChars(colors,sizex,sizey,&numchan);
+		GLuint texture_ = LoadSprite_(texture.path, texture, colors_result, sizex, sizey, numchan, savecolors);
+		Textures_[id] = texture_;
+		Textures = Textures_;
+
+	}
+}
+
+bool HasTexture(string id) {
+	if (Textures_.find(id) != Textures_.end()) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+Texture GetTextureByID(string id) {
+	if (Textures_.find(id) != Textures_.end()) {
+		return Textures_[id];
+	}
+	else {
+		PE("No texture found! GetTextureByID('"+id+"')","E0026");
+		return Textures_["error"];
 	}
 }
 
@@ -658,6 +873,7 @@ void CreateSprite(string id, string sceneid) {
 		Scene scene = GetScene(sceneid);
 		SceneSprites[sceneid].push_back(sprite);
 		UpdateLayers(sceneid);
+		GetTextureTT(GetTextureByID(sprite.texture));
 	}
 	else {
 		PE("Such a sprite is already on the scene! CreateSprite('"+id+"','"+sceneid+"')","E0023");
@@ -750,6 +966,91 @@ void SetSpriteCornerUV(string sceneid, string id, l_Vector2 pos, bool left, bool
 	SetSprite(sprite);
 }
 
+void CreateTexture(string id, string path, bool savecolors) {
+	if (!HasTexture(id)) {
+		Texture texture = Texture(path);
+		texture.id = id;
+		texture.TextureID = GetTextureID(texture);
+		Textures_[id] = texture;
+		GetTextureTT(texture,savecolors);
+	}
+	else {
+		PE("Such a texture is already exsist! CreateTexture('"+id+"','"+path+"')","E0027");
+	}
+}
+
+void CreateTextureByArray(string id, int sizex, int sizey, vector<l_Color> colors, bool savecolors) {
+	if (!HasTexture(id)) {
+		Texture texture = Texture("");
+		texture.id = id;
+		texture.TextureID = GetTextureID(texture);
+		Textures_[id] = texture;
+		GetTextureTTT(texture, sizex,sizey,colors, savecolors);
+	}
+	else {
+		PE("Such a texture is already exsist! CreateTextureByArray('" + id + "',"+to_string(sizex) + ","+to_string(sizey) + ",vector<l_Color>)", "E0028");
+	}
+}
+
+void WriteImage(string path, int sizex, int sizey, vector<l_Color> colors) {
+	int numchan;
+	unsigned char* colors_result = VectorColorsToChars(colors, sizex, sizey, &numchan);
+
+	unsigned char* rotated_colors_result = new unsigned char[sizex * sizey * numchan];
+
+	for (int y = 0; y < sizey; y++) {
+		for (int x = 0; x < sizex; x++) {
+			int rotatedY = sizey - 1 - y;
+			int rotatedIndex = (rotatedY * sizex + x) * numchan;
+			int originalIndex = (y * sizex + x) * numchan;
+
+			for (int c = 0; c < numchan; c++) {
+				rotated_colors_result[rotatedIndex + c] = colors_result[originalIndex + c];
+			}
+		}
+	}
+
+	string filetype = Lowercase(GetFileType(path));
+
+	int result;
+
+	if (filetype == "png") {
+		result = stbi_write_png(StringToConstChar(path), sizex, sizey, numchan, rotated_colors_result, sizex * numchan);
+	}
+	else if (filetype == "jpg" || filetype == "jpeg") {
+		result = stbi_write_jpg(StringToConstChar(path), sizex, sizey, numchan, rotated_colors_result, sizex * numchan);
+	}
+	else if (filetype == "bmp") {
+		result = stbi_write_bmp(StringToConstChar(path), sizex, sizey, numchan, rotated_colors_result);
+	}
+	else if (filetype == "tga") {
+		result = stbi_write_tga(StringToConstChar(path), sizex, sizey, numchan, rotated_colors_result);
+	}
+	else if (filetype == "hdr") {
+		float* colors_hdr = new float[sizex * sizey * numchan];
+		for (int i = 0; i < (sizex * sizey * numchan); i++) {
+			colors_hdr[i] = float(rotated_colors_result[i]) / 255;
+		}
+		result = stbi_write_hdr(StringToConstChar(path), sizex, sizey, numchan, colors_hdr);
+		delete[] colors_hdr;
+	}
+	else {
+		PE("Unknown image format. WriteImage('"+path+"',"+to_string(sizex) + ","+to_string(sizey) + ")", "E0029");
+		result = stbi_write_png(StringToConstChar(path), sizex, sizey, numchan, rotated_colors_result, sizex * numchan);
+	}
+
+	if (result == 0) {
+		PE("Failed to write image data. WriteImage('" + path + "'," + to_string(sizex) + "," + to_string(sizey) + ")", "E0030");
+	}
+	delete[] colors_result;
+}
+
+void SetTextureBlur(string id, bool blur) {
+	Texture texture = GetTextureByID(id);
+	texture.SetBlur(blur);
+	Textures_[id] = texture;
+}
+
 void SetCameraPosition(string id, float pos, bool thatX) {
 	Scene scene = GetScene(id);
 	if (thatX) {
@@ -789,17 +1090,29 @@ l_Color GetSpriteColor(string sceneid, string id) {
 	return sprite.color;
 }
 
-Texture SetSpriteTexture(string sceneid, string id, Texture texture) {
+void SetSpriteTexture(string sceneid, string id, string texture) {
 	l_Sprite sprite = GetSprite(sceneid, id);
 	sprite.texture = texture;
-	sprite.texture.SetID(sceneid, id);
+	Texture texture_ = GetTextureByID(texture);
+	texture_.SetID(sceneid, id);
+	Textures_[texture] = texture_;
 	SetSprite(sprite);
-	return sprite.texture;
 }
 
-l_Vector2 GetTextureSize(Texture texture) {
-	GLuint t = GetTextureT(texture);
-	string id = GetTextureID(texture);
+void SetSpriteVisible(string sceneid, string id, bool visible) {
+	l_Sprite sprite = GetSprite(sceneid, id);
+	sprite.Visible = visible;
+	SetSprite(sprite);
+}
+
+bool GetSpriteVisible(string sceneid, string id) {
+	l_Sprite sprite = GetSprite(sceneid, id);
+	return sprite.Visible;
+}
+
+l_Vector2 GetTextureSize(string texture) {
+	Texture t = GetTextureByID(texture);
+	string id = GetTextureID(t);
 	int x = StringToInt(Textures_Info[id]["x"]);
 	int y = StringToInt(Textures_Info[id]["y"]);
 	return l_Vector2(x,y);
@@ -827,6 +1140,23 @@ void SetSpriteMirror(string sceneid, string id, bool ThatX, bool b) {
 	else {
 		sprite.FlipY = b;
 	}
+	SetSprite(sprite);
+}
+
+void SetSpriteShader(string sceneid, string id, string shader) {
+	if (Shaders[shader]) {
+		l_Sprite sprite = GetSprite(sceneid, id);
+		sprite.shader = shader;
+		SetSprite(sprite);
+	}
+	else {
+		PE("Shader not found! SetSpriteShader('" + sceneid + "','" + id + "','" + shader + "')", "E0031");
+	}
+}
+
+void SetSpriteHeight(string sceneid, string id, float height) {
+	l_Sprite sprite = GetSprite(sceneid, id);
+	sprite.Height = height;
 	SetSprite(sprite);
 }
 
@@ -865,6 +1195,61 @@ vector<string> GetSpritesOnScene(string sceneid) {
 	}
 
 	return sortedList;
+}
+
+vector<string> split(string str_, char delimiter) {
+	std::vector<std::string> res;
+	char* arr = StringToCharArray(str_);
+	int i = 0;
+
+	string s;
+	while (arr[i] != '\0') {
+		if (arr[i] != delimiter) {
+			s += arr[i];
+		}
+		else {
+			res.push_back(s);
+			s.clear();
+		}
+		i++;
+	}
+	res.push_back(s);
+	return res;
+}
+
+vector<l_Color> GetTextureColors(string textureid) {
+	Texture texture = GetTextureByID(textureid);
+	string id = GetTextureID(texture);
+	int size = StringToInt(Textures_Info[id]["x"]) * StringToInt(Textures_Info[id]["y"]);
+	string rs = Textures_Info[id]["r"];
+	string gs = Textures_Info[id]["g"];
+	string bs = Textures_Info[id]["b"];
+	string as = Textures_Info[id]["a"];
+	if (rs!="") {
+		if (!StringToBool(Textures_Info[id]["hasalpha"])) {
+			int i_ = 0;
+			for (int i_ = 0; i_ < size; i_++) {
+				as = as + "255,";
+			}
+			as.pop_back();
+		}
+		vector<string> rs_ = split(rs, ',');
+		vector<string> gs_ = split(gs, ',');
+		vector<string> bs_ = split(bs, ',');
+		vector<string> as_ = split(as, ',');
+		vector<l_Color> result;
+		int j = 0;
+		for (int j = 0; j < size; j++) {
+			result.push_back(l_Color(StringToInt(rs_[j]), StringToInt(gs_[j]), StringToInt(bs_[j]), StringToInt(as_[j])));
+		}
+		return result;
+	}
+	else {
+		PW("The texture has no colors saved, it is not possible to get a colors. GetTextureColors('"+textureid+"')", "W0009");
+		vector<l_Color> result;
+		result.push_back(ErrorColor);
+		return result;
+	}
 }
 
 vector<string> GetWindows() {
@@ -1192,7 +1577,7 @@ Window CreateWindowGLFW(string id, int sizex, int sizey, string title) {
 		if (sizex<=121 || sizey <= 0) { PF("Window size cannot be x<=121, y<=0! CreateWindow('" + id + "'," + to_string(sizex) + "," + to_string(sizey) + ",'" + title + "')", "C0022"); return Window(); }
 		else {
 			glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
-			GLFWwindow* window = glfwCreateWindow(sizex, sizey, StringToConstChar(title), NULL, NULL);
+			GLFWwindow* window = glfwCreateWindow(500, 500, StringToConstChar(title), NULL, NULL);
 			if (!window) {
 				PF("Window could not be created! CreateWindow('" + id + "'," + to_string(sizex) + "," + to_string(sizey) + ",'" + title + "')", "C0018");
 				return Window();
@@ -1200,13 +1585,16 @@ Window CreateWindowGLFW(string id, int sizex, int sizey, string title) {
 			glfwMakeContextCurrent(window);
 			Window window_ = Window(id,window);
 			CreateBuffers(window_);
-			window_.StartSizeX = sizex;
-			window_.StartSizeY = sizey;
+			window_.StartSizeX = 500;
+			window_.StartSizeY = 500;
 			glfwSetKeyCallback(window, KeyCallback);
 			glfwSetMouseButtonCallback(window, MouseCallback);
 
 			Windows[id] = window_;
 			Windows_2[window] = id;
+
+			SetWindowSize(id, false, sizex);
+			SetWindowSize(id, true, sizey);
 
 			P("WINDOW", "Window [" + id + "] created!");
 
@@ -1226,11 +1614,11 @@ void DestroyWindowGLFW(string id) {
 			StartFunction(window.WindowClosed, {});
 		}
 		glfwMakeContextCurrent(window.glfw);
+		glDeleteVertexArrays(1, &window.Arrays);
+		glDeleteBuffers(1, &window.Buffer);
 		for (auto it = window.Shaders.begin(); it != window.Shaders.end(); ++it) {
 			glDeleteProgram(it->second);
 		}
-		glDeleteVertexArrays(1, &window.Arrays);
-		glDeleteBuffers(1, &window.Buffer);
 		glfwDestroyWindow(window.glfw);
 		P("WINDOW", "Window [" + id + "] destroyed!");
 		Windows_2.erase(window.glfw);

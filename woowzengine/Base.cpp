@@ -1,3 +1,6 @@
+#pragma warning(disable : 4244)
+#pragma warning(disable : 4267)
+
 #define NOMINMAX 1
 #define byte win_byte_override
 #include "Windows.h"
@@ -6,6 +9,7 @@
 #include <filesystem>
 #include <regex>
 #include <map>
+#include <unordered_map>
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <chrono>
@@ -496,7 +500,19 @@ V GetFromMapExtra(const map<K, V>& m, const K& key) {
 	}
 	return V{};
 }
-GLuint GetFromMap(map<string, GLuint> map, string id) {
+template <typename K, typename V>
+V GetFromMapExtra(const unordered_map<K, V>& m, const K& key) {
+	auto it = m.find(key);
+	if (it != m.end()) {
+		return it->second;
+	}
+	else {
+		PE("Element not found! GetFromMap('" + string(typeid(K).name()) + "','" + string(typeid(V).name()) + "')", "E0007");
+		return V{};
+	}
+	return V{};
+}
+GLuint GetFromMap(unordered_map<string, GLuint> map, string id) {
 	return GetFromMapExtra(map, id);
 }
 int GetFromMap(map<string, int> map, string id) {

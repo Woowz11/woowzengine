@@ -13,3 +13,4 @@ void StopCycleEngine();
 void StartCycleEngine();
 void InOtherThread(sol::function func);
 void SetTargetFPS(int newfps);
+void SetConsoleTitle_(string title);

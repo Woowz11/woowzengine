@@ -15,6 +15,23 @@
 
 using namespace std;
 
+unsigned char* StringToUnsignedChar(string str) {
+	size_t size = str.size() + 1;
+	unsigned char* ptr = new unsigned char[size];
+	memcpy(ptr, str.c_str(), size);
+	return ptr;
+}
+
+/*Превращает строку в массив символов*/
+char* StringToCharArray(string& str) {
+	char* charArray = new char[str.size() + 1];
+	const char* cstr = StringToConstChar(str);
+	std::copy(cstr, cstr + str.size() + 1, charArray);
+	charArray[str.size()] = '\0';
+
+	return charArray;
+}
+
 /*Превращает строку в LPCSTR*/
 LPCSTR StringToLPCSTR(string str) {
 	LPCSTR l = str.c_str();
