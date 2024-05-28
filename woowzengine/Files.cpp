@@ -134,3 +134,12 @@ string GetFileInfo(string Dir) {
 		return "E0010";
 	}
 }
+
+void RemoveFile(string path) {
+	std::FILE* file;
+	fopen_s(&file, StringToConstChar(path), "r");
+	std::fclose(file);
+	if (std::remove(StringToConstChar(path)) != 0) {
+		PE("Couldn't delete the file! RemoveFile('"+path+"')", "F0003");
+	}
+}

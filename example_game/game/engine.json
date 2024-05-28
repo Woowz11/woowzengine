@@ -1,5 +1,4 @@
 {
-    "Console": "true",
     "DiscordActivities": "true",
     "DiscordApplicationID": "1240635259221970954",
     "LogErrors": "-ERRORS",
@@ -9,5 +8,5 @@
     "LogType": "log",
     "Logs": "true",
     "OnlyOne": "true",
-    "SafeMode": "false"
+    "StartScript": "start"
 }

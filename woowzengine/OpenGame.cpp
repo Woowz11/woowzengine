@@ -27,6 +27,7 @@ string SGamePath = "";
 bool SessionInfoBroken = false;
 bool JGameBroken = false;
 bool JEngineBroken = false;
+bool JSettingsBroken = false;
 bool HasStartScript = true;
 bool DebugMode = false;/*›“Œ Õ≈ “–Œ√¿…! DebugMode (DebugVersion) ‚ÍÎ˛˜‡ÂÚ¸Òˇ ‚ Source.cpp!!!*/
 
@@ -43,6 +44,10 @@ void DebugPrint(float f) {
 void DebugPrint_(string text) {
 	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 8);
 	wcout << StringToWString(text) << "\n";
+}
+void DebugPrint_w(wstring text) {
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 8);
+	wcout << text << "\n";
 }
 void DebugPrint_(float f) {
 	DebugPrint_(to_string(f));
@@ -68,10 +73,12 @@ void CheckFiles(string ev) {
 	GetOrCreateFolder(SGamePath + "woowzengine/log");
 	GetOrCreateFolder(SGamePath + "woowzengine/temporary");
 
-	string SessionInfoPath = SGamePath + "woowzengine/temporary/sessioninfo";
+	string TemporaryPath = SGamePath + "woowzengine/temporary";
+	string SessionInfoPath =  TemporaryPath+"/sessioninfo";
 	string OurGamePath = SGamePath + "game";
 	string JEngine = OurGamePath + "/engine.json";
 	string JGame = OurGamePath + "/game.json";
+	string JSettings = OurGamePath + "/settings.json";
 
 	int Seed = (int)std::time(nullptr);
 	
@@ -81,7 +88,7 @@ void CheckFiles(string ev) {
 		SessionInfoBroken = true;
 	}
 
-	map<string, string> SessionInfoInfo = { {"Debug",(DebugMode ? "true" : "false")},{"Seed",to_string(Seed)},{"GamePath",SGamePath},{"Version",ev},{"SourcePath",SGamePath + "game/"},{"EngineJson",JEngine},{"GameJson",JGame},{"SessionPath",SessionInfoPath}};
+	map<string, string> SessionInfoInfo = { {"Debug",(DebugMode ? "true" : "false")},{"Seed",to_string(Seed)},{"GamePath",SGamePath},{"Version",ev},{"SourcePath",SGamePath + "game/"},{"EngineJson",JEngine},{"GameJson",JGame},{"SettingsJson",JSettings},{"SessionPath",SessionInfoPath},{"TemporaryPath",TemporaryPath}};
 	WriteToFile(SessionInfoPath, ConvertToJSON(SessionInfoInfo));
 
 	GetOrCreateFolder(OurGamePath);
@@ -108,12 +115,26 @@ void CheckFiles(string ev) {
 		WriteToFile(ShadersPath + "/default.f", ShaderFragment);
 	}
 
+	if (!HasDirectory(ShadersPath + "/font.v")) {
+		CreateFile(ShadersPath + "/font.v");
+		WriteToFile(ShadersPath + "/font.v", ShaderVertex);
+	}
+	if (!HasDirectory(ShadersPath + "/font.f")) {
+		CreateFile(ShadersPath + "/font.f");
+		WriteToFile(ShadersPath + "/font.f", ShaderFragment);
+	}
+
+	string FontsPath = EnginePath + "/fonts";
+	GetOrCreateFolder(FontsPath);
+	if (!HasDirectory(FontsPath + "/default.png")) {
+		CreateFile(FontsPath + "/default.png");
+		WriteImage(FontsPath + "/default.png", 128, 128, DefaultImage);
+	}
+
 	GetOrCreateFile(JEngine);
 	if (!JSONValid(JEngine)) {
 		WriteToFile(JEngine, "{}");
 	}
-	CreateValueJson(JEngine, "Console", "true");
-	CreateValueJson(JEngine, "SafeMode", "true");
 	CreateValueJson(JEngine, "Logs", "true");
 	CreateValueJson(JEngine, "LogType", "log");
 	CreateValueJson(JEngine, "LogFormat", "%y-%mn-%d-%h-%m-%s-%ms%f");
@@ -123,22 +144,22 @@ void CheckFiles(string ev) {
 	CreateValueJson(JEngine, "OnlyOne", "true");
 	CreateValueJson(JEngine, "DiscordActivities", "true");
 	CreateValueJson(JEngine, "DiscordApplicationID", "1240635259221970954");
+	CreateValueJson(JEngine, "StartScript", "start");
 
 	GetOrCreateFile(JGame);
 	if (!JSONValid(JGame)) {
 		WriteToFile(JGame, "{}");
 	}
-	CreateValueJson(JGame, "Name",    "Example Game");
+	CreateValueJson(JGame, "Name", "Example Game");
 	CreateValueJson(JGame, "Version", "0.0.0");
-	CreateValueJson(JGame, "Author",  "Unknown");
+	CreateValueJson(JGame, "Author", "Unknown");
 
-	if (!HasDirectory(OurGamePath + "/start.lua")) {
-		HasStartScript = false;
+	GetOrCreateFile(JSettings);
+	if (!JSONValid(JSettings)) {
+		WriteToFile(JSettings, "{}");
 	}
-	GetOrCreateFile(OurGamePath + "/start.lua");
-	if (!HasStartScript) {
-		WriteToFile(OurGamePath + "/start.lua","--[[Example script start.lua\nRuns when the game starts.]]\n\nCheckLua()");
-	}
+	CreateValueJson(JSettings, "Console", "true");
+	CreateValueJson(JSettings, "SafeMode", "true");
 
 	SetRandomSeed(Seed);
 }
@@ -150,7 +171,24 @@ void Cycle() {
 
 void GameInstall() {
 	DiscordStart(GetEngineInfo("DiscordApplicationID"));
-	LuaCompile();
+
+	if (GetEngineInfo("StartScript") != "" && NameWindowsAccept(GetEngineInfo("StartScript"))) {
+
+
+		string StartScriptPath = GetSessionInfo("SourcePath") + GetEngineInfo("StartScript") + ".lua";
+		if (!HasDirectory(StartScriptPath)) {
+			HasStartScript = false;
+		}
+		GetOrCreateFile(StartScriptPath);
+		if (!HasStartScript) {
+			WriteToFile(StartScriptPath, StartScriptCode);
+		}
+
+		LuaCompile();
+	}
+	else {
+		PF("StartScript ["+ GetEngineInfo("StartScript") +"] cannot be empty or contain incompatible characters with Windows","C0027");
+	}
 }
 
 void Install(string ev) {
@@ -183,7 +221,7 @@ void Install(string ev) {
 	if (JEngineBroken) {
 		PW("engine.json has corrupted or was not created! File has been recreated!", "W0003");
 	}
-	if (StringToBool(GetEngineInfo("Console"))) {
+	if (StringToBool(GetSettingsInfo("Console"))) {
 		::ShowWindow(::GetConsoleWindow(), SW_SHOW);
 	}
 

@@ -1,8 +1,10 @@
-﻿  LuaCompile.cpp
-  Source.cpp
+﻿  GLFW.cpp
+  LuaCompile.cpp
+  OpenGame.cpp
+  RenderElement.h
   Создание кода
-  272 of 16277 functions ( 1.7%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    136 functions had inline decision re-evaluated but remain unchanged
+  318 of 17392 functions ( 1.8%) were compiled, the rest were copied from previous compilation.
+    6 functions were new in current compilation
+    161 functions had inline decision re-evaluated but remain unchanged
   Создание кода завершено
   woowzengine.vcxproj -> F:\woowzengine\WoowzEngine\Build\woowzengine\Release\woowzengine.exe

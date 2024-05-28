@@ -68,6 +68,7 @@ string GetEngineInfo(string ID);
 string GetSessionInfoIE(string ID);
 string GetGameInfoIE(string ID);
 string GetEngineInfoIE(string ID);
+string GetSettingsInfo(string ID);
 bool CheckPathToSymbols(string path);
 void SetSessionInfo(string ID, string Value);
 string ReplaceString(string,string,string);

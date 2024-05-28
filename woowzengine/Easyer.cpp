@@ -1,3 +1,5 @@
+#pragma warning(disable : 4101)
+
 #define NOMINMAX 1
 #define byte win_byte_override
 #include "Windows.h"

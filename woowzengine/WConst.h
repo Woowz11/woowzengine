@@ -22,13 +22,14 @@ layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec2 aTexCoord;
 
 uniform vec2 scale;
+uniform float height;
 
 out vec2 TexCoord;
 
 void main()
 {
 	vec2 NewPosition = aPos.xy * scale;
-	gl_Position = vec4(NewPosition, 0, 1);
+	gl_Position = vec4(NewPosition, 0, height);
 	TexCoord = aTexCoord;
 }
 )";
@@ -45,4 +46,10 @@ void main()
 {
     FragColor = texture(sprite, TexCoord) * color;
 } 
+)";
+
+const string StartScriptCode = R"(--This script is run when the game is started.
+--You can also visit wikipedia https://woowz11.github.io/woowzsite/woowzengine.html
+
+CheckLua()
 )";

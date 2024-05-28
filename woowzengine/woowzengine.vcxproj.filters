@@ -257,6 +257,12 @@
     <ClInclude Include="lib\stb_image_write.h">
       <Filter>Исходные файлы\lib</Filter>
     </ClInclude>
+    <ClInclude Include="l_Text.h">
+      <Filter>Исходные файлы\Elements\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="l_Font.h">
+      <Filter>Исходные файлы\Elements\Lua</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="woowzengine.rc">

@@ -29,16 +29,20 @@ void LoggerInstall() {
 		LogsType = LogsType_;
 	}
 	else {
-		MessageBoxFatal("LogType (engine.json) contains illegal characters in windows (\\ / : * ? \" < > | + .)", "C0011", true);
+		MessageBoxFatal("LogType ["+LogsType_+"] (engine.json) contains illegal characters in windows (\\ / : * ? \" < > | + .)", "C0011", true);
 	}
 
 	if (!NameWindowsAccept(GetEngineInfo("LogFatal"))) {
-		MessageBoxFatal("LogFatal (engine.json) contains illegal characters in windows (\\ / : * ? \" < > | + .)", "C0015", true);
+		MessageBoxFatal("LogFatal ["+ GetEngineInfo("LogFatal") +"] (engine.json) contains illegal characters in windows (\\ / : * ? \" < > | + .)", "C0015", true);
+	}
+
+	if (!NameWindowsAccept(GetEngineInfo("LogErrors"))) {
+		MessageBoxFatal("LogErrors ["+ GetEngineInfo("LogErrors") +"] (engine.json) contains illegal characters in windows (\\ / : * ? \" < > | + .)", "C0028", true);
 	}
 
 	LogFormat = GetEngineInfo("LogFormat");
 	if(StringEmpty(LogFormat)){ MessageBoxFatal("LogsFormat (engine.json) can't be empty!", "C0012", true); }
-	if(!NameWindowsAccept(LogFormat)){ MessageBoxFatal("LogFormat (engine.json) contains illegal characters in windows (\\ / : * ? \" < > | + .)", "C0013", true); }
+	if(!NameWindowsAccept(LogFormat)){ MessageBoxFatal("LogFormat ["+ LogFormat +"] (engine.json) contains illegal characters in windows (\\ / : * ? \" < > | + .)", "C0013", true); }
 	ms = GetTime("ms");
 	s = GetTime("s");
 	m = GetTime("m");

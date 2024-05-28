@@ -44,7 +44,10 @@ string EmptyWindow = "New Window";
 string EmptyScene = "New Scene";
 string EmptySprite = "New Sprite";
 string EmptyTexture = "New Texture";
+string EmptyText = "New Text";
 string EmptyShader = "default";
+string EmptyFont = "default";
+string EmptyDUser = "495215150165524481";
 string EmptyImage;
 
 /*Проверяет работает ли lua или нет*/
@@ -385,11 +388,6 @@ float l_Rem(float f, float f2) {
 	return remainder(f, f2);
 }
 
-/*Возводит в степень*/
-float l_Pow(float f, float f2) {
-	return pow(f,f2);
-}
-
 /*Гиперболический синус*/
 float l_HSin(float f) {
 	return sinh(f);
@@ -510,15 +508,13 @@ float l_ToNumber(sol::object Str_, sol::object IfError) {
 }
 
 /*Запуск команды cmd*/
-void l_Cmd(sol::object command_) {
+string l_Cmd(sol::object command_) {
 	string command = ToString(command_);
-	if (SafeMode()) { PW("Function [Cmd('" + command + "')] cannot be started in SafeMode!", "LW0014"); }
+	if (SafeMode()) { PW("Function [Cmd('" + command + "')] cannot be started in SafeMode!", "LW0014"); return "ERROR_LW0014"; }
 	else {
-		int result = system(StringToConstChar(command));
-		if (result != 0) {
-			PE("Cmd command failed! Cmd('"+command+"')","L0022");
-		}
+		return system_withresult(command);
 	}
+	return "";
 }
 
 /*Создать окно*/
@@ -1390,6 +1386,127 @@ void l_SetSpriteHeight(sol::object sceneid, sol::object id, float height) {
 	SetSpriteHeight(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), height);
 }
 
+/*Возводит в степень f^f2*/
+float l_Pow(float f, float f2) {
+	if (f2 == 0 && f == 0) {
+		PW("Degree and base number cannot be = 0! Pow("+to_string(f)+","+to_string(f2) + ")", "LW0038");
+		return 1;
+	}
+	else {
+		if(f2<0 && f == 0){
+			PW("Base number at negative degree cannot be = 0! Pow(" + to_string(f) + "," + to_string(f2) + ")","LW0039");
+			return 0;
+		}
+		else {
+			return pow(f, f2);
+		}
+	}
+}
+
+/*Удалить файл*/
+void l_RemoveFile(sol::object pathandname_) {
+	string pathandname = ToString(pathandname_);
+	if (SafeMode()) { PW("Function [RemoveFile('" + pathandname + "')] cannot be started in SafeMode!", "LW0040"); }
+	else {
+		bool has = HasDirectory(pathandname);
+		if (has) {
+			RemoveFile(pathandname);
+		}
+		else {
+			PE("File not found! RemoveFile('"+pathandname+"')", "L0037");
+		}
+	}
+}
+
+/*Воспроизводит дефолтный звук Windows*/
+void l_PlayBeep() {
+	PlayBeep();
+}
+
+/*Получить шейдер спрайта*/
+string l_GetSpriteShader(sol::object sceneid, sol::object id) {
+	return GetSpriteShader(ToString(sceneid, EmptyScene), ToString(id, EmptySprite));
+}
+
+/*Получить высоту спрайта*/
+float l_GetSpriteHeight(sol::object sceneid, sol::object id) {
+	return GetSpriteHeight(ToString(sceneid, EmptyScene), ToString(id, EmptySprite));
+}
+
+/*Функция для теста других функций (ЧИСТО ДЛЯ WOOWZ11)*/
+void l_TestFunction(wstring str) {
+	if (StringToBool(GetSettingsInfo("Console"))) {
+		for (int i = 0; i < str.length(); i++) {
+			char c = str[i];
+			wstring s;
+			s.push_back(c);
+			DebugPrint_w(to_wstring(c)+L" | "+s);
+		}
+	}
+	else {
+		PW("This function is a test function! It can be called only when the console is enabled, also it may change every version of the engine, it cannot be used. TestFunction()","LW0041");
+	}
+}
+
+/*Получить данные пользователя Discord*/
+void l_GetDiscordUserInfo(sol::object userid_, sol::function func) {
+	string userid = ToString(userid_, EmptyDUser);
+	if (func == sol::nil || !func.valid()) { PE("Function not found or does not exist for GetDiscordUserInfo(" + userid + ")!", "L0038"); }
+	else {
+		GetDiscordUserInfo(userid, func);
+	}
+}
+
+/*Получить айди текущего пользователя*/
+string l_GetDiscordCurrentUser() {
+	return GetDiscordCurrentUser();
+}
+
+/*Создаёт текст*/
+void l_CreateText(sol::object id_, sol::object sceneid_, sol::object text_) {
+	string id = ToString(id_,EmptyText);
+	string sceneid = ToString(sceneid_,EmptyScene);
+	string text = ToString(text_, "Default text!");
+	CreateText(id,sceneid,text);
+}
+
+/*Создаёт шрифт*/
+void l_CreateFont(sol::object id_, sol::object path_) {
+	string id = ToString(id_, EmptyFont);
+	string path = ToString(path_);
+	CreateFont(id,path);
+}
+
+/*Установить позицию тексту*/
+void l_SetTextPosition(sol::object sceneid_, sol::object id_, l_Vector2 pos) {
+	SetTextPosition(ToString(sceneid_,EmptyScene),ToString(id_,EmptyText),pos);
+}
+
+/*Установить шрифт тексту*/
+void l_SetTextFont(sol::object sceneid_, sol::object id_, sol::object font) {
+	SetTextFont(ToString(sceneid_, EmptyScene), ToString(id_, EmptyText),ToString(font,"default"));
+}
+
+/*Установить цвет тексту*/
+void l_SetTextColor(sol::object sceneid, sol::object id, l_Color color) {
+	SetTextColor(ToString(sceneid, EmptyScene), ToString(id, EmptyText), color);
+}
+
+/*Получить символ ASCII*/
+char l_GetASCIIChar(int i) {
+	return static_cast<char>(i);
+}
+
+/*Установить текст тексту*/
+void l_SetTextText(sol::object sceneid, sol::object id, sol::object text) {
+	SetTextText(ToString(sceneid, EmptyScene), ToString(id, EmptyText), ToString(text,"New Text!"));
+}
+
+/*Установить высоту тексту*/
+void l_SetTextHeight(sol::object sceneid, sol::object id, float height) {
+	SetTextHeight(ToString(sceneid, EmptyScene), ToString(id, EmptyText), height);
+}
+
 /*Зона woowzengine*/
 
 l_Color ObjToColor(sol::object obj) {
@@ -1661,8 +1778,8 @@ void LuaCompile() {
 	lua["Version"] = sol::as_table(GetGameInfo("Version"));
 	lua["GameName"] = sol::as_table(GetGameInfo("Name"));
 	lua["Author"] = sol::as_table(GetGameInfo("Author"));
-	lua["SafeMode"] = sol::as_table(StringToBool(GetEngineInfo("SafeMode")));
-	lua["ConsoleEnabled"] = sol::as_table(StringToBool(GetEngineInfo("Console")));
+	lua["SafeMode"] = sol::as_table(StringToBool(GetSettingsInfo("SafeMode")));
+	lua["ConsoleEnabled"] = sol::as_table(StringToBool(GetSettingsInfo("Console")));
 	lua["DebugMode"] = sol::as_table(StringToBool(GetSessionInfo("Debug")));
 	lua["Infinity"] = sol::as_table(std::numeric_limits<int>::max());
 	lua["Red"] = sol::as_table(l_Color(255, 0, 0, 255));
@@ -1734,7 +1851,6 @@ void LuaCompile() {
 	lua.set_function("Fma", &l_Fma);
 	lua.set_function("Mod", &l_Mod);
 	lua.set_function("Rem", &l_Rem);
-	lua.set_function("Pow", &l_Pow);
 	lua.set_function("HSin", &l_HSin);
 	lua.set_function("HCos", &l_HCos);
 	lua.set_function("HTan", &l_HTan);
@@ -1878,8 +1994,24 @@ void LuaCompile() {
 	lua.set_function("WriteImage", &l_WriteImage);
 	lua.set_function("SetSpriteShader", &l_SetSpriteShader);
 	lua.set_function("SetSpriteHeight", &l_SetSpriteHeight);
+	lua.set_function("Pow", &l_Pow);
+	lua.set_function("RemoveFile", &l_RemoveFile);
+	lua.set_function("PlayBeep", &l_PlayBeep);
+	lua.set_function("GetSpriteShader", &l_GetSpriteShader);
+	lua.set_function("GetSpriteHeight", &l_GetSpriteHeight);
+	lua.set_function("TestFunction", &l_TestFunction);
+	lua.set_function("GetDiscordUserInfo", &l_GetDiscordUserInfo);
+	lua.set_function("GetDiscordCurrentUser", &l_GetDiscordCurrentUser);
+	lua.set_function("CreateText", &l_CreateText);
+	lua.set_function("CreateFont", &l_CreateFont);
+	lua.set_function("SetTextPosition", &l_SetTextPosition);
+	lua.set_function("SetTextFont", &l_SetTextFont);
+	lua.set_function("SetTextColor", &l_SetTextColor);
+	lua.set_function("GetASCIIChar", &l_GetASCIIChar);
+	lua.set_function("SetTextText", &l_SetTextText);
+	lua.set_function("SetTextHeight", &l_SetTextHeight);
 
 	P("LUA", "Lua functions and etc. are loaded!");
-	P("LUA", "Start 'start.lua' script...");
-	CompileScript(GetSessionInfo("SourcePath") + "start.lua");
+	P("LUA", "Start '"+ GetEngineInfo("StartScript") +".lua' script...");
+	CompileScript(GetSessionInfo("SourcePath") + GetEngineInfo("StartScript") + ".lua");
 }

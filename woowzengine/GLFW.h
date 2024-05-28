@@ -15,11 +15,13 @@
 #include "Color.h"
 #include "RenderElement.h"
 #include "l_Sprite.h"
+#include "l_Text.h"
 #include "Vector2.h"
+#include "l_Font.h"
 #pragma once
 using namespace std; 
 
-void UpdateShader(Window window, string shaderid, l_Color color,int width, int height, bool autosize = false, float z = 0);
+void UpdateShader(Window window, string shaderid, l_Color color,int width, int height, bool autosize = false, float z = 0, float charpos = 0, float stringlenght = 0);
 void RenderQuad(list<float> v_uv);
 void SetWindowTitle(string id, string title);
 void SetWindowSize(string id, bool thatY, int size);
@@ -62,7 +64,7 @@ GLuint GetTexture(l_Sprite sprite);
 unsigned char* LoadTexture(string path, int* x, int* y, int* numchannel);
 GLuint LoadSprite(string path, l_Sprite spritedata, bool savecolors = false);
 GLuint LoadSprite(string path, Texture texture, bool savecolors = false);
-GLuint LoadSprite_(string path, Texture texture, unsigned char* colors, int x, int y, int numchan, bool savecolors = false);
+GLuint LoadSprite_(Texture texture, unsigned char* colors, int x, int y, int numchan, bool savecolors = false, bool that_stbi = false);
 void CreateBuffers(Window& window);
 void GLAPIENTRY PE_OPENGL(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
 int GetWindowPosition(string id, bool ThatX);
@@ -133,3 +135,19 @@ void WriteImage(string path, int sizex, int sizey, vector<l_Color> colors);
 unsigned char* VectorColorsToChars(vector<l_Color> colors, int sizex, int sizey, int* numchan);
 void SetSpriteShader(string sceneid, string id, string shader);
 void SetSpriteHeight(string sceneid, string id, float height);
+string GetSpriteShader(string sceneid, string id);
+float GetSpriteHeight(string sceneid, string id);
+bool HasText(string sceneid, string id);
+void CreateText(string id, string sceneid, string text);
+void RenderText(Window window, string id, l_Text text, int width, int height, Scene scene);
+void GLFWTest();
+void CreateFont(string id, string path);
+bool GenerateFont_(l_Font font, string sceneid);
+void UpdateTexturesWindowCreated();
+l_Text GetText(string sceneid, string id);
+void SetText(l_Text text);
+void SetTextPosition(string sceneid, string id, l_Vector2 pos);
+void SetTextFont(string sceneid, string id, string font);
+void SetTextColor(string sceneid, string id, l_Color col);
+void SetTextText(string sceneid, string id, string text_);
+void SetTextHeight(string sceneid, string id, float height);

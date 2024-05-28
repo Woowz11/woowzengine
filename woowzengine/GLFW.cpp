@@ -41,6 +41,8 @@
 #include "Window.h"
 
 #include "l_Sprite.h"
+#include "l_Text.h"
+#include "l_Font.h"
 #include "Scene.h"
 
 using namespace std;
@@ -53,13 +55,151 @@ unordered_map<string, unordered_map<string, string>> Textures_Info;
 string MainWindow = "";
 
 unordered_map <string, vector <l_Sprite>> SceneSprites;
+unordered_map <string, vector <l_Text>> SceneTexts;
 
 unordered_map<string, Scene> Scenes;
 
+unordered_map<string, l_Font> Fonts;
+unordered_map <string, vector<string>> SceneFonts;
+unordered_map<string, unordered_map<string, GLuint>> Chars;
+
 string NowWindow;
+
+void UpdateTexturesWindowCreated() {
+	for (auto pair : Windows) {
+		string sceneid = pair.second.scene;
+		if (sceneid != "") {
+			glfwMakeContextCurrent(pair.second.glfw);
+			Scene scene = Scenes[sceneid];
+			for (auto pair2 : Fonts) {
+				GenerateFont_(pair2.second, scene.name);
+			}
+		}
+	}
+}
+
+unordered_map<int, string> Chars_IDS = {
+	{32," "},{48,"0"},{49,"1"},{50,"2"},{51,"3"},{52,"4"},{53,"5"},{54,"6"},{55,"7"},{56,"8"},{57,"9"},
+	{33,"!"},{63,"?"},{45,"-"},{43,"+"},{61,"="},{95,"_"},{35,"#"},{36,"№"},{64,"@"},{126,"~"},{96,"`"},{39,"'"},
+	{34,"\""},{58,":"},{59,";"},{46,"."},{44,","},{37,"%"},{94,"^"},{38,"&"},{42,"*"},{40,"("},{41,")"},
+	{91,"["},{93,"]"},{123,"{"},{125,"}"},{60,"<"},{62,">"},{92,"\\"},{124,"|"},{47,"/"},{65,"A"},{97,"a"},
+	{66,"B"},{98,"b"},{67,"C"},{99,"c"},{68,"D"},{100,"d"},{69,"E"},{101,"e"},{70,"F"},{102,"f"},{71,"G"},
+	{103,"g"},{72,"H"},{104,"h"},{73,"I"},{105,"i"},{74,"J"},{106,"j"},{75,"K"},{107,"k"},{76,"L"},{108,"l"},
+	{77,"M"},{109,"m"},{78,"N"},{110,"n"},{79,"O"},{111,"o"},{80,"P"},{112,"p"},{81,"Q"},{113,"q"},{82,"R"},{114,"r"},
+	{83,"S"},{115,"s"},{84,"T"},{116,"t"},{85,"U"},{117,"u"},{86,"V"},{118,"v"},{87,"W"},{119,"w"},{88,"X"},{120,"x"},
+	{89,"Y"},{121,"y"},{90,"Z"},{122,"z"}
+};
+
+unordered_map<int, string> Chars_Pos = {
+	{0, " "}, {1, "0"}, {2, "1"}, {3, "2"}, {4, "3"}, {5, "4"}, {6, "5"}, {7, "6"}, {8, "7"}, {9, "8"}, {10, "9"},
+	{11, "!"}, {12, "?"}, {13, "-"}, {14, "+"}, {15, "="}, {16, "_"}, {17, "#"}, {18, "№"}, {19, "@"}, {20, "%"}, {21, "&"}, {22, "*"},
+	{23, "("}, {24, ")"}, {25, "["}, {26, "]"}, {27, "{"}, {28, "}"}, {29, "<"}, {30, ">"}, {31, "^"},
+	{32, "."}, {33, ","}, {34, ":"}, {35, ";"}, {36, "'"}, {37, "\""}, {38, "`"}, {39, "~"}, {40, "/"}, {41, "|"}, {42, "\\"},
+	{48, "A"}, {49, "a"}, {50, "B"}, {51, "b"}, {52, "C"}, {53, "c"}, {54, "D"}, {55, "d"}, {56, "E"}, {57, "e"}, {58, "F"}, {59, "f"}, {60, "G"}, {61, "g"}, {62, "H"},
+	{63, "h"}, {64, "I"}, {65, "i"}, {66, "J"}, {67, "j"}, {68, "K"}, {69, "k"}, {70, "L"}, {71, "l"}, {72, "M"}, {73, "m"}, {74, "N"}, {75, "n"}, {76, "O"}, {77, "o"},
+	{78, "P"}, {79, "p"}, {80, "Q"}, {81, "q"}, {82, "R"}, {83, "r"}, {84, "S"}, {85, "s"}, {86, "T"}, {87, "t"}, {88, "U"}, {89, "u"}, {90, "V"}, {91, "v"}, {92, "W"},
+	{93, "w"}, {94, "X"}, {95, "x"}, {96, "Y"}, {97, "y"}, {98, "Z"}, {99, "z"},
+
+	{255, "error"}
+};
 
 void StopGLFW() {
 	glfwTerminate();
+}
+
+bool GenerateFont_(l_Font font, string sceneid) {
+	vector<string> fonts = SceneFonts[sceneid];
+	if (find(fonts.begin(), fonts.end(), font.id) == fonts.end()) {
+		int x, y, numchan;
+		unsigned char* fonttexture = LoadTexture(font.image, &x, &y, &numchan);
+		if (x != y) {
+			PE("", "");
+			delete[] fonttexture;
+			return false;
+		}
+		if (x % 16 != 0) {
+			PE("", "");
+			delete[] fonttexture;
+			return false;
+		}
+
+		if (numchan <= 3) {
+			numchan = 4;
+			unsigned char* destination = new unsigned char[x*y* numchan];
+			for (int i = 0; i < x * y; i++) {
+				destination[i * numchan] = fonttexture[i * 3];
+				destination[i * numchan + 1] = fonttexture[i * 3 + 1];
+				destination[i * numchan + 2] = fonttexture[i * 3 + 2];
+				destination[i * numchan + 3] = min(fonttexture[i * 3]+fonttexture[i * 3 + 1]+ fonttexture[i * 3 + 2],255);
+			}
+			delete[] fonttexture;
+			fonttexture = destination;
+		}
+
+		int size = x / 16;
+		unordered_map<string, GLuint> chars;
+		int nx = 0;
+		int ny = 15;
+		for (int c = 0; c < 256; c++) {
+				int cx = nx * size;
+				int cy = ny * size;
+				int cw = size;
+				int ch = size;
+
+				nx++;
+				if (nx > 15) {
+					nx = 0;
+					ny--;
+				}
+
+			if (Chars_Pos.find(c) != Chars_Pos.end()) {
+				unsigned char* chartexture = new unsigned char[cw * ch * numchan];
+				for (int i = 0; i < ch; i++) {
+					for (int j = 0; j < cw; j++) {
+						for (int k = 0; k < numchan; k++) {
+							if (numchan > 3) {
+								chartexture[(i * cw + j) * numchan + k] = fonttexture[((i + cy) * x + j + cx) * numchan + k];
+							}
+							else {
+								chartexture[(i * cw + j) * numchan + k] = fonttexture[((i + cy) * x + j + cx) * numchan + k];
+							}
+						}
+					}
+				}
+
+				string charid = "Font (" + font.id + ") " + Chars_Pos[c];
+				Texture texture = Texture("");
+				texture.sceneid = sceneid;
+				texture.id = charid;
+				texture.TextureID = GetTextureID(texture);
+				Textures_[charid] = texture;
+
+				GLuint texture_ = LoadSprite_(texture, chartexture, cw, ch, numchan);
+				Textures[texture.TextureID] = texture_;
+
+
+				chars[Chars_Pos[c]] = texture_;
+			}
+		}
+		Chars[font.id] = chars;
+
+		fonts.push_back(font.id);
+		SceneFonts[sceneid] = fonts;
+		return true;
+	}
+	return false;
+}
+
+void CreateFont(string id, string path) {
+	l_Font font(id,path);
+	if (GenerateFont_(font,"")) {
+		Fonts[id] = font;
+		P("FONT", "Font [" + id + "] created!");
+		UpdateTexturesWindowCreated();
+	}
+	else {
+		PE("Such a font is already exsist! CreateFont('"+id+"','"+path+"')","E0038");
+	}
 }
 
 /*Загрузка текстуры через stb_image*/
@@ -87,38 +227,42 @@ string GetTextureID(Texture texture) {
 		result = result + " [LINEAR]";
 	}
 
+	result = texture.sceneid + " " + result;
+
 	return result;
 }
 
 GLuint LoadSprite(string path, l_Sprite spritedata, bool savecolors) {
 	int x, y, numchan;
 	unsigned char* colors = LoadTexture(path, &x, &y, &numchan);
-	return LoadSprite_(path, GetTextureByID(spritedata.texture), colors, x, y, numchan, savecolors);
+	return LoadSprite_(GetTextureByID(spritedata.texture), colors, x, y, numchan, savecolors, true);
 }
 
 GLuint LoadSprite(string path, Texture texture, bool savecolors) {
 	int x, y, numchan;
 	unsigned char* colors = LoadTexture(path, &x, &y, &numchan);
-	return LoadSprite_(path, texture, colors, x, y, numchan, savecolors);
+	return LoadSprite_(texture, colors, x, y, numchan, savecolors, true);
 }
 
-GLuint LoadSprite_(string path, Texture texture, unsigned char* colors, int x, int y, int numchan, bool savecolors) {
+GLuint LoadSprite_(Texture texture, unsigned char* colors, int x, int y, int numchan, bool savecolors, bool that_stbi) {
 	unsigned char* imagedata = colors;
 	GLuint sprite;
 	glGenTextures(1, &sprite);
 	glBindTexture(GL_TEXTURE_2D, sprite);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (texture.Linear? GL_LINEAR : GL_NEAREST));
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (texture.Linear ? GL_LINEAR : GL_NEAREST));
-	glTexImage2D(GL_TEXTURE_2D, 0, (numchan > 3? GL_RGBA : GL_RGB), x, y, 0, (numchan > 3 ? GL_RGBA : GL_RGB), GL_UNSIGNED_BYTE, imagedata);
+	glTexImage2D(GL_TEXTURE_2D, 0, (numchan > 3? GL_RGBA : (numchan > 1 ? GL_RGB : GL_ALPHA)), x, y, 0, (numchan > 3 ? GL_RGBA : (numchan > 1 ? GL_RGB : GL_RED)), GL_UNSIGNED_BYTE, imagedata);
 
 	string textureid = GetTextureID(texture);
 	Textures_Info[textureid]["x"] = to_string(x);
 	Textures_Info[textureid]["y"] = to_string(y);
 	Textures_Info[textureid]["hasalpha"] = (numchan > 3 ? "true" : "false");
 
-	int size = x * y * numchan;
-
 	if (savecolors) {
+		int size = x * y * numchan;
+
 		string ColorsR = "";
 		string ColorsG = "";
 		string ColorsB = "";
@@ -162,7 +306,7 @@ GLuint LoadSprite_(string path, Texture texture, unsigned char* colors, int x, i
 		Textures_Info[textureid]["a"] = "";
 	}
 
-	stbi_image_free(imagedata);
+	if (that_stbi) { stbi_image_free(imagedata); }
 
 	return sprite;
 }
@@ -210,6 +354,9 @@ Window CreateShaders(Window window, string shaderpath) {
 			U["scale"] = glGetUniformLocation(Shader, "scale");
 			U["color"] = glGetUniformLocation(Shader, "color");
 			U["height"] = glGetUniformLocation(Shader, "height");
+			U["charpos"] = glGetUniformLocation(Shader, "charpos");
+			U["stringlen"] = glGetUniformLocation(Shader, "stringlen");
+			U["zoom"] = glGetUniformLocation(Shader, "zoom");
 
 			window.Shaders[ShaderID] = Shader;
 			window.Uniforms[ShaderID] = U;
@@ -218,6 +365,16 @@ Window CreateShaders(Window window, string shaderpath) {
 		}
 	}
 	return window;
+}
+
+void GLFWTest() {
+	for (auto t : Textures_) {
+		DebugPrint_(t.first + " | " + t.second.path + " | " + t.second.id + " | " + t.second.TextureID);
+	}
+	DebugPrint_("--------------------------");
+	for (auto t : Textures) {
+		DebugPrint_(t.first + " | " + to_string(t.second));
+	}
 }
 
 void CreateBuffers(Window& window) {
@@ -274,6 +431,8 @@ void GLFWInstall() {
 
 	CreateTexture("default", GetSessionInfo("SourcePath") + "engine/default.png");
 	CreateTexture("error", GetSessionInfo("SourcePath") + "engine/error.png");
+
+	CreateFont("default", GetSessionInfo("SourcePath") + "engine/fonts/default.png");
 }
 
 void PE_GLFW() {
@@ -369,7 +528,7 @@ void RenderQuad(list<float> v_uv) {
 	glDrawArrays(GL_QUADS, 0, 4);
 }
 
-void UpdateShader(Window window, string shaderid, l_Color color, int width, int height, bool autosize, float z) {
+void UpdateShader(Window window, string shaderid, l_Color color, int width, int height, bool autosize, float z, float charpos, float stringlenght, float zoom) {
 	GLuint Shader = window.Shaders[shaderid];
 	glUseProgram(Shader);
 	if (window.Uniforms[shaderid]["sprite"] != -1) {
@@ -390,6 +549,15 @@ void UpdateShader(Window window, string shaderid, l_Color color, int width, int 
 	}
 	if (window.Uniforms[shaderid]["height"] != -1) {
 		glUniform1f(window.Uniforms[shaderid]["height"], pow(2, -z));
+	}
+	if (window.Uniforms[shaderid]["charpos"] != -1) {
+		glUniform1f(window.Uniforms[shaderid]["charpos"], charpos);
+	}
+	if (window.Uniforms[shaderid]["stringlen"] != -1) {
+		glUniform1f(window.Uniforms[shaderid]["stringlen"], stringlenght);
+	}
+	if (window.Uniforms[shaderid]["zoom"] != -1) {
+		glUniform1f(window.Uniforms[shaderid]["zoom"], zoom);
 	}
 }
 
@@ -541,8 +709,8 @@ void RenderSprite(Window window, string id, l_Sprite sprite, int width, int heig
 		float CENTERY = (BLY + TLY + TRY + BRY) / 4 + sprite.origin.y;
 		float HeightScale = (pow(2, -sprite.Height));
 		float OutNumber = 400 * Zoom * HeightScale * max(sprite.size.x+(abs(sprite.LB.x) + abs(sprite.LT.x) + abs(sprite.RB.x) + abs(sprite.RT.x)), sprite.size.y+(abs(sprite.LB.y) + abs(sprite.LT.y) + abs(sprite.RB.y) + abs(sprite.RT.y)));
-		float HeightOffsetX = (CamPosX - CENTERX);
-		float HeightOffsetY = (CamPosY - CENTERY);
+		float HeightOffsetX = (CamPosX - CENTERX) * HeightScale;
+		float HeightOffsetY = (CamPosY - CENTERY) * HeightScale;
 		bool Out = PointOutside(window,CENTERX+HeightOffsetX,CENTERY+HeightOffsetY,scene,xw,yw,FloatToInt(OutNumber));
 		if (!Out){
 
@@ -555,7 +723,7 @@ void RenderSprite(Window window, string id, l_Sprite sprite, int width, int heig
 
 			GLuint texture = GetTexture(sprite);
 			glBindTexture(GL_TEXTURE_2D, texture);
-			UpdateShader(window, sprite.shader, sprite.color, width, height, sprite.autoresize, sprite.Height);
+			UpdateShader(window, sprite.shader, sprite.color, width, height, sprite.autoresize, sprite.Height, 0, 0, Zoom);
 
 			float flipx = 1;
 			if (sprite.FlipX) {
@@ -575,6 +743,116 @@ void RenderSprite(Window window, string id, l_Sprite sprite, int width, int heig
 			});
 		}
 			
+		glFlush();
+	}
+}
+
+void RenderText(Window window, string id, l_Text text, int width, int height, Scene scene) {
+	if (text.id != "" && text.font != "") {
+		l_Font font = Fonts[text.font];
+
+		float x = text.position.x;
+		float y = text.position.y;
+
+		float charscalesymbol = 1;
+		float mirrory = 1;
+		float mirrorx = 1;
+
+		float Zoom = scene.CameraZoom;
+
+		int length = text.text.length();
+		for (int i = 0; i < length; i++) {
+			char c = text.text[i];
+
+			float bearingx = 0;
+			float bearingy = 0;
+			float sizex = 1;
+			float sizey = 1;
+			float otstyp = 0;
+			float scale = text.scale * charscalesymbol;
+
+			float xpos = (x + bearingx * scale) * Zoom;
+			float ypos = (y - (sizey - bearingy) * scale) * Zoom;
+			float w = sizex * scale * Zoom;
+			float h = sizey * scale * Zoom;
+
+			float CamPosX = scene.CameraPosition.x * Zoom;
+			float CamPosY = scene.CameraPosition.y * Zoom;
+
+			float xw = float(width);
+			float yw = float(height);
+
+			float BLX = xpos;
+			float BLY = ypos;
+			float TLX = xpos;
+			float TLY = ypos + h;
+			float TRX = xpos + w;
+			float TRY = ypos + h;
+			float BRX = xpos + w;
+			float BRY = ypos;
+
+			l_Vector2 LB = l_Vector2(BLX, BLY);
+			l_Vector2 LT = l_Vector2(TLX, TLY);
+			l_Vector2 RB = l_Vector2(BRX, BRY);
+			l_Vector2 RT = l_Vector2(TRX, TRY);
+			l_Vector2 CENTER = l_Vector2(xpos+w/2,ypos+h/2);
+
+			float HeightScale = (pow(2, -text.height));
+			float OutNumber = 400 * Zoom * HeightScale;
+			bool Out = PointOutside(window, CENTER.x, CENTER.y, scene, xw, yw, FloatToInt(OutNumber));
+
+			bool dontrender = false;
+			if (c == 0 || (c >= 1 && c <= 8) || c == 10 || Out) {
+				dontrender = true;
+			}
+			if (!dontrender) {
+				string charid = Chars_IDS[c];
+				if (charid == "") {
+					charid = "error";
+				}
+				GLuint texture = Chars[text.font][charid];
+				glBindTexture(GL_TEXTURE_2D, texture);
+				UpdateShader(window, text.shader, text.color, width, height, false, text.height, i, length, Zoom);
+
+				RenderQuad({
+					LB.x - CamPosX,LB.y - CamPosY, 0,    0,      0,
+					LT.x - CamPosX,LT.y - CamPosY, 0,    0,      mirrory,
+					RT.x - CamPosX,RT.y - CamPosY, 0,    mirrorx,mirrory,
+					RB.x - CamPosX,RB.y - CamPosY, 0,    mirrorx,0
+				});
+			}
+
+			if (!((c >= 1 && c <= 8) || c == 10)) { x += (sizex + otstyp * Zoom) * scale; }
+			if (c == 10) {
+				y -= (sizey + otstyp) * scale;
+				x = text.position.x;
+			}
+			if (c == 1) {
+				mirrory = mirrory * -1;
+			}
+			if (c == 8) {
+				mirrorx = mirrorx * -1;
+			}
+			if (c == 2) {
+				y += 0.2  * scale;
+			}
+			if (c == 3) {
+				y -= 0.2 * scale;
+			}
+			if (c == 4) {
+				x += 0.2 * scale;
+			}
+			if (c == 5) {
+				x -= 0.2 * scale;
+			}
+			if (c == 6) {
+				charscalesymbol *= 1.1;
+			}
+			if (c == 7) {
+				charscalesymbol /= 1.1;
+			}
+		}
+
 		glFlush();
 	}
 }
@@ -623,6 +901,16 @@ void Render() {
 								}
 							}
 						}
+
+						vector<l_Text> texts = SceneTexts[window.scene];
+						if (texts.size() > 0) {
+
+							for (const auto& text : texts) {
+								if (text.Visible) {
+									RenderText(window, text.id, text, width, height, scene);
+								}
+							}
+						}
 					}
 					else {
 						ErrorScene("Camera zoom cannot be equal to 0!");
@@ -667,6 +955,21 @@ bool HasSprite(string sceneid, string id) {
 		});
 
 	if (it != sprites.end()) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+bool HasText(string sceneid, string id) {
+	Scene scene = GetScene(sceneid);
+	vector<l_Text> texts = SceneTexts[sceneid];
+	auto it = find_if(texts.begin(), texts.end(), [&](const l_Text& text_) {
+		return text_.id == id;
+		});
+
+	if (it != texts.end()) {
 		return true;
 	}
 	else {
@@ -774,7 +1077,7 @@ void GetTextureTTT(Texture texture, int sizex, int sizey, vector<l_Color> colors
 		unordered_map<string, GLuint> Textures_ = Textures;
 		int numchan;
 		unsigned char* colors_result = VectorColorsToChars(colors,sizex,sizey,&numchan);
-		GLuint texture_ = LoadSprite_(texture.path, texture, colors_result, sizex, sizey, numchan, savecolors);
+		GLuint texture_ = LoadSprite_(texture, colors_result, sizex, sizey, numchan, savecolors);
 		Textures_[id] = texture_;
 		Textures = Textures_;
 
@@ -821,6 +1124,22 @@ l_Sprite GetSprite(string sceneid, string id, bool textureerror) {
 	}
 }
 
+l_Text GetText(string sceneid, string id) {
+	Scene scene = GetScene(sceneid);
+	vector<l_Text> texts = SceneTexts[sceneid];
+	auto it = find_if(texts.begin(), texts.end(), [&](const l_Text& text_) {
+		return text_.id == id;
+		});
+
+	if (it != texts.end()) {
+		return *it;
+	}
+	else {
+		PE("No text found! GetText('" + sceneid + "','" + id + "')", "E0037");
+		return l_Text("","");
+	}
+}
+
 Scene GetScene(string id) {
 	if (Scenes.find(id) == Scenes.end()) {
 		PE("No scene found! GetScene('"+id+"')","E0021");
@@ -836,10 +1155,21 @@ void SetSprite(l_Sprite sprite) {
 	vector<l_Sprite> sprites = SceneSprites[sprite.sceneid];
 	auto it = find_if(sprites.begin(), sprites.end(), [&](const l_Sprite& sprite_) {
 		return sprite_.id == sprite.id;
-	});
+		});
 	*it = sprite;
 	SceneSprites[sprite.sceneid].clear();
 	SceneSprites[sprite.sceneid] = sprites;
+}
+
+void SetText(l_Text text) {
+	Scene scene = GetScene(text.sceneid);
+	vector<l_Text> texts = SceneTexts[text.sceneid];
+	auto it = find_if(texts.begin(), texts.end(), [&](const l_Text& text_) {
+		return text_.id == text.id;
+		});
+	*it = text;
+	SceneTexts[text.sceneid].clear();
+	SceneTexts[text.sceneid] = texts;
 }
 
 void CreateScene(string id) {
@@ -862,6 +1192,47 @@ void SetCameraZoom(string id, float f) {
 
 float GetCameraZoom(string id) {
 	return GetScene(id).CameraZoom;
+}
+
+void CreateText(string id, string sceneid, string text) {
+	if (!HasText(sceneid, id)) {
+		l_Text result(id, sceneid,text);
+		Scene scene = GetScene(sceneid);
+		SceneTexts[sceneid].push_back(result);
+	}
+	else {
+		PE("Such a text is already on the scene! CreateText('" + id + "','" + sceneid + "','"+text+"')", "E0036");
+	}
+}
+
+void SetTextPosition(string sceneid, string id, l_Vector2 pos) {
+	l_Text text = GetText(sceneid, id);
+	text.position = pos;
+	SetText(text);
+}
+
+void SetTextText(string sceneid, string id, string text_) {
+	l_Text text = GetText(sceneid, id);
+	text.text = text_;
+	SetText(text);
+}
+
+void SetTextHeight(string sceneid, string id, float height) {
+	l_Text text = GetText(sceneid, id);
+	text.height = height;
+	SetText(text);
+}
+
+void SetTextColor(string sceneid, string id, l_Color col) {
+	l_Text text = GetText(sceneid, id);
+	text.color = col;
+	SetText(text);
+}
+
+void SetTextFont(string sceneid, string id, string font) {
+	l_Text text = GetText(sceneid, id);
+	text.font = font;
+	SetText(text);
 }
 
 int spritescount = 0;
@@ -1160,6 +1531,16 @@ void SetSpriteHeight(string sceneid, string id, float height) {
 	SetSprite(sprite);
 }
 
+string GetSpriteShader(string sceneid, string id) {
+	l_Sprite sprite = GetSprite(sceneid, id);
+	return sprite.shader;
+}
+
+float GetSpriteHeight(string sceneid, string id) {
+	l_Sprite sprite = GetSprite(sceneid, id);
+	return sprite.Height;
+}
+
 bool GetSpriteMirror(string sceneid, string id, bool ThatX) {
 	l_Sprite sprite = GetSprite(sceneid, id);
 	if (ThatX) {
@@ -1406,6 +1787,7 @@ void SetWindowScene(string id, string b, bool DontPrint) {
 	Scenes[b] = scene;
 	w.scene = b;
 	Windows[id] = w;
+	UpdateTexturesWindowCreated();
 }
 
 /*Изменение маштаба*/
@@ -1597,6 +1979,8 @@ Window CreateWindowGLFW(string id, int sizex, int sizey, string title) {
 			SetWindowSize(id, true, sizey);
 
 			P("WINDOW", "Window [" + id + "] created!");
+
+			UpdateTexturesWindowCreated();
 
 			return window_;
 		}

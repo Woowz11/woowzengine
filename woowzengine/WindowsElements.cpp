@@ -1,4 +1,5 @@
 #pragma warning(disable : 4996)
+#pragma warning(disable : 4244)
 
 #define _HAS_STD_BYTE 0
 #include "Windows.h"
@@ -6,18 +7,20 @@
 #include <iostream>
 #include <string>
 #include <map>
-#include <Lmcons.h>
-#include <Psapi.h>
-#include <tlhelp32.h>
+#include <unordered_map>
+#include <vector>
+#include <cstdlib>
+#include <iostream>
+#include <fstream>
+#include "Files.h"
+#include "Lmcons.h"
+#include "Psapi.h"
+#include "tlhelp32.h"
 #include "WindowsElements.h"
 #include "Easyer.h"
 #include "Base.h"
 #include "Logger.h"
 #include "ShlObj.h"
-#include "vector"
-#include "fstream"
-#include <mmdeviceapi.h>
-#include <endpointvolume.h>
 
 using namespace std;
 
@@ -156,44 +159,37 @@ void SetDesktopBackground(string img) {
 	P("DESKTOP","New background desktop image installed!");
 }
 
+int systemresultcount = 0;
+string system_withresult(string command) {
+	systemresultcount++;
+	string filename = "cmdresult" + to_string(systemresultcount);
+	string path = GetSessionInfo("TemporaryPath") + "\\" + filename;
+	GetOrCreateFile(path);
+	int result = system(StringToConstChar(command + " > \"" + path + "\""));
+	string result_ = ReadFile(path);
+	RemoveFile(path);
+	if (result == 1) {
+		PE("Cmd command failed! (" + to_string(result) + ") Cmd('" + command + "')", "L0022");
+	}
+	return result_;
+}
+
+
 void SetVolume(int volume) {
-	IMMDeviceEnumerator* deviceEnumerator = nullptr;
-	CoInitialize(nullptr);
-	CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL, IID_PPV_ARGS(&deviceEnumerator));
-
-	IMMDevice* device = nullptr;
-	deviceEnumerator->GetDefaultAudioEndpoint(eRender, eConsole, &device);
-
-	IAudioEndpointVolume* audioEndpointVolume = nullptr;
-	device->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_ALL, nullptr, reinterpret_cast<void**>(&audioEndpointVolume));
-
-	audioEndpointVolume->SetMasterVolumeLevel(-64*(1-(float(volume)/100)), nullptr);
-
-	audioEndpointVolume->Release();
-	device->Release();
-	deviceEnumerator->Release();
-	CoUninitialize();
+	system_withresult(GetSessionInfo("GamePath") + "SetVol.exe "+to_string(volume));
 }
 
 int GetVolume() {
-	IMMDeviceEnumerator* deviceEnumerator = nullptr;
-	CoInitialize(nullptr);
-	CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL, IID_PPV_ARGS(&deviceEnumerator));
+	string result = system_withresult(GetSessionInfo("GamePath") + "SetVol.exe report");
 
-	IMMDevice* device = nullptr;
-	deviceEnumerator->GetDefaultAudioEndpoint(eRender, eConsole, &device);
+	size_t pos = result.find("Master audio level = ");
+	std::string levelStr = result.substr(pos + 21);
 
-	IAudioEndpointVolume* audioEndpointVolume = nullptr;
-	device->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_ALL, nullptr, reinterpret_cast<void**>(&audioEndpointVolume));
+	levelStr.erase(std::remove(levelStr.begin(), levelStr.end(), '\n'), levelStr.end());
 
-	float volumeLevel;
-	audioEndpointVolume->GetMasterVolumeLevel(&volumeLevel);
+	return StringToInt(levelStr);
+}
 
-	audioEndpointVolume->Release();
-	device->Release();
-	deviceEnumerator->Release();
-	CoUninitialize();
-
-	float volumePercentage = volumeLevel; /*Я короче пока-что хз как децибелы нормальн в проценты конвертировать*/
-	return int(round(volumePercentage));
+void PlayBeep() {
+	system(StringToConstChar(GetSessionInfo("GamePath") + "SetVol.exe beep"));
 }

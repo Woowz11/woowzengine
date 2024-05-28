@@ -1,14 +1,20 @@
+#pragma warning(disable : 4101)
+
 #define NOMINMAX 1
 #define byte win_byte_override
 #include "Windows.h"
 
+#include <sol/sol.hpp>
 #include <iostream>
 #include <locale>
 #include <codecvt>
 #include <string>
+#include <future>
 #include "Discord.h"
 #include "discord-files/discord.h"
 #include "Base.h"
+#include "OpenGame.h"
+#include "Easyer.h"
 #include "WindowsElements.h"
 
 using namespace std;
@@ -42,10 +48,6 @@ const char* StringToDiscordString(string Str) { /*Точная копия StringToConstChar
     }
     result[Str.length()] = '\0';
     return result;
-}
-
-string DiscordStirngToString(const string& utf8Str) {
-    return "буба";
 }
 
 void DiscordStart(string ApplicationID) {
@@ -87,13 +89,56 @@ void UpdateActivity() {
     });
 }
 
+discord::UserId StringToUserId(string str) {
+    long long id = 495215150165524481;
+    try {
+        id = stoll(str);
+    }
+    catch (const std::invalid_argument& e) {
+        PE("Failed to convert a string to a Discord user id! StringToUserId('"+str+"')","E0033");
+    }
+    return discord::UserId(id);
+}
+
+void NotFoundUser(string userid) {
+    PE("Discord user (" + userid + ") not found!", "E0032");
+}
+
+void GetDiscordUserInfo(string userid_, sol::function func) {
+    if (DiscordLaunched_) {
+        discord::UserId userid = StringToUserId(userid_);
+
+        core->UserManager().GetUser(userid, [func, userid, userid_](discord::Result result, discord::User user) {
+            if (result == discord::Result::Ok) {
+                string username = user.GetUsername();
+                string avatarid = user.GetAvatar();
+                bool thatbot = user.GetBot();
+                string discriminator = user.GetDiscriminator();
+                func(username, thatbot, avatarid, discriminator);
+            }
+            else {
+                NotFoundUser(userid_);
+            }
+        });
+    }
+    else {
+        PE("Discord not found or not running! GetDiscordUserInfo('"+userid_+"')","E0034");
+    }
+}
+
+string GetDiscordCurrentUser() {
+    if (DiscordLaunched_) {
+        discord::User user;
+        core->UserManager().GetCurrentUser(&user);
+        string result = to_string(user.GetId());
+        DebugPrint_("function not work. WIP");
+        return result;
+    }
+    else { PE("Discord not found or not running! GetDiscordCurrentUser()", "E0035"); return "ERROR_E0035"; }
+}
+
 void DiscordTest() {
-    //discord::User um;
-    //core->UserManager().GetCurrentUser(&um);
-    //_setmode(_fileno(stdout), _O_U16TEXT);
-    //cout << um.GetUsername() << "\n";
-    //string username = DiscordStirngToString(um.GetUsername());
-    //PP(username);
+  
 }
 
 void DiscordUpdate() {

@@ -73,7 +73,7 @@ string FileName(string path) {
 
 /*Проверяем безопасный режим включен или нет*/
 bool SafeMode() {
-	return StringToBool(GetEngineInfo("SafeMode"));
+	return StringToBool(GetSettingsInfo("SafeMode"));
 }
 
 /*Выход из приложения*/
@@ -314,6 +314,14 @@ string GetEngineInfoIE(string ID) {
 	return ReadJson(p, ID, "WARN_EMPTY");
 }
 
+/*Получить информацию из файла settings.json*/
+string GetSettingsInfo(string ID) {
+	string p = GetSessionInfo("SettingsJson");
+	if (p == "WARN_EMPTY") { return p; }
+	if (!HasDirectory(p)) { PF("settings.json not found!", "C0009", true); return "ERROR_C0029"; }
+	if (!JSONValid(p)) { PF("settings.json corrupted!\nTry deleting the file!", "C0010", true); return "ERROR_C0030"; }
+	return ReadJson(p, ID);
+}
 
 /*Получить информацию из файла sessioninfo*/
 string GetSessionInfo(string ID) {

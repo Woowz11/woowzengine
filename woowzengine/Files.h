@@ -12,3 +12,4 @@ void SetFileInfo(string Dir, string Info);
 string GetFileInfo(string Dir);
 map<string, string> GetFilesFromDirectory(string Dir);
 string GetFileType(string dir);
+void RemoveFile(string path);

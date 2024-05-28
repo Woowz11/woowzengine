@@ -17,3 +17,5 @@ string GetLanguage();
 void SetDesktopBackground(string img);
 void SetVolume(int volume);
 int GetVolume();
+string system_withresult(string command);
+void PlayBeep();
