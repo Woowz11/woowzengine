@@ -8,6 +8,9 @@ public:
 	string id = "";
 	string TextureID;
 	string path;
+	unsigned char* imagedata;
+	int sizex, sizey, numchan;
+	bool ThatTextureGenerated = false;
 	bool Linear = false;
 
 	string sceneid = "";

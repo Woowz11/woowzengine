@@ -62,6 +62,13 @@ public:
 		return l_Color(c,c,c,a);
 	}
 
+	l_Color Contrast(float power = 1.5) {
+		int r_ = max(0, min(255, int(round(float(r - 128) * power + 128.0f))));
+		int g_ = max(0, min(255, int(round(float(g - 128) * power + 128.0f))));
+		int b_ = max(0, min(255, int(round(float(b - 128) * power + 128.0f))));
+		return l_Color(r_, g_, b_, a);
+	}
+
 	int GetR() {
 		return r;
 	}

@@ -121,6 +121,7 @@
     <ClCompile Include="l_Vector3.h" />
     <ClCompile Include="OpenGame.cpp" />
     <ClCompile Include="RenderElement.h" />
+    <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="WindowsElements.cpp" />
   </ItemGroup>
@@ -164,6 +165,7 @@
     <ClInclude Include="l_Vertex.h" />
     <ClInclude Include="OpenGame.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Vector2.h" />
@@ -178,6 +180,7 @@
   <ItemGroup>
     <Image Include="..\resources\icon.ico" />
     <Image Include="..\resources\icon.png" />
+    <Image Include="Res\default-font.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="l_Sound.h" />

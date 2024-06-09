@@ -123,6 +123,9 @@
     <ClCompile Include="LIBS\discord-files\voice_manager.cpp">
       <Filter>Исходные файлы\discord-files</Filter>
     </ClCompile>
+    <ClCompile Include="ResourceManager.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="OpenGame.h">
@@ -263,6 +266,9 @@
     <ClInclude Include="l_Font.h">
       <Filter>Исходные файлы\Elements\Lua</Filter>
     </ClInclude>
+    <ClInclude Include="ResourceManager.h">
+      <Filter>Исходные файлы</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="woowzengine.rc">
@@ -274,6 +280,9 @@
       <Filter>Файлы ресурсов</Filter>
     </Image>
     <Image Include="..\resources\icon.ico">
+      <Filter>Файлы ресурсов</Filter>
+    </Image>
+    <Image Include="Res\default-font.png">
       <Filter>Файлы ресурсов</Filter>
     </Image>
   </ItemGroup>

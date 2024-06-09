@@ -1,6 +1,8 @@
 #pragma warning(disable : 4996)
 #pragma warning(disable : 4244)
 
+#define OEMRESOURCE
+
 #define _HAS_STD_BYTE 0
 #include "Windows.h"
 
@@ -12,6 +14,9 @@
 #include <cstdlib>
 #include <iostream>
 #include <fstream>
+#include "WinUser.h"
+#include "conio.h"
+#include "stdio.h"
 #include "Files.h"
 #include "Lmcons.h"
 #include "Psapi.h"

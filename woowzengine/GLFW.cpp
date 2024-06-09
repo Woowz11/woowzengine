@@ -227,7 +227,9 @@ string GetTextureID(Texture texture) {
 		result = result + " [LINEAR]";
 	}
 
-	result = texture.sceneid + " " + result;
+	if (texture.sceneid != "") {
+		result = texture.sceneid + " " + result;
+	}
 
 	return result;
 }
@@ -247,18 +249,18 @@ GLuint LoadSprite(string path, Texture texture, bool savecolors) {
 GLuint LoadSprite_(Texture texture, unsigned char* colors, int x, int y, int numchan, bool savecolors, bool that_stbi) {
 	unsigned char* imagedata = colors;
 	GLuint sprite;
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glGenTextures(1, &sprite);
 	glBindTexture(GL_TEXTURE_2D, sprite);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (texture.Linear? GL_LINEAR : GL_NEAREST));
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (texture.Linear ? GL_LINEAR : GL_NEAREST));
-	glTexImage2D(GL_TEXTURE_2D, 0, (numchan > 3? GL_RGBA : (numchan > 1 ? GL_RGB : GL_ALPHA)), x, y, 0, (numchan > 3 ? GL_RGBA : (numchan > 1 ? GL_RGB : GL_RED)), GL_UNSIGNED_BYTE, imagedata);
+	GLint imagechannels = (numchan == 4 ? GL_RGBA : (numchan == 1 ? GL_RED : (numchan == 2 ? GL_RG : GL_RGB)));
+	glTexImage2D(GL_TEXTURE_2D, 0, imagechannels, x, y, 0, imagechannels, GL_UNSIGNED_BYTE, imagedata);
 
-	string textureid = GetTextureID(texture);
+	string textureid = texture.id;
 	Textures_Info[textureid]["x"] = to_string(x);
 	Textures_Info[textureid]["y"] = to_string(y);
-	Textures_Info[textureid]["hasalpha"] = (numchan > 3 ? "true" : "false");
+	Textures_Info[textureid]["hasalpha"] = (numchan >= 4 ? "true" : "false");
 
 	if (savecolors) {
 		int size = x * y * numchan;
@@ -267,26 +269,43 @@ GLuint LoadSprite_(Texture texture, unsigned char* colors, int x, int y, int num
 		string ColorsG = "";
 		string ColorsB = "";
 		string ColorsA = "";
-		int i = 0;
+		
+		string ColorsR_ = "";
+		string ColorsG_ = "";
+		string ColorsB_ = "";
+		string ColorsA_ = "";
 		int colorid = 1;
-		for (i = 0; i < (size); i++) {
+		int j = 0;
+		for (int i = 0; i < (size); i++) {
 			switch (colorid) {
 			case 1:
-				ColorsR = ColorsR + to_string(imagedata[i]) + ",";
+				ColorsR_ = ColorsR_ + to_string(imagedata[i]) + ",";
 				break;
 			case 2:
-				ColorsG = ColorsG + to_string(imagedata[i]) + ",";
+				ColorsG_ = ColorsG_ + to_string(imagedata[i]) + ",";
 				break;
 			case 3:
-				ColorsB = ColorsB + to_string(imagedata[i]) + ",";
+				ColorsB_ = ColorsB_ + to_string(imagedata[i]) + ",";
 				break;
 			case 4:
-				ColorsA = ColorsA + to_string(imagedata[i]) + ",";
+				ColorsA_ = ColorsA_ + to_string(imagedata[i]) + ",";
 				break;
 			}
 			colorid++;
 			if (colorid > numchan) {
 				colorid = 1;
+				j++;
+			}
+			if (j >= x) {
+				ColorsR = ColorsR_ + ColorsR;
+				ColorsG = ColorsG_ + ColorsG;
+				ColorsB = ColorsB_ + ColorsB;
+				ColorsA = ColorsA_ + ColorsA;
+				ColorsR_ = "";
+				ColorsG_ = "";
+				ColorsB_ = "";
+				ColorsA_ = "";
+				j = 0;
 			}
 		}
 
@@ -368,13 +387,7 @@ Window CreateShaders(Window window, string shaderpath) {
 }
 
 void GLFWTest() {
-	for (auto t : Textures_) {
-		DebugPrint_(t.first + " | " + t.second.path + " | " + t.second.id + " | " + t.second.TextureID);
-	}
-	DebugPrint_("--------------------------");
-	for (auto t : Textures) {
-		DebugPrint_(t.first + " | " + to_string(t.second));
-	}
+
 }
 
 void CreateBuffers(Window& window) {
@@ -495,16 +508,24 @@ GLuint CompileShaderProgram(GLuint Vertex, GLuint Fragment) {
 
 GLuint GetTexture(l_Sprite sprite) {
 	unordered_map<string, GLuint> Textures_ = Textures;
-	string textureid = GetTextureID(GetTextureByID(sprite.texture));
+	Texture t = GetTextureByID(sprite.texture);
+	string textureid = GetTextureID(t);
 
 	GLuint result;
 	if (Textures_.find(textureid) != Textures_.end()) {
 		result = Textures_[textureid];
 	}
 	else {
-		GLuint texture = LoadSprite(GetTextureByID(sprite.texture).path, sprite);
-		Textures_[textureid] = texture;
-		result = texture;
+		if (t.ThatTextureGenerated) {
+			GLuint texture = LoadSprite_(t,t.imagedata,t.sizex,t.sizey,t.numchan);
+			Textures_[textureid] = texture;
+			result = texture;
+		}
+		else {
+			GLuint texture = LoadSprite(t.path, sprite);
+			Textures_[textureid] = texture;
+			result = texture;
+		}
 	}
 
 	Textures = Textures_;
@@ -594,7 +615,6 @@ Vector2 ScreenToWorld(Window window,Vector2 sc) {
 	y /= scene.CameraZoom;
 	x += scene.CameraPosition.x;
 	y += scene.CameraPosition.y;
-	DebugPrint_(to_string(sc.x) + " = "+to_string(x) + " | "+to_string(sc.y) + " = "+to_string(y));
 	return Vector2(x, y);
 }
 
@@ -999,7 +1019,7 @@ void GetTextureTT(Texture texture, bool savecolors) {
 	}
 }
 
-unsigned char* VectorColorsToChars(vector<l_Color> colors, int sizex, int sizey, int* numchan) {
+unsigned char* VectorColorsToChars(vector<l_Color> colors, int sizex, int sizey, int* numchan, bool reverse_, bool flipx) {
 	*numchan = 3;
 	for (const auto c : colors) {
 		if (c.a != 255) {
@@ -1027,6 +1047,24 @@ unsigned char* VectorColorsToChars(vector<l_Color> colors, int sizex, int sizey,
 			}
 		}
 	}
+	if (flipx) {
+		vector<l_Color> colors_(sizex * sizey);
+
+		int x_ = 0;
+		int y_ = 0;
+		for (int i_ = 0; i_ < (sizex * sizey); i_++) {
+			colors_[(sizex-1)-x_ + (y_ * (sizex))] = colors[i_];
+
+			x_++;
+			if (x_ > (sizex-1)) {
+				x_ = 0;
+				y_++;
+			}
+		}
+
+		colors = colors_;
+	}
+	if (reverse_) { reverse(colors.begin(), colors.end()); }
 	unsigned char* colors_result = new unsigned char[sizex * sizey * *numchan];
 	int i = 0;
 	int j = 0;
@@ -1071,12 +1109,10 @@ unsigned char* VectorColorsToChars(vector<l_Color> colors, int sizex, int sizey,
 	return colors_result;
 }
 
-void GetTextureTTT(Texture texture, int sizex, int sizey, vector<l_Color> colors, bool savecolors) {
+void GetTextureTTT(Texture texture, int sizex, int sizey, unsigned char* colors_result, int numchan, bool savecolors) {
 	string id = GetTextureID(texture);
 	if (Textures_.find(id) != Textures_.end()) {
 		unordered_map<string, GLuint> Textures_ = Textures;
-		int numchan;
-		unsigned char* colors_result = VectorColorsToChars(colors,sizex,sizey,&numchan);
 		GLuint texture_ = LoadSprite_(texture, colors_result, sizex, sizey, numchan, savecolors);
 		Textures_[id] = texture_;
 		Textures = Textures_;
@@ -1352,33 +1388,89 @@ void CreateTexture(string id, string path, bool savecolors) {
 
 void CreateTextureByArray(string id, int sizex, int sizey, vector<l_Color> colors, bool savecolors) {
 	if (!HasTexture(id)) {
+		int numchan;
+		unsigned char* c = VectorColorsToChars(colors, sizex, sizey, &numchan, true, true);   
 		Texture texture = Texture("");
+		texture.imagedata = c;
+		texture.sizex = sizex;
+		texture.sizey = sizey;
+		texture.numchan = numchan;
+		texture.ThatTextureGenerated = true;
 		texture.id = id;
 		texture.TextureID = GetTextureID(texture);
 		Textures_[id] = texture;
-		GetTextureTTT(texture, sizex,sizey,colors, savecolors);
+		GetTextureTTT(texture, sizex,sizey,c,numchan, savecolors);
 	}
 	else {
 		PE("Such a texture is already exsist! CreateTextureByArray('" + id + "',"+to_string(sizex) + ","+to_string(sizey) + ",vector<l_Color>)", "E0028");
 	}
 }
 
+vector<l_Color> StringToVectorColors(string col, unordered_map<char, l_Color> colorkeys) {
+	vector<l_Color> result;
+	for (size_t i = 0; i < col.length(); i++) {
+		char c = col[i];
+		if (colorkeys.find(c)!=colorkeys.end()) {
+			result.push_back(colorkeys[c]);
+		}
+		else {
+			result.push_back(ErrorColor);
+		}
+	}
+	return result;
+}
+
+void WriteImage(string path, int sizex, int sizey, string colors_, unordered_map<char,l_Color> colorkeys) {
+	int numchan;
+	unsigned char* colors_result = VectorColorsToChars(StringToVectorColors(colors_, colorkeys), sizex, sizey, &numchan, false,false);
+
+	WriteImage(path,sizex,sizey,colors_result,numchan,false);
+}
 void WriteImage(string path, int sizex, int sizey, vector<l_Color> colors) {
 	int numchan;
 	unsigned char* colors_result = VectorColorsToChars(colors, sizex, sizey, &numchan);
 
-	unsigned char* rotated_colors_result = new unsigned char[sizex * sizey * numchan];
+	WriteImage(path,sizex,sizey,colors_result,numchan,true,true);
+}
+void WriteImage(string path, int sizex, int sizey, unsigned char* colors_result, int numchan, bool rotate, bool flip) {
+	if (rotate) {
+		unsigned char* rotated_colors_result = new unsigned char[sizex * sizey * numchan];
 
-	for (int y = 0; y < sizey; y++) {
-		for (int x = 0; x < sizex; x++) {
-			int rotatedY = sizey - 1 - y;
-			int rotatedIndex = (rotatedY * sizex + x) * numchan;
-			int originalIndex = (y * sizex + x) * numchan;
+		for (int y = 0; y < sizey; y++) {
+			for (int x = 0; x < sizex; x++) {
+				int rotatedY = sizey - 1 - y;
+				int rotatedIndex = (rotatedY * sizex + x) * numchan;
+				int originalIndex = (y * sizex + x) * numchan;
 
-			for (int c = 0; c < numchan; c++) {
-				rotated_colors_result[rotatedIndex + c] = colors_result[originalIndex + c];
+				for (int c = 0; c < numchan; c++) {
+					rotated_colors_result[rotatedIndex + c] = colors_result[originalIndex + c];
+				}
 			}
 		}
+		delete[] colors_result;
+		colors_result = rotated_colors_result;
+	}
+	if (flip) {
+		unsigned char* rotated_colors_result = new unsigned char[sizex * sizey * numchan];
+
+		int x_ = 0;
+		int y_ = 0;
+		for (int y = 0; y < sizey; y++) {
+			for (int x = 0; x < sizex; x++) {
+				for (int c = 0; c < numchan; c++) {
+					rotated_colors_result[((sizex-1) - x_ + (y_ * (sizex))) * numchan + c] = colors_result[(y * sizex + x) * numchan + c];
+				}
+
+				x_++;
+				if (x_ > (sizex - 1)) {
+					x_ = 0;
+					y_++;
+				}
+			}
+		}
+
+		delete[] colors_result;
+		colors_result = rotated_colors_result;
 	}
 
 	string filetype = Lowercase(GetFileType(path));
@@ -1386,28 +1478,28 @@ void WriteImage(string path, int sizex, int sizey, vector<l_Color> colors) {
 	int result;
 
 	if (filetype == "png") {
-		result = stbi_write_png(StringToConstChar(path), sizex, sizey, numchan, rotated_colors_result, sizex * numchan);
+		result = stbi_write_png(StringToConstChar(path), sizex, sizey, numchan, colors_result, sizex * numchan);
 	}
 	else if (filetype == "jpg" || filetype == "jpeg") {
-		result = stbi_write_jpg(StringToConstChar(path), sizex, sizey, numchan, rotated_colors_result, sizex * numchan);
+		result = stbi_write_jpg(StringToConstChar(path), sizex, sizey, numchan, colors_result, sizex * numchan);
 	}
 	else if (filetype == "bmp") {
-		result = stbi_write_bmp(StringToConstChar(path), sizex, sizey, numchan, rotated_colors_result);
+		result = stbi_write_bmp(StringToConstChar(path), sizex, sizey, numchan, colors_result);
 	}
 	else if (filetype == "tga") {
-		result = stbi_write_tga(StringToConstChar(path), sizex, sizey, numchan, rotated_colors_result);
+		result = stbi_write_tga(StringToConstChar(path), sizex, sizey, numchan, colors_result);
 	}
 	else if (filetype == "hdr") {
 		float* colors_hdr = new float[sizex * sizey * numchan];
 		for (int i = 0; i < (sizex * sizey * numchan); i++) {
-			colors_hdr[i] = float(rotated_colors_result[i]) / 255;
+			colors_hdr[i] = float(colors_result[i]) / 255;
 		}
 		result = stbi_write_hdr(StringToConstChar(path), sizex, sizey, numchan, colors_hdr);
 		delete[] colors_hdr;
 	}
 	else {
 		PE("Unknown image format. WriteImage('"+path+"',"+to_string(sizex) + ","+to_string(sizey) + ")", "E0029");
-		result = stbi_write_png(StringToConstChar(path), sizex, sizey, numchan, rotated_colors_result, sizex * numchan);
+		result = stbi_write_png(StringToConstChar(path), sizex, sizey, numchan, colors_result, sizex * numchan);
 	}
 
 	if (result == 0) {
@@ -1483,7 +1575,7 @@ bool GetSpriteVisible(string sceneid, string id) {
 
 l_Vector2 GetTextureSize(string texture) {
 	Texture t = GetTextureByID(texture);
-	string id = GetTextureID(t);
+	string id = texture;
 	int x = StringToInt(Textures_Info[id]["x"]);
 	int y = StringToInt(Textures_Info[id]["y"]);
 	return l_Vector2(x,y);
@@ -1600,13 +1692,15 @@ vector<string> split(string str_, char delimiter) {
 
 vector<l_Color> GetTextureColors(string textureid) {
 	Texture texture = GetTextureByID(textureid);
-	string id = GetTextureID(texture);
+	string id = textureid;
 	int size = StringToInt(Textures_Info[id]["x"]) * StringToInt(Textures_Info[id]["y"]);
 	string rs = Textures_Info[id]["r"];
 	string gs = Textures_Info[id]["g"];
 	string bs = Textures_Info[id]["b"];
 	string as = Textures_Info[id]["a"];
 	if (rs!="") {
+		vector<l_Color> result;
+
 		if (!StringToBool(Textures_Info[id]["hasalpha"])) {
 			int i_ = 0;
 			for (int i_ = 0; i_ < size; i_++) {
@@ -1614,11 +1708,10 @@ vector<l_Color> GetTextureColors(string textureid) {
 			}
 			as.pop_back();
 		}
-		vector<string> rs_ = split(rs, ',');
-		vector<string> gs_ = split(gs, ',');
-		vector<string> bs_ = split(bs, ',');
-		vector<string> as_ = split(as, ',');
-		vector<l_Color> result;
+		vector<string> rs_ = split(ReplaceString(rs, " ", ""), ',');
+		vector<string> gs_ = split(ReplaceString(gs, " ", ""), ',');
+		vector<string> bs_ = split(ReplaceString(bs, " ", ""), ',');
+		vector<string> as_ = split(ReplaceString(as, " ", ""), ',');
 		int j = 0;
 		for (int j = 0; j < size; j++) {
 			result.push_back(l_Color(StringToInt(rs_[j]), StringToInt(gs_[j]), StringToInt(bs_[j]), StringToInt(as_[j])));
@@ -1769,6 +1862,11 @@ int GetWindowSize(string id, bool thatY) {
 	else {
 		return x;
 	}
+}
+
+/*Показывает или прячет курсор в окне*/
+void ShowCursor_(string id, bool b) {
+	glfwSetInputMode(GetWindowByID(id).glfw, GLFW_CURSOR, (b ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_HIDDEN));
 }
 
 /*Изменение авторазмера OpenGL*/

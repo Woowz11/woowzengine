@@ -80,7 +80,12 @@ double FloatToDouble(float f) {
 
 /*Превращает строку в дробное число*/
 int StringToInt(string Str) {
-	return FloatToInt(StringToFloat(Str));
+	float f = StringToFloat(Str, -627892216);
+	if (f == -627892216) {
+		PE("It is not possible to convert a string to a int! StringToInt('"+Str+"')","E0039");
+		return -1;
+	}
+	return FloatToInt(f);
 }
 
 /*Превращает строку в дробное число*/
@@ -101,7 +106,7 @@ float StringToFloat(string Str, float IfError) {
 		return f;
 	}
 	else {
-		float f = -1;
+		float f = IfError;
 		try {
 			f = stof(Str);
 		}

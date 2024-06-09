@@ -1434,14 +1434,9 @@ float l_GetSpriteHeight(sol::object sceneid, sol::object id) {
 }
 
 /*Функция для теста других функций (ЧИСТО ДЛЯ WOOWZ11)*/
-void l_TestFunction(wstring str) {
+void l_TestFunction() {
 	if (StringToBool(GetSettingsInfo("Console"))) {
-		for (int i = 0; i < str.length(); i++) {
-			char c = str[i];
-			wstring s;
-			s.push_back(c);
-			DebugPrint_w(to_wstring(c)+L" | "+s);
-		}
+		
 	}
 	else {
 		PW("This function is a test function! It can be called only when the console is enabled, also it may change every version of the engine, it cannot be used. TestFunction()","LW0041");
@@ -1507,15 +1502,38 @@ void l_SetTextHeight(sol::object sceneid, sol::object id, float height) {
 	SetTextHeight(ToString(sceneid, EmptyScene), ToString(id, EmptyText), height);
 }
 
+/*Превратить строку в масив цветов*/
+sol::table l_StringToColors(sol::object str_, sol::table colors, sol::object errorcolor_) {
+	l_Color errorcolor = ObjToColor(errorcolor_,ErrorColor);
+	string str = ToString(str_, "0");
+	sol::table tbl = lua.create_table();
+	for (size_t i = 0; i < str.length(); i++) {
+		char c_ = str[i];
+		string c = {c_};
+		if (colors[c]!=sol::nil) {
+			tbl.add(colors[c]);
+		}
+		else {
+			tbl.add(errorcolor);
+		}
+	}
+	return tbl;
+}
+
+/*Показывать или спрятать курсор*/
+void l_ShowCursor(sol::object id, bool b) {
+	ShowCursor_(ToString(id, EmptyWindow),b);
+}
+
 /*Зона woowzengine*/
 
-l_Color ObjToColor(sol::object obj) {
+l_Color ObjToColor(sol::object obj, l_Color ifnil) {
 	string type = GetObjectType(obj);
 	if (type == "color") {
 		return obj.as<sol::userdata>().as<l_Color>();
 	}
 	else if (type == "nil") {
-		return l_Color(0, 0, 0, 255);
+		return ifnil;
 	}
 	else {
 		PE("Failed to convert the object [" + ToString(obj) + "] to color!", "L0015");
@@ -1726,7 +1744,8 @@ void LuaCompile() {
 		"GetA", &l_Color::GetA,
 		"Invert", &l_Color::Invert,
 		"InvertAll", &l_Color::InvertAll,
-		"Gray", &l_Color::Gray
+		"Gray", &l_Color::Gray,
+		"Contrast", &l_Color::Contrast
 	);
 
 	lua.new_usertype<l_Vector2>("Vector2",
@@ -1768,6 +1787,7 @@ void LuaCompile() {
 	lua["Log10E"] = sol::as_table(0.434294481903251827651);
 	lua["Ln2"] = sol::as_table(0.693147180559945309417);
 	lua["Ln10"] = sol::as_table(2.30258509299404568402);
+	lua["EarthGravity"] = sol::as_table(9.80665);
 	string sourcepath = GetSessionInfo("GamePath");
 	sourcepath = sourcepath.substr(0, sourcepath.size() - 1);
 	lua["SourcePath"] = sol::as_table(sourcepath);
@@ -1800,6 +1820,7 @@ void LuaCompile() {
 	lua["Front"] = sol::as_table(l_Vector3(0, 0, 1));
 	lua["Back"] = sol::as_table(l_Vector3(0, 0, -1));
 	lua["ErrorColor"] = sol::as_table(ErrorColor);
+	lua["StringMax"] = sol::as_table(4294967295);
 
 	/*Функции*/
 	lua.set_function("CheckLua", &l_CheckLua);
@@ -1983,7 +2004,6 @@ void LuaCompile() {
 	lua.set_function("SetDesktopBackground", &l_SetDesktopBackground);
 	lua.set_function("GetVolume", &l_GetVolume);
 	lua.set_function("SetVolume", &l_SetVolume);
-
 	lua.set_function("LoadTexture", &l_LoadTexture);
 	lua.set_function("SetSpriteVisible", &l_SetSpriteVisible);
 	lua.set_function("GetSpriteVisible", &l_GetSpriteVisible);
@@ -2010,6 +2030,8 @@ void LuaCompile() {
 	lua.set_function("GetASCIIChar", &l_GetASCIIChar);
 	lua.set_function("SetTextText", &l_SetTextText);
 	lua.set_function("SetTextHeight", &l_SetTextHeight);
+	lua.set_function("StringToColors", &l_StringToColors);
+	lua.set_function("ShowCursor", &l_ShowCursor);
 
 	P("LUA", "Lua functions and etc. are loaded!");
 	P("LUA", "Start '"+ GetEngineInfo("StartScript") +".lua' script...");
