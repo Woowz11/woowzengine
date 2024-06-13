@@ -12,7 +12,7 @@ public:
 
 	void SetR(int i) {
 		if (i < 0 || i>255) {
-			PW("'Red' in color cannot be <0 and >255! Color must be an integer! Color.ToCPP(" + to_string(r) + "," + to_string(g) + "," + to_string(b) + "," + to_string(a) + ")", "LW0015");
+			PW("'Red' in color cannot be <0 and >255! Color must be an integer! Color.ToCPP(" + to_string(i) + "," + to_string(g) + "," + to_string(b) + "," + to_string(a) + ")", "LW0015");
 		}
 		else {
 			r = i;
@@ -21,7 +21,7 @@ public:
 
 	void SetG(int i) {
 		if (i < 0 || i>255) {
-			PW("'Green' in color cannot be <0 and >255! Color must be an integer! Color.ToCPP(" + to_string(r) + "," + to_string(g) + "," + to_string(b) + "," + to_string(a) + ")", "LW0015");
+			PW("'Green' in color cannot be <0 and >255! Color must be an integer! Color.ToCPP(" + to_string(r) + "," + to_string(i) + "," + to_string(b) + "," + to_string(a) + ")", "LW0015");
 		}
 		else {
 			g = i;
@@ -30,7 +30,7 @@ public:
 
 	void SetB(int i) {
 		if (i < 0 || i>255) {
-			PW("'Blue' in color cannot be <0 and >255! Color must be an integer! Color.ToCPP(" + to_string(r) + "," + to_string(g) + "," + to_string(b) + "," + to_string(a) + ")", "LW0015");
+			PW("'Blue' in color cannot be <0 and >255! Color must be an integer! Color.ToCPP(" + to_string(r) + "," + to_string(g) + "," + to_string(i) + "," + to_string(a) + ")", "LW0015");
 		}
 		else {
 			b = i;
@@ -39,7 +39,7 @@ public:
 
 	void SetA(int i) {
 		if (i < 0 || i>255) {
-			PW("'Alpha' in color cannot be <0 and >255! Color must be an integer! Color.ToCPP(" + to_string(r) + "," + to_string(g) + "," + to_string(b) + "," + to_string(a) + ")", "LW0015");
+			PW("'Alpha' in color cannot be <0 and >255! Color must be an integer! Color.ToCPP(" + to_string(r) + "," + to_string(g) + "," + to_string(b) + "," + to_string(i) + ")", "LW0015");
 		}
 		else {
 			a = i;
@@ -52,6 +52,10 @@ public:
 
 	l_Color InvertAll() {
 		return l_Color(255 - r, 255 - g, 255 - b, 255 - a);
+	}
+
+	l_Color InvertAlpha() {
+		return l_Color(r,g,b, 255 - a);
 	}
 
 	l_Color Gray() {

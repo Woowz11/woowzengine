@@ -259,11 +259,16 @@ float l_Min(float f, float f2) {
 
 /*Квадратный корень*/
 float l_Sqrt(float f) {
+	if (f < 0) {
+		PE("It is not possible to get the square root of a negative number! Sqrt("+to_string(f)+")", "L0040");
+		return 0;
+	}
 	return sqrt(f);
 }
 
 /*Логарифм*/
 float l_Log(float f, float base) {
+	if (base == 0) { base = 2; }
 	return log(f)/log(base);
 }
 
@@ -297,8 +302,12 @@ int l_Ceil(float f) {
 	return ceil(f);
 }
 
-/*Тангец*/
+/*Тангенс*/
 float l_Tan(float f) {
+	if (cos(f)==0) {
+		PE("Cosine should not be = 0! Tan("+to_string(f)+")", "L0042");
+		return 0;
+	}
 	return tan(f);
 }
 
@@ -338,7 +347,7 @@ float l_ACos(float f) {
 	return acos(f);
 }
 
-/*Арктангец*/
+/*Арктангенс*/
 float l_ATan(float f) {
 	return atan(f);
 }
@@ -380,12 +389,11 @@ float l_Fma(float x,float y,float z) {
 
 /*Остаток от деления*/
 float l_Mod(float f, float f2) {
+	if (f2 == 0) {
+		PE("Second number cannot be = 0! Mod("+to_string(f) + ",0)", "L0039");
+		return 0;
+	}
 	return fmod(f, f2);
-}
-
-/*Остаток от деления но наоборот*/
-float l_Rem(float f, float f2) {
-	return remainder(f, f2);
 }
 
 /*Гиперболический синус*/
@@ -406,11 +414,6 @@ float l_HTan(float f) {
 /*Удаление дробной части*/
 int l_Trunc(float f) {
 	return round(f-GetFractionalPart(f));
-}
-
-/*Разбивает значение с плавающей запятой на дробную и целую части*/
-float l_Modf(float f, float * f2) {
-	return modff(f, f2);
 }
 
 /*Ищет строку в строке*/
@@ -670,6 +673,11 @@ l_Vector2 l_GetWindowPosition(sol::object id) {
 /*Получает дробное число из числа*/
 float l_Frac(float f) {
 	return GetFractionalPart(f);
+}
+
+/*Разбивает значение с плавающей запятой на дробную и целую части*/
+std::tuple<float, int> l_Modf(float f) {
+	return std::make_tuple(l_Frac(f), l_Trunc(f));
 }
 
 /*Получить весь JSON файл в виде таблицы*/
@@ -1386,10 +1394,16 @@ void l_SetSpriteHeight(sol::object sceneid, sol::object id, float height) {
 	SetSpriteHeight(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), height);
 }
 
+/*Проверяет чётное число или нет*/
+bool l_Even(float f, float f2) {
+	if (f2 == 0) { f2 = 2; }
+	float f_ = f / f2;
+	return GetFractionalPart(f_) == 0;
+}
+
 /*Возводит в степень f^f2*/
 float l_Pow(float f, float f2) {
 	if (f2 == 0 && f == 0) {
-		PW("Degree and base number cannot be = 0! Pow("+to_string(f)+","+to_string(f2) + ")", "LW0038");
 		return 1;
 	}
 	else {
@@ -1398,7 +1412,13 @@ float l_Pow(float f, float f2) {
 			return 0;
 		}
 		else {
-			return pow(f, f2);
+			if ((f2<1&&f2>-1) && l_Even(1/f2,2) && f < 0){
+				PE("It is not possible to get the even root of a negative number! Pow("+to_string(f) + ","+to_string(f2) + ")", "L0041");
+				return 0;
+			}
+			else {
+				return pow(f, f2);
+			}
 		}
 	}
 }
@@ -1525,6 +1545,11 @@ void l_ShowCursor(sol::object id, bool b) {
 	ShowCursor_(ToString(id, EmptyWindow),b);
 }
 
+/*Установить моноспейс текст*/
+void l_SetTextMono(sol::object sceneid, sol::object id, bool b) {
+	SetTextMono(ToString(sceneid, EmptyScene), ToString(id, EmptyText), b);
+}
+
 /*Зона woowzengine*/
 
 l_Color ObjToColor(sol::object obj, l_Color ifnil) {
@@ -1539,6 +1564,11 @@ l_Color ObjToColor(sol::object obj, l_Color ifnil) {
 		PE("Failed to convert the object [" + ToString(obj) + "] to color!", "L0015");
 		return ErrorColor;
 	}
+}
+
+string l_WIP() {
+	PW("Called function has not been created!","LW0038");
+	return "LW0038";
 }
 
 string GetObjectType(sol::object obj) {
@@ -1743,6 +1773,7 @@ void LuaCompile() {
 		"GetB", &l_Color::GetB,
 		"GetA", &l_Color::GetA,
 		"Invert", &l_Color::Invert,
+		"InvertAlpha", &l_Color::InvertAlpha,
 		"InvertAll", &l_Color::InvertAll,
 		"Gray", &l_Color::Gray,
 		"Contrast", &l_Color::Contrast
@@ -1808,10 +1839,10 @@ void LuaCompile() {
 	lua["Yellow"] = sol::as_table(l_Color(255, 255, 0, 255));
 	lua["White"] = sol::as_table(l_Color(255, 255, 255, 255));
 	lua["Black"] = sol::as_table(l_Color(0, 0, 0, 255));
-	lua["Gray"] = sol::as_table(l_Color(125, 125, 125, 255));
-	lua["Orange"] = sol::as_table(l_Color(255, 125, 0, 255));
+	lua["Gray"] = sol::as_table(l_Color(128, 128, 128, 255));
+	lua["Orange"] = sol::as_table(l_Color(255, 128, 0, 255));
 	lua["Purple"] = sol::as_table(l_Color(255, 0, 255, 255));
-	lua["Cyan"] = sol::as_table(l_Color(0, 125, 255, 255));
+	lua["Cyan"] = sol::as_table(l_Color(0, 255, 255, 255));
 	lua["Transparent"] = sol::as_table(l_Color(0, 0, 0, 0));
 	lua["Up"] = sol::as_table(l_Vector2(0, 1));
 	lua["Down"] = sol::as_table(l_Vector2(0, -1));
@@ -1871,7 +1902,6 @@ void LuaCompile() {
 	lua.set_function("Hypot", &l_Hypot);
 	lua.set_function("Fma", &l_Fma);
 	lua.set_function("Mod", &l_Mod);
-	lua.set_function("Rem", &l_Rem);
 	lua.set_function("HSin", &l_HSin);
 	lua.set_function("HCos", &l_HCos);
 	lua.set_function("HTan", &l_HTan);
@@ -1891,8 +1921,8 @@ void LuaCompile() {
 	lua.set_function("DestroyWindow", &l_DestroyWindow);
 	lua.set_function("HasWindow", &l_HasWindow);
 	lua.set_function("SetWindowMain", &l_SetWindowMain);
-	lua.set_function("MainWindow", &l_MainWindow);
-	lua.set_function("Seed", &l_Seed);
+	lua.set_function("GetMainWindow", &l_MainWindow);
+	lua.set_function("GetSeed", &l_Seed);
 	lua.set_function("SetSeed", &l_SetSeed);
 	lua.set_function("GetWindowSize", &l_GetWindowSize);
 	lua.set_function("SetWindowSize", &l_SetWindowSize);
@@ -1999,8 +2029,8 @@ void LuaCompile() {
 	lua.set_function("SetSpriteCenter", &l_SetSpriteCenter);
 	lua.set_function("GetSpriteCenter", &l_GetSpriteCenter);
 	lua.set_function("GetWindows", &l_GetWindows);
-	lua.set_function("GetWindow", &l_GetWindow);
-	lua.set_function("GetScene", &l_GetScene);
+	lua.set_function("GetSceneWindow", &l_GetWindow);
+	lua.set_function("GetWindowScene", &l_GetScene);
 	lua.set_function("SetDesktopBackground", &l_SetDesktopBackground);
 	lua.set_function("GetVolume", &l_GetVolume);
 	lua.set_function("SetVolume", &l_SetVolume);
@@ -2031,7 +2061,30 @@ void LuaCompile() {
 	lua.set_function("SetTextText", &l_SetTextText);
 	lua.set_function("SetTextHeight", &l_SetTextHeight);
 	lua.set_function("StringToColors", &l_StringToColors);
-	lua.set_function("ShowCursor", &l_ShowCursor);
+	lua.set_function("SetShowCursor", &l_ShowCursor);
+	lua.set_function("Even", &l_Even);
+
+	lua.set_function("SetTextMono", &l_SetTextMono);
+	lua.set_function("GetShowCursor", &l_WIP);
+	lua.set_function("GetTextMono", &l_WIP);
+	lua.set_function("GetTextText", &l_WIP);
+	lua.set_function("GetTextHeight", &l_WIP);
+	lua.set_function("GetTextPosition", &l_WIP);
+	lua.set_function("GetTextFont", &l_WIP);
+	lua.set_function("GetTextColor", &l_WIP);
+	lua.set_function("GetSpriteUVLTCorner", &l_WIP);
+	lua.set_function("GetSpriteUVLBCorner", &l_WIP);
+	lua.set_function("GetSpriteUVRTCorner", &l_WIP);
+	lua.set_function("GetSpriteUVRBCorner", &l_WIP);
+	lua.set_function("GetSpriteLTCorner", &l_WIP);
+	lua.set_function("GetSpriteLBCorner", &l_WIP);
+	lua.set_function("GetSpriteRTCorner", &l_WIP);
+	lua.set_function("GetSpriteRBCorner", &l_WIP);
+	lua.set_function("GetWindowTitle", &l_WIP);
+	lua.set_function("GetWindowAutoScale", &l_WIP);
+	lua.set_function("GetWindowResizable", &l_WIP);
+	lua.set_function("GetTextureBlur", &l_WIP);
+	lua.set_function("GetSceneBackgroundColor", &l_WIP);
 
 	P("LUA", "Lua functions and etc. are loaded!");
 	P("LUA", "Start '"+ GetEngineInfo("StartScript") +".lua' script...");

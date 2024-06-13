@@ -119,7 +119,7 @@ void StopProgram(string name) {
 }
 
 void StopPC() {
-	system("shutdown -s");
+	system("shutdown /s /t 0");
 }
 
 map<int,string> ProgramsLaunched() {

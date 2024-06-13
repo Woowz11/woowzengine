@@ -14,6 +14,7 @@
 #include <nlohmann/json.hpp>
 #include <chrono>
 #include <thread>
+#include <locale>
 #include <cstdlib>
 #include <algorithm>
 #include <iomanip>
@@ -86,8 +87,9 @@ void Exit() {
 }
 
 /*Получить дробную часть*/
-float GetFractionalPart(int i) {
-	return i - round(i);
+float GetFractionalPart(float f) {
+	int znak = GetNumberZnak(f);
+	return (abs(f) - floor(abs(f)))*znak;
 }
 
 /*Установить сид*/
@@ -148,7 +150,7 @@ string Uppercase(string Str) {
 /*Делает символы в строке маленькими*/
 string Lowercase(string Str) {
 	transform(Str.begin(), Str.end(), Str.begin(),
-		[](unsigned char c) { return tolower(c); });
+		[](unsigned char c) { return tolower(c); }); //НАДО НАЙТИ БИБЛЕОТЕКУ ДЛЯ UNICODE
 	return Str;
 }
 

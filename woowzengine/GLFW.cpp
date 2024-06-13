@@ -62,6 +62,7 @@ unordered_map<string, Scene> Scenes;
 unordered_map<string, l_Font> Fonts;
 unordered_map <string, vector<string>> SceneFonts;
 unordered_map<string, unordered_map<string, GLuint>> Chars;
+unordered_map<string, unordered_map<string, unordered_map<string, float>>> CharsInfo;
 
 string NowWindow;
 
@@ -138,6 +139,7 @@ bool GenerateFont_(l_Font font, string sceneid) {
 
 		int size = x / 16;
 		unordered_map<string, GLuint> chars;
+		unordered_map<string, unordered_map<string,float>> charsInfo;
 		int nx = 0;
 		int ny = 15;
 		for (int c = 0; c < 256; c++) {
@@ -153,19 +155,23 @@ bool GenerateFont_(l_Font font, string sceneid) {
 				}
 
 			if (Chars_Pos.find(c) != Chars_Pos.end()) {
+				float otstyp = 0;
 				unsigned char* chartexture = new unsigned char[cw * ch * numchan];
 				for (int i = 0; i < ch; i++) {
+					float otstyp_ = 0;
 					for (int j = 0; j < cw; j++) {
 						for (int k = 0; k < numchan; k++) {
-							if (numchan > 3) {
-								chartexture[(i * cw + j) * numchan + k] = fonttexture[((i + cy) * x + j + cx) * numchan + k];
-							}
-							else {
-								chartexture[(i * cw + j) * numchan + k] = fonttexture[((i + cy) * x + j + cx) * numchan + k];
+							unsigned char uc = fonttexture[((i + cy) * x + j + cx) * numchan + k];
+							chartexture[(i * cw + j) * numchan + k] = uc;
+							if (k == 3 && (i == floor(ch * 0.9375) || i == floor(ch * 0.8125) || i == floor(ch * 0.6875) || i == floor(ch * 0.5625) || i == floor(ch * 0.4375) || i == floor(ch * 0.3125) || i == floor(ch * 0.1875) || i == floor(ch * 0.0625)) && uc != 0) {
+								otstyp_ = float(j+1)/float(cw);
 							}
 						}
 					}
+					otstyp = max(otstyp, otstyp_);
 				}
+
+				unordered_map<string, float> CharInfo_;
 
 				string charid = "Font (" + font.id + ") " + Chars_Pos[c];
 				Texture texture = Texture("");
@@ -177,11 +183,17 @@ bool GenerateFont_(l_Font font, string sceneid) {
 				GLuint texture_ = LoadSprite_(texture, chartexture, cw, ch, numchan);
 				Textures[texture.TextureID] = texture_;
 
+				if (Chars_Pos[c] == " " && otstyp == 0) {
+					otstyp = 0.5;
+				}
+				CharInfo_["otstyp"] = otstyp;
 
 				chars[Chars_Pos[c]] = texture_;
+				charsInfo[Chars_Pos[c]] = CharInfo_;
 			}
 		}
 		Chars[font.id] = chars;
+		CharsInfo[font.id] = charsInfo;
 
 		fonts.push_back(font.id);
 		SceneFonts[sceneid] = fonts;
@@ -788,7 +800,6 @@ void RenderText(Window window, string id, l_Text text, int width, int height, Sc
 			float bearingy = 0;
 			float sizex = 1;
 			float sizey = 1;
-			float otstyp = 0;
 			float scale = text.scale * charscalesymbol;
 
 			float xpos = (x + bearingx * scale) * Zoom;
@@ -801,6 +812,11 @@ void RenderText(Window window, string id, l_Text text, int width, int height, Sc
 
 			float xw = float(width);
 			float yw = float(height);
+
+			string charid = Chars_IDS[c];
+			if (charid == "") {
+				charid = "error";
+			}
 
 			float BLX = xpos;
 			float BLY = ypos;
@@ -822,14 +838,15 @@ void RenderText(Window window, string id, l_Text text, int width, int height, Sc
 			bool Out = PointOutside(window, CENTER.x, CENTER.y, scene, xw, yw, FloatToInt(OutNumber));
 
 			bool dontrender = false;
-			if (c == 0 || (c >= 1 && c <= 8) || c == 10 || Out) {
+			bool donthaschar = false;
+			if (c == 0 || (c >= 1 && c <= 8) || c == 10) {
+				donthaschar = true;
+				dontrender = true;
+			}
+			if (Out) {
 				dontrender = true;
 			}
 			if (!dontrender) {
-				string charid = Chars_IDS[c];
-				if (charid == "") {
-					charid = "error";
-				}
 				GLuint texture = Chars[text.font][charid];
 				glBindTexture(GL_TEXTURE_2D, texture);
 				UpdateShader(window, text.shader, text.color, width, height, false, text.height, i, length, Zoom);
@@ -841,10 +858,15 @@ void RenderText(Window window, string id, l_Text text, int width, int height, Sc
 					RB.x - CamPosX,RB.y - CamPosY, 0,    mirrorx,0
 				});
 			}
+			float otstyp = (text.mono? 0 : -0.5/Zoom);
+			if (!donthaschar && !text.mono) {
+				unordered_map<string, float> info = CharsInfo[text.font][charid];
+				otstyp = (info["otstyp"]==0?0:0.128/Zoom) - (1-info["otstyp"])/Zoom;
+			}
+			if (!((c >= 1 && c <= 8) || c == 10) || c == 0) { x += (sizex + otstyp * Zoom) * scale; }
 
-			if (!((c >= 1 && c <= 8) || c == 10)) { x += (sizex + otstyp * Zoom) * scale; }
 			if (c == 10) {
-				y -= (sizey + otstyp) * scale;
+				y -= (sizey + 0.128) * scale;
 				x = text.position.x;
 			}
 			if (c == 1) {
@@ -1250,6 +1272,12 @@ void SetTextPosition(string sceneid, string id, l_Vector2 pos) {
 void SetTextText(string sceneid, string id, string text_) {
 	l_Text text = GetText(sceneid, id);
 	text.text = text_;
+	SetText(text);
+}
+
+void SetTextMono(string sceneid, string id, bool b) {
+	l_Text text = GetText(sceneid, id);
+	text.mono = b;
 	SetText(text);
 }
 

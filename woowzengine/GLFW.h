@@ -121,7 +121,6 @@ float GetSpriteRotation(string sceneid, string id);
 vector<string> GetWindows();
 string GetSceneByWindow(string sceneid);
 string GetWindowByScene(string windowid);
-
 Texture GetTextureByID(string id);
 void CreateTexture(string id, string path, bool savecolors = false);
 void SetSpriteVisible(string sceneid, string id, bool visible);
@@ -155,3 +154,5 @@ void SetTextColor(string sceneid, string id, l_Color col);
 void SetTextText(string sceneid, string id, string text_);
 void SetTextHeight(string sceneid, string id, float height);
 void ShowCursor_(string id, bool b);
+
+void SetTextMono(string sceneid, string id, bool b);

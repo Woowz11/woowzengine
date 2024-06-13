@@ -12,6 +12,7 @@ public:
 	string shader = "font";
 	string text = "Default text!";
 	bool Visible = true;
+	bool mono = false;
 	l_Vector2 position = l_Vector2(0, 0);
 	float scale = 1;
 	float height = 0;

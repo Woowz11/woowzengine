@@ -4,6 +4,8 @@
 
 #include <iostream>
 #include <string>
+#include <locale>
+#include <algorithm>
 #include <string_view>
 #include "OpenGame.h"
 #include "Easyer.h"

@@ -11,7 +11,7 @@ using namespace std;
 
 int GetNumberZnak(float num);
 string DoubleToString(double value);
-float GetFractionalPart(int i);
+float GetFractionalPart(float f);
 string GetPathWithoutFileName(string path);
 string FileName(string path);
 bool SafeMode();
