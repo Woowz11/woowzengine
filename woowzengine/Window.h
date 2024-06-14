@@ -18,6 +18,7 @@ public:
 	bool AutoResize = false;
 	unsigned int Buffer = 0;
 	unsigned int Arrays = 0;
+	bool ShowCursor = true;
 	sol::function WindowClosed = sol::nil;
 	sol::function WindowKeyPress = sol::nil;
 	sol::function WindowKeyRelease = sol::nil;

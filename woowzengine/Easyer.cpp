@@ -73,6 +73,12 @@ string CharToString(char c) {
 	return s;
 }
 
+/*Превращает wсимвол в wстроку*/
+wstring WCharToWString(wchar_t c) {
+	wstring s(1, c);
+	return s;
+}
+
 /*Превращает дробное число в double*/
 double FloatToDouble(float f) {
 	return (double)f;

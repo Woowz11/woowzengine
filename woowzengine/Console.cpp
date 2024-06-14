@@ -42,19 +42,22 @@ bool RunPrintFunction(string text, string type, string module, string code, int 
 }
 
 void ConsoleInstall() {
-    HWND console = GetConsoleWindow();
-
 	hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
     CONSOLE_FONT_INFOEX fontInfo;
     fontInfo.cbSize = sizeof(fontInfo);
     GetCurrentConsoleFontEx(hConsole, FALSE, &fontInfo);
 
-    wcscpy_s(fontInfo.FaceName, L"Consolas");
-    fontInfo.dwFontSize.X = 12;
-    fontInfo.dwFontSize.Y = 16;
+	wcscpy_s(fontInfo.FaceName, L"NSimSun");
+	fontInfo.dwFontSize.X = 8;
+	fontInfo.dwFontSize.Y = 16;
 
     SetCurrentConsoleFontEx(hConsole, FALSE, &fontInfo);
+
+	HWND console = GetConsoleWindow();
+	RECT r;
+	GetWindowRect(console, &r);
+	MoveWindow(console, r.left, r.top, 1000, 500, TRUE);
 }
 
 /*Отправка сообщения в консоль*/

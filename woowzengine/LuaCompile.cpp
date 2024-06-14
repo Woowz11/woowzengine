@@ -1,4 +1,4 @@
-#pragma warning(disable : 4244)
+п»ї#pragma warning(disable : 4244)
 #pragma warning(disable : 4267)
 
 #include <lua/lua.hpp>
@@ -19,6 +19,9 @@
 #include "Discord.h"
 #include "WindowsElements.h"
 #include "WConst.h"
+#include "fcntl.h"
+#include "io.h"
+#include "stdio.h"
 
 #include "Color.h"
 #include "Vector2.h"
@@ -38,7 +41,7 @@ using namespace std;
 
 sol::state lua{};
 
-/*Зона игры*/
+/*Р—РѕРЅР° РёРіСЂС‹*/
 
 string EmptyWindow = "New Window";
 string EmptyScene = "New Scene";
@@ -50,18 +53,18 @@ string EmptyFont = "default";
 string EmptyDUser = "495215150165524481";
 string EmptyImage;
 
-/*Проверяет работает ли lua или нет*/
+/*РџСЂРѕРІРµСЂСЏРµС‚ СЂР°Р±РѕС‚Р°РµС‚ Р»Рё lua РёР»Рё РЅРµС‚*/
 void l_CheckLua() {
 	DiscordTest();
 	P("LUACHK", "Lua supported!");
 }
 
-/*Закрывает приложение*/
+/*Р—Р°РєСЂС‹РІР°РµС‚ РїСЂРёР»РѕР¶РµРЅРёРµ*/
 void l_Exit() {
 	Exit();
 }
 
-/*Закрывает приложение*/
+/*Р—Р°РєСЂС‹РІР°РµС‚ РїСЂРёР»РѕР¶РµРЅРёРµ*/
 void l_Wait(int milisec, sol::function func) {
 	if (func.valid()) {
 		auto wainfunc = [func, milisec]() {
@@ -69,7 +72,7 @@ void l_Wait(int milisec, sol::function func) {
 				try {
 					func();
 				}
-				catch (const sol::error& e) { /*Получение ошибок из lua скриптов*/
+				catch (const sol::error& e) { /*РџРѕР»СѓС‡РµРЅРёРµ РѕС€РёР±РѕРє РёР· lua СЃРєСЂРёРїС‚РѕРІ*/
 					string what = e.what();
 					PE(what, "LUA");
 				}
@@ -82,28 +85,28 @@ void l_Wait(int milisec, sol::function func) {
 	}
 }
 
-/*Вернуть случайное число от 0 до 1*/
+/*Р’РµСЂРЅСѓС‚СЊ СЃР»СѓС‡Р°Р№РЅРѕРµ С‡РёСЃР»Рѕ РѕС‚ 0 РґРѕ 1*/
 float l_Random(float min,float max) {
 	if (min == 0 && max == 0) { return Random(); }
 	return Random(min,max);
 }
 
-/*Дробное число в целое*/
+/*Р”СЂРѕР±РЅРѕРµ С‡РёСЃР»Рѕ РІ С†РµР»РѕРµ*/
 int l_Round(float val) {
 	return FloatToInt(val);
 }
 
-/*Есть папка или файл в этой позиции*/
+/*Р•СЃС‚СЊ РїР°РїРєР° РёР»Рё С„Р°Р№Р» РІ СЌС‚РѕР№ РїРѕР·РёС†РёРё*/
 bool l_HasDirectory(sol::object path) {
 	return HasDirectory(ToString(path));
 }
 
-/*Получить данные из файла*/
+/*РџРѕР»СѓС‡РёС‚СЊ РґР°РЅРЅС‹Рµ РёР· С„Р°Р№Р»Р°*/
 string l_ReadFile(sol::object path) {
 	return ReadFile(ToString(path));
 }
 
-/*Записать данные в файл*/
+/*Р—Р°РїРёСЃР°С‚СЊ РґР°РЅРЅС‹Рµ РІ С„Р°Р№Р»*/
 void l_WriteFile(sol::object path_, sol::object value_, bool Add) {
 	string path = ToString(path_);
 	string value = ToString(value_);
@@ -118,7 +121,7 @@ void l_WriteFile(sol::object path_, sol::object value_, bool Add) {
 	}
 }
 
-/*Отправляет кастомное сообщение в консоль*/
+/*РћС‚РїСЂР°РІР»СЏРµС‚ РєР°СЃС‚РѕРјРЅРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ РІ РєРѕРЅСЃРѕР»СЊ*/
 void l_PrintCustom(sol::object module, sol::object text, sol::object firstsymbol, int color) {
 		if (module == sol::nil) { PE("Provided module in PrintCustom('"+ToString(text)+"') cannot be empty!", "L0003"); }
 		else {
@@ -141,28 +144,28 @@ void l_PrintCustom(sol::object module, sol::object text, sol::object firstsymbol
 		}
 }
 
-/*Отправляет сообщение в консоль*/
+/*РћС‚РїСЂР°РІР»СЏРµС‚ СЃРѕРѕР±С‰РµРЅРёРµ РІ РєРѕРЅСЃРѕР»СЊ*/
 void l_Print(sol::object text) {
 	PP(ToString(text));
 }
 
-/*Отправляет предупреждение в консоль*/
+/*РћС‚РїСЂР°РІР»СЏРµС‚ РїСЂРµРґСѓРїСЂРµР¶РґРµРЅРёРµ РІ РєРѕРЅСЃРѕР»СЊ*/
 void l_Warn(sol::object text, sol::object code) {
 	
 	PW(ToString(text),"GW"+FillString(ToString(code,"_EMPTY"), 4, '0', true));
 }
 
-/*Отправляет ошибку в консоль*/
+/*РћС‚РїСЂР°РІР»СЏРµС‚ РѕС€РёР±РєСѓ РІ РєРѕРЅСЃРѕР»СЊ*/
 void l_Error(sol::object text, sol::object code) {
 	PE(ToString(text), "GE" + FillString(ToString(code, "_EMPTY"), 4, '0', true));
 }
 
-/*Отправляет фатальную ошибку в консоль*/
+/*РћС‚РїСЂР°РІР»СЏРµС‚ С„Р°С‚Р°Р»СЊРЅСѓСЋ РѕС€РёР±РєСѓ РІ РєРѕРЅСЃРѕР»СЊ*/
 void l_Fatal(sol::object text, sol::object code) {
 	PF(ToString(text), "GF" + FillString(ToString(code, "_EMPTY"), 4, '0', true));
 }
 
-/*Отправляет сообщение в консоль (без формата лога)*/
+/*РћС‚РїСЂР°РІР»СЏРµС‚ СЃРѕРѕР±С‰РµРЅРёРµ РІ РєРѕРЅСЃРѕР»СЊ (Р±РµР· С„РѕСЂРјР°С‚Р° Р»РѕРіР°)*/
 void l_PrintClear(sol::object text, int color) {
 	if (color < 0 || color>255) { PE("The color must match 0<color<255 in PrintClear('"+ToString(text)+"')!","L0002"); }
 	else {
@@ -173,7 +176,7 @@ void l_PrintClear(sol::object text, int color) {
 	}
 }
 
-/*Превращает функцию в цикл*/
+/*РџСЂРµРІСЂР°С‰Р°РµС‚ С„СѓРЅРєС†РёСЋ РІ С†РёРєР»*/
 void l_Cycle(sol::function func, int milisec) {
 	if (func == sol::nil || !func.valid()) { PE("Function not found or does not exist for Cycle("+to_string(milisec)+")!","L0000"); }
 	else {
@@ -184,7 +187,7 @@ void l_Cycle(sol::function func, int milisec) {
 	}
 }
 
-/*Создать папки*/
+/*РЎРѕР·РґР°С‚СЊ РїР°РїРєРё*/
 void l_CreateDirectory(sol::object path_) {
 	string path = ToString(path_);
 	if (SafeMode()) { PW("Function [CreateDirectory('" + path + "')] cannot be started in SafeMode!", "LW0002"); }
@@ -193,7 +196,7 @@ void l_CreateDirectory(sol::object path_) {
 	}
 }
 
-/*Создать файл*/
+/*РЎРѕР·РґР°С‚СЊ С„Р°Р№Р»*/
 void l_CreateFile(sol::object pathandname_, sol::object source_) {
 	string pathandname = ToString(pathandname_);
 	string source = ToString(source_);
@@ -207,7 +210,7 @@ void l_CreateFile(sol::object pathandname_, sol::object source_) {
 	}
 }
 
-/*Переменовать файл*/
+/*РџРµСЂРµРјРµРЅРѕРІР°С‚СЊ С„Р°Р№Р»*/
 void l_RenameFile(sol::object path_, sol::object newname_) {
 	string path = ToString(path_);
 	string newname = ToString(newname_);
@@ -220,7 +223,7 @@ void l_RenameFile(sol::object path_, sol::object newname_) {
 	}
 }
 
-/*Запись переменных в JSON*/
+/*Р—Р°РїРёСЃСЊ РїРµСЂРµРјРµРЅРЅС‹С… РІ JSON*/
 void l_WriteJSON(sol::object path_, sol::object id_, sol::object val_) {
 	string path = ToString(path_);
 	string id = ToString(id_,"Key");
@@ -231,7 +234,7 @@ void l_WriteJSON(sol::object path_, sol::object id_, sol::object val_) {
 	}
 }
 
-/*Получить данные из json файла*/
+/*РџРѕР»СѓС‡РёС‚СЊ РґР°РЅРЅС‹Рµ РёР· json С„Р°Р№Р»Р°*/
 string l_ReadJSON(sol::object path_, sol::object id_) {
 	string path = ToString(path_);
 	string id = ToString(id_,"Key");
@@ -240,24 +243,24 @@ string l_ReadJSON(sol::object path_, sol::object id_) {
 	return ReadJson(path,id);
 }
 
-/*Делает число положительным*/
+/*Р”РµР»Р°РµС‚ С‡РёСЃР»Рѕ РїРѕР»РѕР¶РёС‚РµР»СЊРЅС‹Рј*/
 float l_Abs(float f) {
 	return abs(f);
 }
 
-/*Возвращает максимальное число*/
+/*Р’РѕР·РІСЂР°С‰Р°РµС‚ РјР°РєСЃРёРјР°Р»СЊРЅРѕРµ С‡РёСЃР»Рѕ*/
 float l_Max(float f, float f2) {
 	if (f == f2) { PW("In the Max("+to_string(f) + "," + to_string(f2) + ") function, the numbers cannot be the same!", "LW0006"); return f; }
 	return fmax(f,f2);
 }
 
-/*Возвращает минимальное число*/
+/*Р’РѕР·РІСЂР°С‰Р°РµС‚ РјРёРЅРёРјР°Р»СЊРЅРѕРµ С‡РёСЃР»Рѕ*/
 float l_Min(float f, float f2) {
 	if (f == f2) { PW("In the Min(" + to_string(f) + "," + to_string(f2) + ") function, the numbers cannot be the same!", "LW0007"); return f; }
 	return fmin(f, f2);
 }
 
-/*Квадратный корень*/
+/*РљРІР°РґСЂР°С‚РЅС‹Р№ РєРѕСЂРµРЅСЊ*/
 float l_Sqrt(float f) {
 	if (f < 0) {
 		PE("It is not possible to get the square root of a negative number! Sqrt("+to_string(f)+")", "L0040");
@@ -266,43 +269,43 @@ float l_Sqrt(float f) {
 	return sqrt(f);
 }
 
-/*Логарифм*/
+/*Р›РѕРіР°СЂРёС„Рј*/
 float l_Log(float f, float base) {
 	if (base == 0) { base = 2; }
 	return log(f)/log(base);
 }
 
-/*Логарифм натуральный*/
+/*Р›РѕРіР°СЂРёС„Рј РЅР°С‚СѓСЂР°Р»СЊРЅС‹Р№*/
 float l_LogE(float f) {
 	return log(f);
 }
 
-/*Логарифм на основе 10*/
+/*Р›РѕРіР°СЂРёС„Рј РЅР° РѕСЃРЅРѕРІРµ 10*/
 float l_Log10(float f) {
 	return log10(f);
 }
 
-/*Синус*/
+/*РЎРёРЅСѓСЃ*/
 float l_Sin(float f) {
 	return sin(f);
 }
 
-/*Косинус*/
+/*РљРѕСЃРёРЅСѓСЃ*/
 float l_Cos(float f) {
 	return cos(f);
 }
 
-/*Округлить в меньшую сторону*/
+/*РћРєСЂСѓРіР»РёС‚СЊ РІ РјРµРЅСЊС€СѓСЋ СЃС‚РѕСЂРѕРЅСѓ*/
 int l_Floor(float f) {
 	return floor(f);
 }
 
-/*Округлить в большую сторону*/
+/*РћРєСЂСѓРіР»РёС‚СЊ РІ Р±РѕР»СЊС€СѓСЋ СЃС‚РѕСЂРѕРЅСѓ*/
 int l_Ceil(float f) {
 	return ceil(f);
 }
 
-/*Тангенс*/
+/*РўР°РЅРіРµРЅСЃ*/
 float l_Tan(float f) {
 	if (cos(f)==0) {
 		PE("Cosine should not be = 0! Tan("+to_string(f)+")", "L0042");
@@ -311,73 +314,73 @@ float l_Tan(float f) {
 	return tan(f);
 }
 
-/*Сумма*/
+/*РЎСѓРјРјР°*/
 float l_Sum(float f, float f2) {
 	return f + f2;
 }
 
-/*Вычитание*/
+/*Р’С‹С‡РёС‚Р°РЅРёРµ*/
 float l_Sub(float f, float f2) {
 	return f - f2;
 }
 
-/*Умножение*/
+/*РЈРјРЅРѕР¶РµРЅРёРµ*/
 float l_Mul(float f, float f2) {
 	return f * f2;
 }
 
-/*Деление*/
+/*Р”РµР»РµРЅРёРµ*/
 float l_Div(float f, float f2) {
 	if (f2 == 0) { PW("Can't divide by 0! Div("+to_string(f) + "," + to_string(f2) + ")", "LW0005"); return 0; }
 	return f / f2;
 }
 
-/*Минимальное < число < максимальное*/
+/*РњРёРЅРёРјР°Р»СЊРЅРѕРµ < С‡РёСЃР»Рѕ < РјР°РєСЃРёРјР°Р»СЊРЅРѕРµ*/
 float l_Clamp(float f, float min_, float max_) {
 	return fmax(fmin(f, max_), min_);
 }
 
-/*Арксинус*/
+/*РђСЂРєСЃРёРЅСѓСЃ*/
 float l_ASin(float f) {
 	return asin(f);
 }
 
-/*Арккосинус*/
+/*РђСЂРєРєРѕСЃРёРЅСѓСЃ*/
 float l_ACos(float f) {
 	return acos(f);
 }
 
-/*Арктангенс*/
+/*РђСЂРєС‚Р°РЅРіРµРЅСЃ*/
 float l_ATan(float f) {
 	return atan(f);
 }
 
-/*Кубический корень*/
+/*РљСѓР±РёС‡РµСЃРєРёР№ РєРѕСЂРµРЅСЊ*/
 float l_Cbrt(float f) {
 	return cbrt(f);
 }
 
-/*Математическое ожидание*/
+/*РњР°С‚РµРјР°С‚РёС‡РµСЃРєРѕРµ РѕР¶РёРґР°РЅРёРµ*/
 float l_Exp(float f) {
 	return exp(f);
 }
 
-/*Математическое ожидание и минус 1*/
+/*РњР°С‚РµРјР°С‚РёС‡РµСЃРєРѕРµ РѕР¶РёРґР°РЅРёРµ Рё РјРёРЅСѓСЃ 1*/
 float l_ExpM(float f) {
 	return expm1(f);
 }
 
-/*Абсолютное значение плавающей величины*/
+/*РђР±СЃРѕР»СЋС‚РЅРѕРµ Р·РЅР°С‡РµРЅРёРµ РїР»Р°РІР°СЋС‰РµР№ РІРµР»РёС‡РёРЅС‹*/
 float l_Fabs(float f) {
 	return fabs(f);
 }
 
-/*Разность между числами (положительная)*/
+/*Р Р°Р·РЅРѕСЃС‚СЊ РјРµР¶РґСѓ С‡РёСЃР»Р°РјРё (РїРѕР»РѕР¶РёС‚РµР»СЊРЅР°СЏ)*/
 float l_FDim(float f,float f2) {
 	return fdim(f,f2);
 }
 
-/*Квадратный корень из (x^2 +y^2)*/
+/*РљРІР°РґСЂР°С‚РЅС‹Р№ РєРѕСЂРµРЅСЊ РёР· (x^2 +y^2)*/
 float l_Hypot(float f, float f2) {
 	return hypot(f,f2);
 }
@@ -387,7 +390,7 @@ float l_Fma(float x,float y,float z) {
 	return fma(x,y,z);
 }
 
-/*Остаток от деления*/
+/*РћСЃС‚Р°С‚РѕРє РѕС‚ РґРµР»РµРЅРёСЏ*/
 float l_Mod(float f, float f2) {
 	if (f2 == 0) {
 		PE("Second number cannot be = 0! Mod("+to_string(f) + ",0)", "L0039");
@@ -396,27 +399,27 @@ float l_Mod(float f, float f2) {
 	return fmod(f, f2);
 }
 
-/*Гиперболический синус*/
+/*Р“РёРїРµСЂР±РѕР»РёС‡РµСЃРєРёР№ СЃРёРЅСѓСЃ*/
 float l_HSin(float f) {
 	return sinh(f);
 }
 
-/*Гиперболический косинус*/
+/*Р“РёРїРµСЂР±РѕР»РёС‡РµСЃРєРёР№ РєРѕСЃРёРЅСѓСЃ*/
 float l_HCos(float f) {
 	return cosh(f);
 }
 
-/*Гиперболический тангец*/
+/*Р“РёРїРµСЂР±РѕР»РёС‡РµСЃРєРёР№ С‚Р°РЅРіРµС†*/
 float l_HTan(float f) {
 	return tanh(f);
 }
 
-/*Удаление дробной части*/
+/*РЈРґР°Р»РµРЅРёРµ РґСЂРѕР±РЅРѕР№ С‡Р°СЃС‚Рё*/
 int l_Trunc(float f) {
 	return round(f-GetFractionalPart(f));
 }
 
-/*Ищет строку в строке*/
+/*РС‰РµС‚ СЃС‚СЂРѕРєСѓ РІ СЃС‚СЂРѕРєРµ*/
 bool l_HasString(sol::object Str_, sol::object whatneedfound_) {
 	string Str = ToString(Str_,"");
 	string whatneedfound = ToString(whatneedfound_,"");
@@ -425,7 +428,7 @@ bool l_HasString(sol::object Str_, sol::object whatneedfound_) {
 	return StringHasString(Str, whatneedfound);
 }
 
-/*Замена строк в строке*/
+/*Р—Р°РјРµРЅР° СЃС‚СЂРѕРє РІ СЃС‚СЂРѕРєРµ*/
 string l_Replace(sol::object Str_, sol::object that_, sol::object tothat_) {
 	string Str = ToString(Str_,"");
 	string that = ToString(that_, "");
@@ -436,7 +439,7 @@ string l_Replace(sol::object Str_, sol::object that_, sol::object tothat_) {
 	return ReplaceString(Str, that, tothat);
 }
 
-/*Удалить строку из строки*/
+/*РЈРґР°Р»РёС‚СЊ СЃС‚СЂРѕРєСѓ РёР· СЃС‚СЂРѕРєРё*/
 string l_Remove(sol::object Str_, sol::object that_) {
 	string Str = ToString(Str_, "");
 	string that = ToString(that_, "");
@@ -445,37 +448,37 @@ string l_Remove(sol::object Str_, sol::object that_) {
 	return ReplaceString(Str, that, "");
 }
 
-/*Получить таблицу символов*/
+/*РџРѕР»СѓС‡РёС‚СЊ С‚Р°Р±Р»РёС†Сѓ СЃРёРјРІРѕР»РѕРІ*/
 sol::table l_Charcters(sol::object Str_) {
 	string Str = ToString(Str_, "");
 	if (Str == "") { PW("String cannot be empty! Charcters('')","LW0011"); return lua.create_table(); }
 	sol::table tbl = lua.create_table();
 	int i = 0;
-	for (char& c : Str) {
+	for (wchar_t& c : StringToWString(Str)) {
 		i++;
-		tbl.set(i,CharToString(c));
+		tbl.set(i,WCharToWString(c));
 	}
 	return tbl;
 }
 
-/*Делает строку заглавной*/
+/*Р”РµР»Р°РµС‚ СЃС‚СЂРѕРєСѓ Р·Р°РіР»Р°РІРЅРѕР№*/
 string l_Uppercase(sol::object Str_) {
 	string Str = ToString(Str_, "");
 	if (Str == "") { PW("String cannot be empty! Uppercase('"+Str+"')", "LW0012"); return ""; }
 	return Uppercase(Str);
 }
 
-/*Делает строку не заглавной*/
+/*Р”РµР»Р°РµС‚ СЃС‚СЂРѕРєСѓ РЅРµ Р·Р°РіР»Р°РІРЅРѕР№*/
 string l_Lowercase(sol::object Str_) {
 	string Str = ToString(Str_, "");
 	if (Str == "") { PW("String cannot be empty! Lowercase('"+Str+"')", "LW0013"); return ""; }
 	return Lowercase(Str);
 }
 
-/*Получает размер строки или таблицы*/
+/*РџРѕР»СѓС‡Р°РµС‚ СЂР°Р·РјРµСЂ СЃС‚СЂРѕРєРё РёР»Рё С‚Р°Р±Р»РёС†С‹*/
 int l_Length(sol::object obj) {
 	if (obj.get_type() == sol::type::string) {
-		return obj.as<std::string>().length();
+		return obj.as<std::wstring>().length();
 	}else if(obj.get_type() == sol::type::table) {
 		int size = 0;
 		for (auto& kv : obj.as<sol::table>()) {
@@ -487,7 +490,7 @@ int l_Length(sol::object obj) {
 	return -1;
 }
 
-/*Удаление части строки*/
+/*РЈРґР°Р»РµРЅРёРµ С‡Р°СЃС‚Рё СЃС‚СЂРѕРєРё*/
 string l_SubStr(sol::object Str_, int pos, int size) {
 	string Str = ToString(Str_, "");
 	if (Str == "") { PE("String cannot be empty! SubStr('" + Str + "')", "L0019"); return "ERROR_L0019"; }
@@ -495,10 +498,10 @@ string l_SubStr(sol::object Str_, int pos, int size) {
 	if ((size) <= 0) { PE("Size cannot be <= 0! SubStr('" + Str + "'," + to_string(pos) + "," + to_string(size) + ")", "L0020"); return "ERROR_L0020"; }
 	if (pos > Str.length()) { PW("Position ["+to_string(pos) + "] goes beyond the string ["+to_string(Str.length()) + "]! SubStr('" + Str + "'," + to_string(pos) + "," + to_string(size) + ")", "LW0021"); }
 	if ((size + pos) > Str.length()) { PW("Size [" + to_string(size) + "] extends beyond the string ["+to_string(Str.length()) + "]! SubStr('" + Str + "'," + to_string(pos) + "," + to_string(size) + ")", "LW0020"); }
-	return Str.erase(pos, size);
+	return WStringToString(StringToWString(Str).erase(pos, size));
 }
 
-/*Превращает строку в число*/
+/*РџСЂРµРІСЂР°С‰Р°РµС‚ СЃС‚СЂРѕРєСѓ РІ С‡РёСЃР»Рѕ*/
 float l_ToNumber(sol::object Str_, sol::object IfError) {
 	string Str = ToString(Str_, "");
 	if (Str == "") { PE("String cannot be empty! ToNumber('" + Str + "')", "L0016"); return 0; }
@@ -510,7 +513,7 @@ float l_ToNumber(sol::object Str_, sol::object IfError) {
 	}
 }
 
-/*Запуск команды cmd*/
+/*Р—Р°РїСѓСЃРє РєРѕРјР°РЅРґС‹ cmd*/
 string l_Cmd(sol::object command_) {
 	string command = ToString(command_);
 	if (SafeMode()) { PW("Function [Cmd('" + command + "')] cannot be started in SafeMode!", "LW0014"); return "ERROR_LW0014"; }
@@ -520,7 +523,7 @@ string l_Cmd(sol::object command_) {
 	return "";
 }
 
-/*Создать окно*/
+/*РЎРѕР·РґР°С‚СЊ РѕРєРЅРѕ*/
 void l_CreateWindow(sol::object id_, sol::object Title_, int sizex, int sizey) {
 	string id = ToString(id_, EmptyWindow);
 	string Title = ToString(Title_, EmptyWindow);
@@ -531,53 +534,53 @@ void l_CreateWindow(sol::object id_, sol::object Title_, int sizex, int sizey) {
 	CreateWindowGLFW(id, x, y, Title);
 }
 
-/*Уничтожить окно*/
+/*РЈРЅРёС‡С‚РѕР¶РёС‚СЊ РѕРєРЅРѕ*/
 void l_DestroyWindow(sol::object id) {
 	DestroyWindowGLFW(ToString(id,EmptyWindow));
 }
 
-/*Проверяет есть ли окно в данных*/
+/*РџСЂРѕРІРµСЂСЏРµС‚ РµСЃС‚СЊ Р»Рё РѕРєРЅРѕ РІ РґР°РЅРЅС‹С…*/
 bool l_HasWindow(sol::object id) {
 	return HasWindow(ToString(id,EmptyWindow));
 }
 
-/*Делает окно главным*/
+/*Р”РµР»Р°РµС‚ РѕРєРЅРѕ РіР»Р°РІРЅС‹Рј*/
 void l_SetWindowMain(sol::object id) {
 	SetWindowToMain(ToString(id,EmptyWindow));
 }
 
-/*Получить айди главного окна*/
+/*РџРѕР»СѓС‡РёС‚СЊ Р°Р№РґРё РіР»Р°РІРЅРѕРіРѕ РѕРєРЅР°*/
 string l_MainWindow() {
 	return GetSessionInfo("MainWindow");
 }
 
-/*Получить сид*/
+/*РџРѕР»СѓС‡РёС‚СЊ СЃРёРґ*/
 int l_Seed() {
 	return StringToInt(GetSessionInfo("Seed"));
 }
 
-/*Установить сид*/
+/*РЈСЃС‚Р°РЅРѕРІРёС‚СЊ СЃРёРґ*/
 void l_SetSeed(int seed) {
 	SetRandomSeed(seed);
 }
 
-/*Получить размер окна*/
+/*РџРѕР»СѓС‡РёС‚СЊ СЂР°Р·РјРµСЂ РѕРєРЅР°*/
 l_Vector2 l_GetWindowSize(sol::object id) {
 	return l_Vector2(GetWindowSize(ToString(id, EmptyWindow), false), GetWindowSize(ToString(id, EmptyWindow), true));
 }
 
-/*Изменить размер экрана*/
+/*РР·РјРµРЅРёС‚СЊ СЂР°Р·РјРµСЂ СЌРєСЂР°РЅР°*/
 void l_SetWindowSize(sol::object id, l_Vector2 v) {
 	SetWindowSize(ToString(id, EmptyWindow), false, v.x);
 	SetWindowSize(ToString(id, EmptyWindow), true, v.y);
 }
 
-/*Изменяет название окна*/
+/*РР·РјРµРЅСЏРµС‚ РЅР°Р·РІР°РЅРёРµ РѕРєРЅР°*/
 void l_SetWindowTitle(sol::object id, sol::object title) {
 	SetWindowTitle(ToString(id, EmptyWindow), ToString(title,"New Title"));
 }
 
-/*Изменение авторазмера у окна*/
+/*РР·РјРµРЅРµРЅРёРµ Р°РІС‚РѕСЂР°Р·РјРµСЂР° Сѓ РѕРєРЅР°*/
 void l_SetWindowAutoScale(sol::object id, sol::optional<bool> b) {
 	if (b) {
 		SetWindowAutosize(ToString(id, EmptyWindow), b.value());
@@ -587,32 +590,32 @@ void l_SetWindowAutoScale(sol::object id, sol::optional<bool> b) {
 	}
 }
 
-/*Синус ABS*/
+/*РЎРёРЅСѓСЃ ABS*/
 float l_AbsSin(float f) {
 	return abs(sin(f));
 }
 
-/*Косинус ABS*/
+/*РљРѕСЃРёРЅСѓСЃ ABS*/
 float l_AbsCos(float f) {
 	return abs(cos(f));
 }
 
-/*(Синус+1)/2*/
+/*(РЎРёРЅСѓСЃ+1)/2*/
 float l_DSin(float f) {
 	return (sin(f) + 1) / 2;
 }
 
-/*(Косинус+1)/2*/
+/*(РљРѕСЃРёРЅСѓСЃ+1)/2*/
 float l_DCos(float f) {
 	return (cos(f) + 1) / 2;
 }
 
-/*Запретить или размешить менять размер окна*/
+/*Р—Р°РїСЂРµС‚РёС‚СЊ РёР»Рё СЂР°Р·РјРµС€РёС‚СЊ РјРµРЅСЏС‚СЊ СЂР°Р·РјРµСЂ РѕРєРЅР°*/
 void l_SetWindowResizable(sol::object id, bool b) {
 	SetWindowResizable(ToString(id, EmptyWindow), b);
 }
 
-/*Вызывает функцию когда окно закрывается*/
+/*Р’С‹Р·С‹РІР°РµС‚ С„СѓРЅРєС†РёСЋ РєРѕРіРґР° РѕРєРЅРѕ Р·Р°РєСЂС‹РІР°РµС‚СЃСЏ*/
 void l_SetWindowEventClosed(sol::object id_, sol::function func) {
 	string id = ToString(id_, EmptyWindow);
 	if (func == sol::nil || !func.valid()) { PE("Function not found or does not exist for SetWindowEventClosed(" + id + ")!", "L0013"); }
@@ -621,7 +624,7 @@ void l_SetWindowEventClosed(sol::object id_, sol::function func) {
 	}
 }
 
-/*Вызывает функцию когда игра закрывается*/
+/*Р’С‹Р·С‹РІР°РµС‚ С„СѓРЅРєС†РёСЋ РєРѕРіРґР° РёРіСЂР° Р·Р°РєСЂС‹РІР°РµС‚СЃСЏ*/
 void l_SetEventClosed(sol::function func) {
 	if (func == sol::nil || !func.valid()) { PE("Function not found or does not exist for SetEventClosed()!", "L0014"); }
 	else {
@@ -629,22 +632,22 @@ void l_SetEventClosed(sol::function func) {
 	}
 }
 
-/*Нажатие клавиши в окне*/
+/*РќР°Р¶Р°С‚РёРµ РєР»Р°РІРёС€Рё РІ РѕРєРЅРµ*/
 void l_SetWindowEventKeyPress(sol::object id, sol::function func) {
 	SetWindowKPEvent(ToString(id, EmptyWindow), func);
 }
 
-/*Отжатие клавиши в окне*/
+/*РћС‚Р¶Р°С‚РёРµ РєР»Р°РІРёС€Рё РІ РѕРєРЅРµ*/
 void l_SetWindowEventKeyRelease(sol::object id, sol::function func) {
 	SetWindowKREvent(ToString(id, EmptyWindow), func);
 }
 
-/*Зажатие клавиши в окне*/
+/*Р—Р°Р¶Р°С‚РёРµ РєР»Р°РІРёС€Рё РІ РѕРєРЅРµ*/
 void l_SetWindowEventKeyHold(sol::object id, sol::function func) {
 	SetWindowKHEvent(ToString(id, EmptyWindow), func);
 }
 
-/*Таблица зажатых клавиш*/
+/*РўР°Р±Р»РёС†Р° Р·Р°Р¶Р°С‚С‹С… РєР»Р°РІРёС€*/
 sol::table l_PressedKeys() {
 	sol::table tbl = lua.create_table();
 	for (const auto& p : GetPressedKeys()) {
@@ -653,34 +656,34 @@ sol::table l_PressedKeys() {
 	return tbl;
 }
 
-/*Вернуть случайное число от 0 до 1 (Целое)*/
+/*Р’РµСЂРЅСѓС‚СЊ СЃР»СѓС‡Р°Р№РЅРѕРµ С‡РёСЃР»Рѕ РѕС‚ 0 РґРѕ 1 (Р¦РµР»РѕРµ)*/
 int l_RRandom(int min, int max) {
 	if (min == 0 && max == 0) { return round(Random()); }
 	return round(Random(min, max));
 }
 
-/*Установить позицию окна*/
+/*РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РїРѕР·РёС†РёСЋ РѕРєРЅР°*/
 void l_SetWindowPosition(sol::object id, l_Vector2 v) {
 	SetWindowPosition(ToString(id, EmptyWindow), v.x, true);
 	SetWindowPosition(ToString(id, EmptyWindow), v.x, false);
 }
 
-/*Получить позицию окна*/
+/*РџРѕР»СѓС‡РёС‚СЊ РїРѕР·РёС†РёСЋ РѕРєРЅР°*/
 l_Vector2 l_GetWindowPosition(sol::object id) {
 	return l_Vector2(GetWindowPosition(ToString(id, EmptyWindow), true), GetWindowPosition(ToString(id, EmptyWindow), false));
 }
 
-/*Получает дробное число из числа*/
+/*РџРѕР»СѓС‡Р°РµС‚ РґСЂРѕР±РЅРѕРµ С‡РёСЃР»Рѕ РёР· С‡РёСЃР»Р°*/
 float l_Frac(float f) {
 	return GetFractionalPart(f);
 }
 
-/*Разбивает значение с плавающей запятой на дробную и целую части*/
+/*Р Р°Р·Р±РёРІР°РµС‚ Р·РЅР°С‡РµРЅРёРµ СЃ РїР»Р°РІР°СЋС‰РµР№ Р·Р°РїСЏС‚РѕР№ РЅР° РґСЂРѕР±РЅСѓСЋ Рё С†РµР»СѓСЋ С‡Р°СЃС‚Рё*/
 std::tuple<float, int> l_Modf(float f) {
 	return std::make_tuple(l_Frac(f), l_Trunc(f));
 }
 
-/*Получить весь JSON файл в виде таблицы*/
+/*РџРѕР»СѓС‡РёС‚СЊ РІРµСЃСЊ JSON С„Р°Р№Р» РІ РІРёРґРµ С‚Р°Р±Р»РёС†С‹*/
 sol::table l_JSONTable(sol::object path) {
 	map<string, string> data = ReadAllJson(ToString(path));
 	sol::table tbl = lua.create_table();
@@ -690,7 +693,7 @@ sol::table l_JSONTable(sol::object path) {
 	return tbl;
 }
 
-/*Получить ключ и переменную из таблицы*/
+/*РџРѕР»СѓС‡РёС‚СЊ РєР»СЋС‡ Рё РїРµСЂРµРјРµРЅРЅСѓСЋ РёР· С‚Р°Р±Р»РёС†С‹*/
 void l_Pairs(sol::table table, sol::function func) {
 	int i = 0;
 	for (auto& v : table) {
@@ -699,17 +702,17 @@ void l_Pairs(sol::table table, sol::function func) {
 	}
 }
 
-/*Получить строку из объекта*/
+/*РџРѕР»СѓС‡РёС‚СЊ СЃС‚СЂРѕРєСѓ РёР· РѕР±СЉРµРєС‚Р°*/
 string l_ToString(sol::object obj) {
 	return ToString(obj);
 }
 
-/*Получить тип переменной*/
+/*РџРѕР»СѓС‡РёС‚СЊ С‚РёРї РїРµСЂРµРјРµРЅРЅРѕР№*/
 string l_GetType(sol::object obj) {
 	return sol::type_name(lua, obj.get_type());
 }
 
-/*Открыть ссылку*/
+/*РћС‚РєСЂС‹С‚СЊ СЃСЃС‹Р»РєСѓ*/
 void l_OpenLink(sol::object html_) {
 	string html = ToString(html_, "https://woowz11.github.io/woowzsite/woowzengine.html");
 	if (SafeMode()) { PW("Function [OpenLink('" + html + "')] cannot be started in SafeMode!", "LW0019"); }
@@ -723,70 +726,70 @@ void l_OpenLink(sol::object html_) {
 	}
 }
 
-/*Получить время сколько уже активен движок*/
+/*РџРѕР»СѓС‡РёС‚СЊ РІСЂРµРјСЏ СЃРєРѕР»СЊРєРѕ СѓР¶Рµ Р°РєС‚РёРІРµРЅ РґРІРёР¶РѕРє*/
 int l_ActiveTime() {
 	return GetActiveTime();
 }
 
-/*Установить позицию камеры*/
+/*РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РїРѕР·РёС†РёСЋ РєР°РјРµСЂС‹*/
 void l_SetCameraPosition(sol::object scene_, l_Vector2 f) {
 	string scene = ToString(scene_, EmptyScene);
 	SetCameraPosition(scene, f.x, true);
 	SetCameraPosition(scene, f.y, false);
 }
 
-/*Получить позицию камеры*/
+/*РџРѕР»СѓС‡РёС‚СЊ РїРѕР·РёС†РёСЋ РєР°РјРµСЂС‹*/
 l_Vector2 l_GetCameraPosition(sol::object scene_) {
 	string scene = ToString(scene_, EmptyScene);
 	return l_Vector2(GetCameraPosition(scene, true), GetCameraPosition(scene, false));
 }
 
-/*Нажатие клавиши на мышке в окне*/
+/*РќР°Р¶Р°С‚РёРµ РєР»Р°РІРёС€Рё РЅР° РјС‹С€РєРµ РІ РѕРєРЅРµ*/
 void l_SetWindowEventMousePress(sol::object id, sol::function func) {
 	SetWindowMPEvent(ToString(id,EmptyWindow), func);
 }
 
-/*Отжатие клавиши на мышке в окне*/
+/*РћС‚Р¶Р°С‚РёРµ РєР»Р°РІРёС€Рё РЅР° РјС‹С€РєРµ РІ РѕРєРЅРµ*/
 void l_SetWindowEventMouseRelease(sol::object id, sol::function func) {
 	SetWindowMREvent(ToString(id,EmptyWindow), func);
 }
 
-/*Зажатие клавиши на мышке в окне*/
+/*Р—Р°Р¶Р°С‚РёРµ РєР»Р°РІРёС€Рё РЅР° РјС‹С€РєРµ РІ РѕРєРЅРµ*/
 void l_SetWindowEventMouseHold(sol::object id, sol::function func) {
 	SetWindowMHEvent(ToString(id,EmptyWindow), func);
 }
 
-/*Получить FPS*/
+/*РџРѕР»СѓС‡РёС‚СЊ FPS*/
 int l_GetFPS() {
 	return GetFPS();
 }
 
-/*Создать сцену*/
+/*РЎРѕР·РґР°С‚СЊ СЃС†РµРЅСѓ*/
 void l_CreateScene(sol::object id) {
 	CreateScene(ToString(id, EmptyScene));
 }
 
-/*Установить цвет заднего фона у сцены*/
+/*РЈСЃС‚Р°РЅРѕРІРёС‚СЊ С†РІРµС‚ Р·Р°РґРЅРµРіРѕ С„РѕРЅР° Сѓ СЃС†РµРЅС‹*/
 void l_SetSceneBackgroundColor(sol::object id, sol::object color) {
 	SetSceneBackgroundColor(ToString(id, EmptyScene), ObjToColor(color).ToCPP());
 }
 
-/*Установить сцену на окно*/
+/*РЈСЃС‚Р°РЅРѕРІРёС‚СЊ СЃС†РµРЅСѓ РЅР° РѕРєРЅРѕ*/
 void l_SetSceneWindow(sol::object window, sol::object id) {
 	SetWindowScene(ToString(window, EmptyWindow), ToString(id, EmptyScene));
 }
 
-/*Создать спрайт*/
+/*РЎРѕР·РґР°С‚СЊ СЃРїСЂР°Р№С‚*/
 void l_CreateSprite(sol::object id, sol::object sceneid) {
 	CreateSprite(ToString(id, EmptySprite), ToString(sceneid, EmptyScene));
 }
 
-/*Установить позицию спрайта*/
+/*РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РїРѕР·РёС†РёСЋ СЃРїСЂР°Р№С‚Р°*/
 void l_SetSpritePosition(sol::object sceneid, sol::object id, l_Vector2 position) {
 	SetSpritePosition(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), position);
 }
 
-/*Установить цикл на рендер*/
+/*РЈСЃС‚Р°РЅРѕРІРёС‚СЊ С†РёРєР» РЅР° СЂРµРЅРґРµСЂ*/
 void l_CycleRender(sol::function f) {
 	if (f && f.valid()) {
 		SetDTFunction(f);
@@ -796,7 +799,7 @@ void l_CycleRender(sol::function f) {
 	}
 }
 
-/*Установить масштаб для камеры*/
+/*РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РјР°СЃС€С‚Р°Р± РґР»СЏ РєР°РјРµСЂС‹*/
 void l_SetCameraZoom(sol::object sceneid_, float f) {
 	string sceneid = ToString(sceneid_);
 	if (f == 0) {
@@ -808,36 +811,36 @@ void l_SetCameraZoom(sol::object sceneid_, float f) {
 	}
 }
 
-/*Получить маштаб камеры*/
+/*РџРѕР»СѓС‡РёС‚СЊ РјР°С€С‚Р°Р± РєР°РјРµСЂС‹*/
 float l_GetCameraZoom(sol::object sceneid) {
 	return GetCameraZoom(ToString(sceneid));
 }
 
-/*Получить позицию курсора*/
+/*РџРѕР»СѓС‡РёС‚СЊ РїРѕР·РёС†РёСЋ РєСѓСЂСЃРѕСЂР°*/
 l_Vector2 l_GetMousePosition(sol::object windowid) {
 	Vector2 v = GetMousePosition(ToString(windowid));
 	return l_Vector2(v.x, v.y);
 }
 
-/*Экранные координаты в мировые*/
+/*Р­РєСЂР°РЅРЅС‹Рµ РєРѕРѕСЂРґРёРЅР°С‚С‹ РІ РјРёСЂРѕРІС‹Рµ*/
 l_Vector2 l_ScreenToWorld(sol::object windowid, l_Vector2 screencord) {
 	Vector2 v = ScreenToWorld(GetWindowByID(ToString(windowid)), Vector2(screencord.x, screencord.y));
 	return l_Vector2(v.x, v.y);
 }
 
-/*Получить мировую позицию курсора*/
+/*РџРѕР»СѓС‡РёС‚СЊ РјРёСЂРѕРІСѓСЋ РїРѕР·РёС†РёСЋ РєСѓСЂСЃРѕСЂР°*/
 l_Vector2 l_GetMouseWPosition(sol::object windowid) {
 	Vector2 v = ScreenToWorld(GetWindowByID(ToString(windowid)), GetMousePosition(ToString(windowid)));
 	return l_Vector2(v.x, v.y);
 }
 
-/*Мировые координаты в экранные*/
+/*РњРёСЂРѕРІС‹Рµ РєРѕРѕСЂРґРёРЅР°С‚С‹ РІ СЌРєСЂР°РЅРЅС‹Рµ*/
 l_Vector2 l_WorldToScreen(sol::object windowid, l_Vector2 worldcord) {
 	Vector2 v = WorldToScreen(GetWindowByID(ToString(windowid)), Vector2(round(worldcord.x), round(worldcord.y)));
 	return l_Vector2(v.x, v.y);
 }
 
-/*Получить знак числа, + или -*/
+/*РџРѕР»СѓС‡РёС‚СЊ Р·РЅР°Рє С‡РёСЃР»Р°, + РёР»Рё -*/
 float l_Sign(float f) {
 	float result = 1;
 	if (f < 0) {
@@ -846,7 +849,7 @@ float l_Sign(float f) {
 	return result;
 }
 
-/*Устанавливает название активности*/
+/*РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РЅР°Р·РІР°РЅРёРµ Р°РєС‚РёРІРЅРѕСЃС‚Рё*/
 void l_SetDiscordActivityTitle(sol::object s_) {
 	string s = ToString(s_);
 	if (s.length() == 1 || s.length() == 2) {
@@ -857,7 +860,7 @@ void l_SetDiscordActivityTitle(sol::object s_) {
 	}
 }
 
-/*Устанавливает описание активности*/
+/*РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РѕРїРёСЃР°РЅРёРµ Р°РєС‚РёРІРЅРѕСЃС‚Рё*/
 void l_SetDiscordActivityDescription(sol::object s_) {
 	string s = ToString(s_);
 	if (s.length() == 1 || s.length() == 2) {
@@ -868,22 +871,22 @@ void l_SetDiscordActivityDescription(sol::object s_) {
 	}
 }
 
-/*Получить имя аккаунта windows*/
+/*РџРѕР»СѓС‡РёС‚СЊ РёРјСЏ Р°РєРєР°СѓРЅС‚Р° windows*/
 string l_GetUserName() {
 	return GetUserName_();
 }
 
-/*Проверить есть подключение к интернету или нет*/
+/*РџСЂРѕРІРµСЂРёС‚СЊ РµСЃС‚СЊ РїРѕРґРєР»СЋС‡РµРЅРёРµ Рє РёРЅС‚РµСЂРЅРµС‚Сѓ РёР»Рё РЅРµС‚*/
 bool l_CheckInternet() {
 	return CheckInternet();
 }
 
-/*Конвертирует строку в bool*/
+/*РљРѕРЅРІРµСЂС‚РёСЂСѓРµС‚ СЃС‚СЂРѕРєСѓ РІ bool*/
 bool l_StringToBool(sol::object s) {
 	return StringToBool(ToString(s));
 }
 
-/*Запускает строку кода lua*/
+/*Р—Р°РїСѓСЃРєР°РµС‚ СЃС‚СЂРѕРєСѓ РєРѕРґР° lua*/
 string l_RunLua(sol::object s, bool DontError) {
 	string code = ToString(s, "");
 	if (code == "") { PW("Empty code in RunLua()!","LW0024"); return "WARNING_LW0024"; }
@@ -898,7 +901,7 @@ string l_RunLua(sol::object s, bool DontError) {
 	return "Succed";
 }
 
-/*Функция которая повториться определённое кол-во раз*/
+/*Р¤СѓРЅРєС†РёСЏ РєРѕС‚РѕСЂР°СЏ РїРѕРІС‚РѕСЂРёС‚СЊСЃСЏ РѕРїСЂРµРґРµР»С‘РЅРЅРѕРµ РєРѕР»-РІРѕ СЂР°Р·*/
 void l_Repeat(sol::function func, int count, int milisec) {
 	if (func == sol::nil || !func.valid()) { PE("Empty function! Repeat(nil,"+to_string(count) + ","+to_string(milisec) + ")", "L0024"); }
 	else {
@@ -914,17 +917,17 @@ void l_Repeat(sol::function func, int count, int milisec) {
 	}
 }
 
-/*Проверяет запущено приложение или нет*/
+/*РџСЂРѕРІРµСЂСЏРµС‚ Р·Р°РїСѓС‰РµРЅРѕ РїСЂРёР»РѕР¶РµРЅРёРµ РёР»Рё РЅРµС‚*/
 bool l_ProgramLaunched(sol::object name) {
 	return ProgramLaunched(ToString(name) + ".exe");
 }
 
-/*Проверяет запущен ли Discord*/
+/*РџСЂРѕРІРµСЂСЏРµС‚ Р·Р°РїСѓС‰РµРЅ Р»Рё Discord*/
 bool l_DiscordLaunched() {
 	return DiscordLaunched();
 }
 
-/*Получить список запущеных программ*/
+/*РџРѕР»СѓС‡РёС‚СЊ СЃРїРёСЃРѕРє Р·Р°РїСѓС‰РµРЅС‹С… РїСЂРѕРіСЂР°РјРј*/
 sol::table l_ProgramsLaunched() {
 	map<int, string> programs = ProgramsLaunched();
 	sol::table tbl = lua.create_table();
@@ -934,7 +937,7 @@ sol::table l_ProgramsLaunched() {
 	return tbl;
 }
 
-/*Быстрая отправка сообщения в консоль*/
+/*Р‘С‹СЃС‚СЂР°СЏ РѕС‚РїСЂР°РІРєР° СЃРѕРѕР±С‰РµРЅРёСЏ РІ РєРѕРЅСЃРѕР»СЊ*/
 void l_PrintFast(sol::object str_, int color) {
 	string str = ToString(str_);
 	if (color < 0 || color>255) { PE("The color must match color <= 255 & color >= 0 in PrintFast('" + str + "'," + to_string(color) + ")!", "L0027"); }
@@ -944,7 +947,7 @@ void l_PrintFast(sol::object str_, int color) {
 	PrintToConsole(str,color_);
 }
 
-/*Останавливает процесс*/
+/*РћСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РїСЂРѕС†РµСЃСЃ*/
 void l_StopProgram(sol::object name_) {
 	string name = ToString(name_) + ".exe";
 	if (SafeMode()) { PW("Function [StopProgram('" + name + "')] cannot be started in SafeMode!", "LW0025"); }
@@ -958,7 +961,7 @@ void l_StopProgram(sol::object name_) {
 	}
 }
 
-/*Завершает работу компьютера*/
+/*Р—Р°РІРµСЂС€Р°РµС‚ СЂР°Р±РѕС‚Сѓ РєРѕРјРїСЊСЋС‚РµСЂР°*/
 void l_ExitPC() {
 	if (SafeMode()) { PW("Function [ExitPC()] cannot be started in SafeMode!", "LW0028"); }
 	else {
@@ -966,13 +969,13 @@ void l_ExitPC() {
 	}
 }
 
-/*Определяет находится ли точка за пределами окна*/
+/*РћРїСЂРµРґРµР»СЏРµС‚ РЅР°С…РѕРґРёС‚СЃСЏ Р»Рё С‚РѕС‡РєР° Р·Р° РїСЂРµРґРµР»Р°РјРё РѕРєРЅР°*/
 bool l_PointOutsideWindow(l_Vector2 point, sol::object windowid_) {
 	string windowid = ToString(windowid_, EmptyWindow);
 	return PointOutside_(point, windowid);
 }
 
-/*Получить список файлов в папке*/
+/*РџРѕР»СѓС‡РёС‚СЊ СЃРїРёСЃРѕРє С„Р°Р№Р»РѕРІ РІ РїР°РїРєРµ*/
 sol::table l_GetFilesFromDirectory(sol::object dir_) {
 	string dir = ToString(dir_,"C:\\Windows");
 	map<string, string> files = GetFilesFromDirectory(dir);
@@ -983,18 +986,18 @@ sol::table l_GetFilesFromDirectory(sol::object dir_) {
 	return tbl;
 }
 
-/*Получить название файла из пути*/
+/*РџРѕР»СѓС‡РёС‚СЊ РЅР°Р·РІР°РЅРёРµ С„Р°Р№Р»Р° РёР· РїСѓС‚Рё*/
 string l_GetFileName(sol::object dir) {
 	return GetFileName(ToString(dir));
 }
 
-/*Получить тип файла*/
+/*РџРѕР»СѓС‡РёС‚СЊ С‚РёРї С„Р°Р№Р»Р°*/
 string l_GetFileType(sol::object dir_) {
 	string dir = ToString(dir_);
 	return GetFileType(dir);
 }
 
-/*Установить размер спрайта*/
+/*РЈСЃС‚Р°РЅРѕРІРёС‚СЊ СЂР°Р·РјРµСЂ СЃРїСЂР°Р№С‚Р°*/
 void l_SetSpriteSize(sol::object sceneid_, sol::object id_, l_Vector2 size) {
 	string sceneid = ToString(sceneid_, EmptyScene);
 	string id = ToString(id_, EmptySprite);
@@ -1006,39 +1009,24 @@ void l_SetSpriteSize(sol::object sceneid_, sol::object id_, l_Vector2 size) {
 	}
 }
 
-/*Установить позицию левого верхнего угла*/
-void l_SetSpriteLTCorner(sol::object sceneid, sol::object id, l_Vector2 pos) {
-	SetSpriteCorner(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), pos, true, true);
+/*РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РїРѕР·РёС†РёСЋ СѓРіР»Р°*/
+void l_SetSpriteCorner(sol::object sceneid, sol::object id, bool left, bool top, l_Vector2 pos) {
+	SetSpriteCorner(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), pos, left, top);
 }
 
-/*Установить позицию левого нижнего угла*/
-void l_SetSpriteLBCorner(sol::object sceneid, sol::object id, l_Vector2 pos) {
-	SetSpriteCorner(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), pos, true, false);
-}
-
-/*Установить позицию правого верхнего угла*/
-void l_SetSpriteRTCorner(sol::object sceneid, sol::object id, l_Vector2 pos) {
-	SetSpriteCorner(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), pos, false, true);
-}
-
-/*Установить позицию правого нижнего угла*/
-void l_SetSpriteRBCorner(sol::object sceneid, sol::object id, l_Vector2 pos) {
-	SetSpriteCorner(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), pos, false, false);
-}
-
-/*Установить лимит фпс*/
+/*РЈСЃС‚Р°РЅРѕРІРёС‚СЊ Р»РёРјРёС‚ С„РїСЃ*/
 void l_SetFPSTarget(int fpstarget) {
 	SetTargetFPS(fpstarget);
 }
 
-/*Вызывает функцию каждый раз когда отправляется сообщение*/
+/*Р’С‹Р·С‹РІР°РµС‚ С„СѓРЅРєС†РёСЋ РєР°Р¶РґС‹Р№ СЂР°Р· РєРѕРіРґР° РѕС‚РїСЂР°РІР»СЏРµС‚СЃСЏ СЃРѕРѕР±С‰РµРЅРёРµ*/
 void l_SetEventPrint(sol::function f) {
 	if (f.valid()) {
 		SetPrintFunction(f);
 	}
 }
 
-/*Установить прозрачность окна*/
+/*РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РїСЂРѕР·СЂР°С‡РЅРѕСЃС‚СЊ РѕРєРЅР°*/
 void l_SetWindowTransparency(sol::object window, int i) {
 	string w = ToString(window, EmptyWindow);
 	if (i < 0 || i>255) {
@@ -1052,12 +1040,12 @@ void l_SetWindowTransparency(sol::object window, int i) {
 	}
 }
 
-/*Получить прозрачность окна*/
+/*РџРѕР»СѓС‡РёС‚СЊ РїСЂРѕР·СЂР°С‡РЅРѕСЃС‚СЊ РѕРєРЅР°*/
 int l_GetWindowTransparency(sol::object window) {
 	return GetWindowTransparency(ToString(window));
 }
 
-/*Открыть файл*/
+/*РћС‚РєСЂС‹С‚СЊ С„Р°Р№Р»*/
 void l_OpenFile(sol::object path_) {
 	string path = StringToPath(ToString(path_));
 	if (SafeMode()) { PW("Function [OpenFile('" + path + "')] cannot be started in SafeMode!", "LW0030"); }
@@ -1071,39 +1059,39 @@ void l_OpenFile(sol::object path_) {
 	}
 }
 
-/*Установить цвет спрайту*/
+/*РЈСЃС‚Р°РЅРѕРІРёС‚СЊ С†РІРµС‚ СЃРїСЂР°Р№С‚Сѓ*/
 void l_SetSpriteColor(sol::object sceneid, sol::object id, l_Color color) {
 	SetSpriteColor(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), color);
 }
 
-/*Получить цвет спрайта*/
+/*РџРѕР»СѓС‡РёС‚СЊ С†РІРµС‚ СЃРїСЂР°Р№С‚Р°*/
 l_Color l_GetSpriteColor(sol::object sceneid, sol::object id) {
 	return GetSpriteColor(ToString(sceneid, EmptyScene), ToString(id, EmptySprite));
 }
 
-/*Установить слой текстуре*/
+/*РЈСЃС‚Р°РЅРѕРІРёС‚СЊ СЃР»РѕР№ С‚РµРєСЃС‚СѓСЂРµ*/
 void l_SetSpriteLayer(sol::object sceneid, sol::object id, float zindex) {
 	SetSpriteLayer(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), zindex);
 }
 
-/*Получить слой текстуры*/
+/*РџРѕР»СѓС‡РёС‚СЊ СЃР»РѕР№ С‚РµРєСЃС‚СѓСЂС‹*/
 float l_GetSpriteLayer(sol::object sceneid, sol::object id) {
 	return GetSpriteLayer(ToString(sceneid, EmptyScene), ToString(id, EmptySprite));
 }
 
-/*Вернуть случайное число от 0 до 1 (без сохранения сида)*/
+/*Р’РµСЂРЅСѓС‚СЊ СЃР»СѓС‡Р°Р№РЅРѕРµ С‡РёСЃР»Рѕ РѕС‚ 0 РґРѕ 1 (Р±РµР· СЃРѕС…СЂР°РЅРµРЅРёСЏ СЃРёРґР°)*/
 float l_FRandom(float min, float max) {
 	if (min == 0 && max == 0) { return Random(true); }
 	return Random(min, max, true);
 }
 
-/*Вернуть случайное число от 0 до 1 (Целое) (без сохранения сида)*/
+/*Р’РµСЂРЅСѓС‚СЊ СЃР»СѓС‡Р°Р№РЅРѕРµ С‡РёСЃР»Рѕ РѕС‚ 0 РґРѕ 1 (Р¦РµР»РѕРµ) (Р±РµР· СЃРѕС…СЂР°РЅРµРЅРёСЏ СЃРёРґР°)*/
 int l_FRRandom(int min, int max) {
 	if (min == 0 && max == 0) { return round(Random(true)); }
 	return round(Random(min, max,true));
 }
 
-/*Получить список спрайтов на сцене*/
+/*РџРѕР»СѓС‡РёС‚СЊ СЃРїРёСЃРѕРє СЃРїСЂР°Р№С‚РѕРІ РЅР° СЃС†РµРЅРµ*/
 sol::table l_GetSprites(sol::object sceneid) {
 	vector<string> sprites = GetSpritesOnScene(ToString(sceneid, EmptyScene));
 	sol::table tbl = lua.create_table();
@@ -1113,103 +1101,88 @@ sol::table l_GetSprites(sol::object sceneid) {
 	return tbl;
 }
 
-/*Запускает функцию в новом потоке*/
+/*Р—Р°РїСѓСЃРєР°РµС‚ С„СѓРЅРєС†РёСЋ РІ РЅРѕРІРѕРј РїРѕС‚РѕРєРµ*/
 void l_NoWait(sol::function func) {
 	InOtherThread(func);
 }
 
-/*Получает установленый язык в системе*/
+/*РџРѕР»СѓС‡Р°РµС‚ СѓСЃС‚Р°РЅРѕРІР»РµРЅС‹Р№ СЏР·С‹Рє РІ СЃРёСЃС‚РµРјРµ*/
 string l_GetSystemLanguage() {
 	return GetSystemLanguage();
 }
 
-/*Получает выбраный язык*/
+/*РџРѕР»СѓС‡Р°РµС‚ РІС‹Р±СЂР°РЅС‹Р№ СЏР·С‹Рє*/
 string l_GetLanguage() {
 	return GetLanguage();
 }
 
-/*Проверяет есть ли такой спрайт на сцене*/
+/*РџСЂРѕРІРµСЂСЏРµС‚ РµСЃС‚СЊ Р»Рё С‚Р°РєРѕР№ СЃРїСЂР°Р№С‚ РЅР° СЃС†РµРЅРµ*/
 bool l_HasSprite(sol::object sceneid, sol::object id) {
 	return HasSprite(ToString(sceneid, EmptyScene), ToString(id, EmptySprite));
 }
 
-/*Устанавливает текстуру спрайту*/
+/*РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ С‚РµРєСЃС‚СѓСЂСѓ СЃРїСЂР°Р№С‚Сѓ*/
 void l_SetSpriteTexture(sol::object sceneid, sol::object id, sol::object texture) {
 	SetSpriteTexture(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), ToString(texture,EmptyTexture));
 }
 
-/*Устанавливает размер как у текстуры*/
+/*РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ СЂР°Р·РјРµСЂ РєР°Рє Сѓ С‚РµРєСЃС‚СѓСЂС‹*/
 void l_SetSpriteSizeByTexture(sol::object sceneid, sol::object id, float sizeextra) {
 	if (sizeextra == 0) { sizeextra = 1; }
 	SetSpriteSizeByTexture(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), 1/sizeextra);
 }
 
-/*Получить размер текстуры*/
+/*РџРѕР»СѓС‡РёС‚СЊ СЂР°Р·РјРµСЂ С‚РµРєСЃС‚СѓСЂС‹*/
 l_Vector2 l_GetTextureSize(sol::object texture) {
 	return GetTextureSize(ToString(texture,EmptyTexture));
 }
 
-/*Получить размер спрайта*/
+/*РџРѕР»СѓС‡РёС‚СЊ СЂР°Р·РјРµСЂ СЃРїСЂР°Р№С‚Р°*/
 l_Vector2 l_GetSpriteSize(sol::object sceneid, sol::object id) {
 	return GetSpriteSize(ToString(sceneid, EmptyScene), ToString(id, EmptySprite));
 }
 
-/*Получить позицию спрайта*/
+/*РџРѕР»СѓС‡РёС‚СЊ РїРѕР·РёС†РёСЋ СЃРїСЂР°Р№С‚Р°*/
 l_Vector2 l_GetSpritePosition(sol::object sceneid, sol::object id) {
 	return GetSpritePosition(ToString(sceneid, EmptyScene), ToString(id, EmptySprite));
 }
 
-/*Отеркалить спрайт по X*/
+/*РћС‚РµСЂРєР°Р»РёС‚СЊ СЃРїСЂР°Р№С‚ РїРѕ X*/
 void l_SetSpriteMirrorX(sol::object sceneid, sol::object id, bool b) {
 	SetSpriteMirror(ToString(sceneid, EmptyScene), ToString(id, EmptySprite),true,b);
 }
 
-/*Отеркалить спрайт по Y*/
+/*РћС‚РµСЂРєР°Р»РёС‚СЊ СЃРїСЂР°Р№С‚ РїРѕ Y*/
 void l_SetSpriteMirrorY(sol::object sceneid, sol::object id, bool b) {
 	SetSpriteMirror(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), false, b);
 }
 
-/*Получить отзеркаливание по X*/
+/*РџРѕР»СѓС‡РёС‚СЊ РѕС‚Р·РµСЂРєР°Р»РёРІР°РЅРёРµ РїРѕ X*/
 bool l_GetSpriteMirrorX(sol::object sceneid, sol::object id) {
 	return GetSpriteMirror(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), true);
 }
 
-/*Получить отзеркаливание по Y*/
+/*РџРѕР»СѓС‡РёС‚СЊ РѕС‚Р·РµСЂРєР°Р»РёРІР°РЅРёРµ РїРѕ Y*/
 bool l_GetSpriteMirrorY(sol::object sceneid, sol::object id) {
 	return GetSpriteMirror(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), false);
 }
 
-/*Установить позицию левого верхнего угла UV*/
-void l_SetSpriteUVLTCorner(sol::object sceneid, sol::object id, l_Vector2 pos) {
-	SetSpriteCornerUV(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), pos, true, true);
+/*РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РїРѕР·РёС†РёСЋ СѓРіР»Р° UV*/
+void l_SetSpriteUVCorner(sol::object sceneid, sol::object id, bool left, bool top, l_Vector2 pos) {
+	SetSpriteCornerUV(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), pos, left, top);
 }
 
-/*Установить позицию левого нижнего угла UV*/
-void l_SetSpriteUVLBCorner(sol::object sceneid, sol::object id, l_Vector2 pos) {
-	SetSpriteCornerUV(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), pos, true, false);
-}
-
-/*Установить позицию правого верхнего угла UV*/
-void l_SetSpriteUVRTCorner(sol::object sceneid, sol::object id, l_Vector2 pos) {
-	SetSpriteCornerUV(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), pos, false, true);
-}
-
-/*Установить позицию правого нижнего угла UV*/
-void l_SetSpriteUVRBCorner(sol::object sceneid, sol::object id, l_Vector2 pos) {
-	SetSpriteCornerUV(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), pos, false, false);
-}
-
-/*Установить поворот спрайта*/
+/*РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РїРѕРІРѕСЂРѕС‚ СЃРїСЂР°Р№С‚Р°*/
 void l_SetSpriteOrientation(sol::object sceneid, sol::object id, float deg) {
 	SetSpriteOrientation(ToString(sceneid, EmptyScene), ToString(id, EmptySprite),deg);
 }
 
-/*Получить поворот спрайта*/
+/*РџРѕР»СѓС‡РёС‚СЊ РїРѕРІРѕСЂРѕС‚ СЃРїСЂР°Р№С‚Р°*/
 float l_GetSpriteRotation(sol::object sceneid, sol::object id) {
 	return GetSpriteRotation(ToString(sceneid, EmptyScene), ToString(id, EmptySprite));
 }
 
-/*Берёт число между двумя числами по t*/
+/*Р‘РµСЂС‘С‚ С‡РёСЃР»Рѕ РјРµР¶РґСѓ РґРІСѓРјСЏ С‡РёСЃР»Р°РјРё РїРѕ t*/
 float l_Lerp(float a, float b, float t) {
 	if (t < 0 || t > 1) {
 		PW("The interpolation value cannot be < 0 or > 1! Lerp("+to_string(a) + ","+to_string(b) + ","+to_string(t) + ")", "LW0033");
@@ -1220,27 +1193,27 @@ float l_Lerp(float a, float b, float t) {
 	}
 }
 
-/*Градусы в радианы*/
+/*Р“СЂР°РґСѓСЃС‹ РІ СЂР°РґРёР°РЅС‹*/
 float l_ToRad(float deg) {
 	return DegToRad(deg);
 }
 
-/*Радианы в градусы*/
+/*Р Р°РґРёР°РЅС‹ РІ РіСЂР°РґСѓСЃС‹*/
 float l_ToDeg(float rad) {
 	return RadToDeg(rad);
 }
 
-/*Установить центр спрайта*/
+/*РЈСЃС‚Р°РЅРѕРІРёС‚СЊ С†РµРЅС‚СЂ СЃРїСЂР°Р№С‚Р°*/
 void l_SetSpriteCenter(sol::object sceneid, sol::object id, l_Vector2 pos) {
 	SetSpriteCenter(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), pos);
 }
 
-/*Получить центр спрайта*/
+/*РџРѕР»СѓС‡РёС‚СЊ С†РµРЅС‚СЂ СЃРїСЂР°Р№С‚Р°*/
 l_Vector2 l_GetSpriteCenter(sol::object sceneid, sol::object id) {
 	return GetSpriteCenter(ToString(sceneid, EmptyScene), ToString(id, EmptySprite));
 }
 
-/*Получить список окон*/
+/*РџРѕР»СѓС‡РёС‚СЊ СЃРїРёСЃРѕРє РѕРєРѕРЅ*/
 sol::table l_GetWindows() {
 	vector<string> windowslist = GetWindows();
 	sol::table tbl = lua.create_table();
@@ -1250,17 +1223,17 @@ sol::table l_GetWindows() {
 	return tbl;
 }
 
-/*Получить окно по сцене*/
+/*РџРѕР»СѓС‡РёС‚СЊ РѕРєРЅРѕ РїРѕ СЃС†РµРЅРµ*/
 string l_GetWindow(sol::object sceneid) {
 	return GetWindowByScene(ToString(sceneid, EmptyScene));
 }
 
-/*Получить сцену по окну*/
+/*РџРѕР»СѓС‡РёС‚СЊ СЃС†РµРЅСѓ РїРѕ РѕРєРЅСѓ*/
 string l_GetScene(sol::object windowid) {
 	return GetSceneByWindow(ToString(windowid, EmptyWindow));
 }
 
-/*Установить фотографию на рабочий стол*/
+/*РЈСЃС‚Р°РЅРѕРІРёС‚СЊ С„РѕС‚РѕРіСЂР°С„РёСЋ РЅР° СЂР°Р±РѕС‡РёР№ СЃС‚РѕР»*/
 void l_SetDesktopBackground(sol::object path_) {
 	string path = StringToPath(ToString(path_, EmptyImage));
 	if (SafeMode()) {
@@ -1276,12 +1249,12 @@ void l_SetDesktopBackground(sol::object path_) {
 	}
 }
 
-/*Получить громкость компьютера*/
+/*РџРѕР»СѓС‡РёС‚СЊ РіСЂРѕРјРєРѕСЃС‚СЊ РєРѕРјРїСЊСЋС‚РµСЂР°*/
 int l_GetVolume() {
 	return GetVolume();
 }
 
-/*Установить громкость компьютера*/
+/*РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РіСЂРѕРјРєРѕСЃС‚СЊ РєРѕРјРїСЊСЋС‚РµСЂР°*/
 void l_SetVolume(int v) {
 	if (SafeMode()) {
 		PW("Function [SetVolume(" + to_string(v) + ")] cannot be started in SafeMode!", "LW0032");
@@ -1296,7 +1269,7 @@ void l_SetVolume(int v) {
 	}
 }
 
-/*Создать текстуру*/
+/*РЎРѕР·РґР°С‚СЊ С‚РµРєСЃС‚СѓСЂСѓ*/
 void l_LoadTexture(sol::object id_, sol::object path_, bool savecolors) {
 	string path = StringToPath(ToString(path_));
 	string id = ToString(id_, EmptyTexture);
@@ -1308,22 +1281,22 @@ void l_LoadTexture(sol::object id_, sol::object path_, bool savecolors) {
 	}
 }
 
-/*Установить видимость спрайта*/
+/*РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РІРёРґРёРјРѕСЃС‚СЊ СЃРїСЂР°Р№С‚Р°*/
 void l_SetSpriteVisible(sol::object sceneid, sol::object id, bool visible) {
 	SetSpriteVisible(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), visible);
 }
 
-/*Получить видимость спрайта*/
+/*РџРѕР»СѓС‡РёС‚СЊ РІРёРґРёРјРѕСЃС‚СЊ СЃРїСЂР°Р№С‚Р°*/
 bool l_GetSpriteVisible(sol::object sceneid, sol::object id) {
 	return GetSpriteVisible(ToString(sceneid, EmptyScene), ToString(id, EmptySprite));
 }
 
-/*Установить размытие текстуре*/
+/*РЈСЃС‚Р°РЅРѕРІРёС‚СЊ СЂР°Р·РјС‹С‚РёРµ С‚РµРєСЃС‚СѓСЂРµ*/
 void l_SetTextureBlur(sol::object id, bool blur) {
 	SetTextureBlur(ToString(id, EmptyTexture), blur);
 }
 
-/*Получить массив цветов в текстуре*/
+/*РџРѕР»СѓС‡РёС‚СЊ РјР°СЃСЃРёРІ С†РІРµС‚РѕРІ РІ С‚РµРєСЃС‚СѓСЂРµ*/
 sol::table l_GetTextureColors(sol::object id) {
 	vector<l_Color> colors = GetTextureColors(ToString(id, EmptyTexture));
 	sol::table tbl = lua.create_table();
@@ -1333,12 +1306,12 @@ sol::table l_GetTextureColors(sol::object id) {
 	return tbl;
 }
 
-/*Установить название консоли*/
+/*РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РЅР°Р·РІР°РЅРёРµ РєРѕРЅСЃРѕР»Рё*/
 void l_SetConsoleTitle(sol::object title) {
 	SetConsoleTitle_(ToString(title, "New Console Title"));
 }
 
-/*Создать текстуру*/
+/*РЎРѕР·РґР°С‚СЊ С‚РµРєСЃС‚СѓСЂСѓ*/
 void l_CreateTexture(sol::object id_, int sizex, int sizey, sol::table colors, bool savecolors) {
 	string id = ToString(id_, EmptyTexture);
 	if (sizex <= 0 || sizey <= 0) {
@@ -1357,7 +1330,7 @@ void l_CreateTexture(sol::object id_, int sizex, int sizey, sol::table colors, b
 	}
 }
 
-/*Записывает данные в изображение файл*/
+/*Р—Р°РїРёСЃС‹РІР°РµС‚ РґР°РЅРЅС‹Рµ РІ РёР·РѕР±СЂР°Р¶РµРЅРёРµ С„Р°Р№Р»*/
 void l_WriteImage(sol::object path_,int sizex, int sizey, sol::table colors) {
 	string path = ToString(path_);
 	if (SafeMode()) { PW("Function [WriteImage('" + path + "'," + to_string(sizex) + ","+to_string(sizey) + ")] cannot be started in SafeMode!", "LW0036"); }
@@ -1384,24 +1357,24 @@ void l_WriteImage(sol::object path_,int sizex, int sizey, sol::table colors) {
 	}
 }
 
-/*Загрузка шейдера в спрайт*/
+/*Р—Р°РіСЂСѓР·РєР° С€РµР№РґРµСЂР° РІ СЃРїСЂР°Р№С‚*/
 void l_SetSpriteShader(sol::object sceneid, sol::object id, sol::object shaderid) {
 	SetSpriteShader(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), ToString(shaderid, EmptyShader));
 }
 
-/*Установить высоту спрайта*/
+/*РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РІС‹СЃРѕС‚Сѓ СЃРїСЂР°Р№С‚Р°*/
 void l_SetSpriteHeight(sol::object sceneid, sol::object id, float height) {
 	SetSpriteHeight(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), height);
 }
 
-/*Проверяет чётное число или нет*/
+/*РџСЂРѕРІРµСЂСЏРµС‚ С‡С‘С‚РЅРѕРµ С‡РёСЃР»Рѕ РёР»Рё РЅРµС‚*/
 bool l_Even(float f, float f2) {
 	if (f2 == 0) { f2 = 2; }
 	float f_ = f / f2;
 	return GetFractionalPart(f_) == 0;
 }
 
-/*Возводит в степень f^f2*/
+/*Р’РѕР·РІРѕРґРёС‚ РІ СЃС‚РµРїРµРЅСЊ f^f2*/
 float l_Pow(float f, float f2) {
 	if (f2 == 0 && f == 0) {
 		return 1;
@@ -1423,7 +1396,7 @@ float l_Pow(float f, float f2) {
 	}
 }
 
-/*Удалить файл*/
+/*РЈРґР°Р»РёС‚СЊ С„Р°Р№Р»*/
 void l_RemoveFile(sol::object pathandname_) {
 	string pathandname = ToString(pathandname_);
 	if (SafeMode()) { PW("Function [RemoveFile('" + pathandname + "')] cannot be started in SafeMode!", "LW0040"); }
@@ -1438,32 +1411,22 @@ void l_RemoveFile(sol::object pathandname_) {
 	}
 }
 
-/*Воспроизводит дефолтный звук Windows*/
+/*Р’РѕСЃРїСЂРѕРёР·РІРѕРґРёС‚ РґРµС„РѕР»С‚РЅС‹Р№ Р·РІСѓРє Windows*/
 void l_PlayBeep() {
 	PlayBeep();
 }
 
-/*Получить шейдер спрайта*/
+/*РџРѕР»СѓС‡РёС‚СЊ С€РµР№РґРµСЂ СЃРїСЂР°Р№С‚Р°*/
 string l_GetSpriteShader(sol::object sceneid, sol::object id) {
 	return GetSpriteShader(ToString(sceneid, EmptyScene), ToString(id, EmptySprite));
 }
 
-/*Получить высоту спрайта*/
+/*РџРѕР»СѓС‡РёС‚СЊ РІС‹СЃРѕС‚Сѓ СЃРїСЂР°Р№С‚Р°*/
 float l_GetSpriteHeight(sol::object sceneid, sol::object id) {
 	return GetSpriteHeight(ToString(sceneid, EmptyScene), ToString(id, EmptySprite));
 }
 
-/*Функция для теста других функций (ЧИСТО ДЛЯ WOOWZ11)*/
-void l_TestFunction() {
-	if (StringToBool(GetSettingsInfo("Console"))) {
-		
-	}
-	else {
-		PW("This function is a test function! It can be called only when the console is enabled, also it may change every version of the engine, it cannot be used. TestFunction()","LW0041");
-	}
-}
-
-/*Получить данные пользователя Discord*/
+/*РџРѕР»СѓС‡РёС‚СЊ РґР°РЅРЅС‹Рµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ Discord*/
 void l_GetDiscordUserInfo(sol::object userid_, sol::function func) {
 	string userid = ToString(userid_, EmptyDUser);
 	if (func == sol::nil || !func.valid()) { PE("Function not found or does not exist for GetDiscordUserInfo(" + userid + ")!", "L0038"); }
@@ -1472,12 +1435,12 @@ void l_GetDiscordUserInfo(sol::object userid_, sol::function func) {
 	}
 }
 
-/*Получить айди текущего пользователя*/
+/*РџРѕР»СѓС‡РёС‚СЊ Р°Р№РґРё С‚РµРєСѓС‰РµРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ*/
 string l_GetDiscordCurrentUser() {
 	return GetDiscordCurrentUser();
 }
 
-/*Создаёт текст*/
+/*РЎРѕР·РґР°С‘С‚ С‚РµРєСЃС‚*/
 void l_CreateText(sol::object id_, sol::object sceneid_, sol::object text_) {
 	string id = ToString(id_,EmptyText);
 	string sceneid = ToString(sceneid_,EmptyScene);
@@ -1485,44 +1448,44 @@ void l_CreateText(sol::object id_, sol::object sceneid_, sol::object text_) {
 	CreateText(id,sceneid,text);
 }
 
-/*Создаёт шрифт*/
+/*РЎРѕР·РґР°С‘С‚ С€СЂРёС„С‚*/
 void l_CreateFont(sol::object id_, sol::object path_) {
 	string id = ToString(id_, EmptyFont);
 	string path = ToString(path_);
 	CreateFont(id,path);
 }
 
-/*Установить позицию тексту*/
+/*РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РїРѕР·РёС†РёСЋ С‚РµРєСЃС‚Сѓ*/
 void l_SetTextPosition(sol::object sceneid_, sol::object id_, l_Vector2 pos) {
 	SetTextPosition(ToString(sceneid_,EmptyScene),ToString(id_,EmptyText),pos);
 }
 
-/*Установить шрифт тексту*/
+/*РЈСЃС‚Р°РЅРѕРІРёС‚СЊ С€СЂРёС„С‚ С‚РµРєСЃС‚Сѓ*/
 void l_SetTextFont(sol::object sceneid_, sol::object id_, sol::object font) {
 	SetTextFont(ToString(sceneid_, EmptyScene), ToString(id_, EmptyText),ToString(font,"default"));
 }
 
-/*Установить цвет тексту*/
+/*РЈСЃС‚Р°РЅРѕРІРёС‚СЊ С†РІРµС‚ С‚РµРєСЃС‚Сѓ*/
 void l_SetTextColor(sol::object sceneid, sol::object id, l_Color color) {
 	SetTextColor(ToString(sceneid, EmptyScene), ToString(id, EmptyText), color);
 }
 
-/*Получить символ ASCII*/
+/*РџРѕР»СѓС‡РёС‚СЊ СЃРёРјРІРѕР» ASCII*/
 char l_GetASCIIChar(int i) {
 	return static_cast<char>(i);
 }
 
-/*Установить текст тексту*/
+/*РЈСЃС‚Р°РЅРѕРІРёС‚СЊ С‚РµРєСЃС‚ С‚РµРєСЃС‚Сѓ*/
 void l_SetTextText(sol::object sceneid, sol::object id, sol::object text) {
 	SetTextText(ToString(sceneid, EmptyScene), ToString(id, EmptyText), ToString(text,"New Text!"));
 }
 
-/*Установить высоту тексту*/
+/*РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РІС‹СЃРѕС‚Сѓ С‚РµРєСЃС‚Сѓ*/
 void l_SetTextHeight(sol::object sceneid, sol::object id, float height) {
 	SetTextHeight(ToString(sceneid, EmptyScene), ToString(id, EmptyText), height);
 }
 
-/*Превратить строку в масив цветов*/
+/*РџСЂРµРІСЂР°С‚РёС‚СЊ СЃС‚СЂРѕРєСѓ РІ РјР°СЃРёРІ С†РІРµС‚РѕРІ*/
 sol::table l_StringToColors(sol::object str_, sol::table colors, sol::object errorcolor_) {
 	l_Color errorcolor = ObjToColor(errorcolor_,ErrorColor);
 	string str = ToString(str_, "0");
@@ -1540,17 +1503,68 @@ sol::table l_StringToColors(sol::object str_, sol::table colors, sol::object err
 	return tbl;
 }
 
-/*Показывать или спрятать курсор*/
+/*РџРѕРєР°Р·С‹РІР°С‚СЊ РёР»Рё СЃРїСЂСЏС‚Р°С‚СЊ РєСѓСЂСЃРѕСЂ*/
 void l_ShowCursor(sol::object id, bool b) {
 	ShowCursor_(ToString(id, EmptyWindow),b);
 }
 
-/*Установить моноспейс текст*/
+/*РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РјРѕРЅРѕСЃРїРµР№СЃ С‚РµРєСЃС‚*/
 void l_SetTextMono(sol::object sceneid, sol::object id, bool b) {
 	SetTextMono(ToString(sceneid, EmptyScene), ToString(id, EmptyText), b);
 }
 
-/*Зона woowzengine*/
+/*РџРѕР»СѓС‡РёС‚СЊ РїРѕРєР°Р·С‹РІР°С‚СЊ РёР»Рё СЃРїСЂСЏС‚Р°С‚СЊ РєСѓСЂСЃРѕСЂ*/
+bool l_GetShowCursor(sol::object id) {
+	return GetShowCursor(ToString(id, EmptyWindow));
+}
+
+/*РџРѕР»СѓС‡РёС‚СЊ РјРѕРЅРѕСЃРїРµР№СЃ С‚РµРєСЃС‚*/
+bool l_GetTextMono(sol::object sceneid, sol::object id) {
+	return GetTextMono(ToString(sceneid, EmptyScene), ToString(id, EmptyText));
+}
+
+/*РџРѕР»СѓС‡РёС‚СЊ С‚РµРєСЃС‚ С‚РµРєСЃС‚Сѓ*/
+string l_GetTextText(sol::object sceneid, sol::object id) {
+	return GetTextText(ToString(sceneid, EmptyScene), ToString(id, EmptyText));
+}
+
+/*РџРѕР»СѓС‡РёС‚СЊ РІС‹СЃРѕС‚Сѓ С‚РµРєСЃС‚Сѓ*/
+float l_GetTextHeight(sol::object sceneid, sol::object id) {
+	return GetTextHeight(ToString(sceneid, EmptyScene), ToString(id, EmptyText));
+}
+
+/*РџРѕР»СѓС‡РёС‚СЊ РїРѕР·РёС†РёСЋ С‚РµРєСЃС‚Сѓ*/
+l_Vector2 l_GetTextPosition(sol::object sceneid_, sol::object id_) {
+	return GetTextPosition(ToString(sceneid_, EmptyScene), ToString(id_, EmptyText));
+}
+
+/*РџРѕР»СѓС‡РёС‚СЊ С€СЂРёС„С‚ С‚РµРєСЃС‚Сѓ*/
+string l_GetTextFont(sol::object sceneid_, sol::object id_) {
+	return GetTextFont(ToString(sceneid_, EmptyScene), ToString(id_, EmptyText));
+}
+
+/*РџРѕР»СѓС‡РёС‚СЊ С†РІРµС‚ С‚РµРєСЃС‚Сѓ*/
+l_Color l_GetTextColor(sol::object sceneid, sol::object id) {
+	return GetTextColor(ToString(sceneid, EmptyScene), ToString(id, EmptyText));
+}
+
+/*РџРѕР»СѓС‡РёС‚СЊ РїРѕР·РёС†РёСЋ Р»РµРІРѕРіРѕ РІРµСЂС…РЅРµРіРѕ СѓРіР»Р°*/
+l_Vector2 l_GetSpriteCorner(sol::object sceneid, sol::object id, bool left, bool top) {
+	return GetSpriteCorner(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), left, top);
+}
+
+/*РџРѕР»СѓС‡РёС‚СЊ РїРѕР·РёС†РёСЋ СѓРіР»Р° UV*/
+l_Vector2 l_GetSpriteUVCorner(sol::object sceneid, sol::object id, bool left, bool top) {
+	return GetSpriteCornerUV(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), left, top);
+}
+
+/*РџРѕР»СѓС‡РёС‚СЊ СЃРёРјРІРѕР» РёР· СЋРЅРёРєРѕРґ С‚Р°Р±Р»РёС†С‹*/
+string l_GetUnicodeChar(int i) {
+	wchar_t c(i);
+	return WStringToString(WCharToWString(c));
+}
+
+/*Р—РѕРЅР° woowzengine*/
 
 l_Color ObjToColor(sol::object obj, l_Color ifnil) {
 	string type = GetObjectType(obj);
@@ -1569,6 +1583,17 @@ l_Color ObjToColor(sol::object obj, l_Color ifnil) {
 string l_WIP() {
 	PW("Called function has not been created!","LW0038");
 	return "LW0038";
+}
+
+/*Р¤СѓРЅРєС†РёСЏ РґР»СЏ С‚РµСЃС‚Р° РґСЂСѓРіРёС… С„СѓРЅРєС†РёР№ (Р§РРЎРўРћ Р”Р›РЇ WOOWZ11)*/
+void l_TestFunction(int i) {
+	if (StringToBool(GetSettingsInfo("Console")) && !SafeMode()) {
+		wchar_t c(i);
+		wcout << WCharToWString(c) << endl;
+	}
+	else {
+		PW("This function is a test function! It can be called only when the console is enabled, also it may change every version of the engine, it cannot be used. TestFunction()", "LW0041");
+	}
 }
 
 string GetObjectType(sol::object obj) {
@@ -1726,7 +1751,7 @@ void StartFunction(sol::function func, list<any> params) {
 			}
 			func(s0,s1,s2,s3,s4,s5,s6,s7,s8,s9);
 		}
-		catch (const sol::error& e) { /*Получение ошибок из lua скриптов*/
+		catch (const sol::error& e) { /*РџРѕР»СѓС‡РµРЅРёРµ РѕС€РёР±РѕРє РёР· lua СЃРєСЂРёРїС‚РѕРІ*/
 			string what = e.what();
 			PE(what, "LUA");
 		}
@@ -1737,7 +1762,7 @@ void CompileScript(string Path) {
 	try {
 		lua.script_file(Path);
 	}
-	catch (const sol::error& e) { /*Получение ошибок из lua скриптов*/
+	catch (const sol::error& e) { /*РџРѕР»СѓС‡РµРЅРёРµ РѕС€РёР±РѕРє РёР· lua СЃРєСЂРёРїС‚РѕРІ*/
 		string what = e.what();
 		PE(what, "LUA");
 	}
@@ -1749,7 +1774,7 @@ void LuaCompile() {
 
 	EmptyImage = GetSessionInfo("SourcePath") + "engine/default.png";
 
-	/*Загрузка скриптов из игры*/
+	/*Р—Р°РіСЂСѓР·РєР° СЃРєСЂРёРїС‚РѕРІ РёР· РёРіСЂС‹*/
 	const string package_path_ = lua["package"]["path"];
 	lua["package"]["path"] = package_path_ + (!package_path_.empty() ? ";" : "") + GetSessionInfo("SourcePath") + "?.lua";
 	for (auto& p : std::filesystem::recursive_directory_iterator(GetSessionInfo("SourcePath"))) {
@@ -1758,10 +1783,10 @@ void LuaCompile() {
 			lua["package"]["path"] = package_path + (!package_path.empty() ? ";" : "") + p.path().string() + "/?.lua";
 		}
 	}
-	CreateValueJson(GetSessionInfo("SessionPath"), "LuaLibs", lua["package"]["path"]);
+	SetSessionInfo("LuaLibs", lua["package"]["path"]);
 	P("LUA", "Lua libraries are loaded!");
 
-	/*Конструкторы*/
+	/*РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹*/
 	lua.new_usertype<l_Color>("Color",
 		sol::constructors<l_Color(), l_Color(int, int, int, int), l_Color(int, int, int), l_Color(int, int), l_Color(int)>(),
 		"SetR", &l_Color::SetR,
@@ -1810,7 +1835,7 @@ void LuaCompile() {
 		"Position", &l_Vertex::Position
 	);
 
-	/*Константы*/
+	/*РљРѕРЅСЃС‚Р°РЅС‚С‹*/
 	lua["Pi"] = sol::as_table(3.14159265358979323846);
 	lua["Sqrt2"] = sol::as_table(1.41421356237309504880);
 	lua["E"] = sol::as_table(2.71828182845904523536);
@@ -1853,7 +1878,7 @@ void LuaCompile() {
 	lua["ErrorColor"] = sol::as_table(ErrorColor);
 	lua["StringMax"] = sol::as_table(4294967295);
 
-	/*Функции*/
+	/*Р¤СѓРЅРєС†РёРё*/
 	lua.set_function("CheckLua", &l_CheckLua);
 	lua.set_function("Wait", &l_Wait);
 	lua.set_function("Exit", &l_Exit);
@@ -1986,10 +2011,7 @@ void LuaCompile() {
 	lua.set_function("GetFileType", &l_GetFileType);
 	lua.set_function("PrintFast", &l_PrintFast);
 	lua.set_function("SetSpriteSize", &l_SetSpriteSize);
-	lua.set_function("SetSpriteLTCorner", &l_SetSpriteLTCorner);
-	lua.set_function("SetSpriteLBCorner", &l_SetSpriteLBCorner);
-	lua.set_function("SetSpriteRTCorner", &l_SetSpriteRTCorner);
-	lua.set_function("SetSpriteRBCorner", &l_SetSpriteRBCorner);
+	lua.set_function("SetSpriteCorner", &l_SetSpriteCorner);
 	lua.set_function("SetFPSTarget", &l_SetFPSTarget);
 	lua.set_function("SetEventPrint", &l_SetEventPrint);
 	lua.set_function("SetWindowTransparency", &l_SetWindowTransparency);
@@ -2017,10 +2039,7 @@ void LuaCompile() {
 	lua.set_function("SetSpriteMirrorY", &l_SetSpriteMirrorY);
 	lua.set_function("GetSpriteMirrorX", &l_GetSpriteMirrorX);
 	lua.set_function("GetSpriteMirrorY", &l_GetSpriteMirrorY);
-	lua.set_function("SetSpriteUVLTCorner", &l_SetSpriteUVLTCorner);
-	lua.set_function("SetSpriteUVLBCorner", &l_SetSpriteUVLBCorner);
-	lua.set_function("SetSpriteUVRTCorner", &l_SetSpriteUVRTCorner);
-	lua.set_function("SetSpriteUVRBCorner", &l_SetSpriteUVRBCorner);
+	lua.set_function("SetSpriteUVCorner", &l_SetSpriteUVCorner);
 	lua.set_function("SetSpriteRotation", &l_SetSpriteOrientation);
 	lua.set_function("Lerp", &l_Lerp);
 	lua.set_function("ToRad", &l_ToRad);
@@ -2063,23 +2082,18 @@ void LuaCompile() {
 	lua.set_function("StringToColors", &l_StringToColors);
 	lua.set_function("SetShowCursor", &l_ShowCursor);
 	lua.set_function("Even", &l_Even);
-
 	lua.set_function("SetTextMono", &l_SetTextMono);
-	lua.set_function("GetShowCursor", &l_WIP);
-	lua.set_function("GetTextMono", &l_WIP);
-	lua.set_function("GetTextText", &l_WIP);
-	lua.set_function("GetTextHeight", &l_WIP);
-	lua.set_function("GetTextPosition", &l_WIP);
-	lua.set_function("GetTextFont", &l_WIP);
-	lua.set_function("GetTextColor", &l_WIP);
-	lua.set_function("GetSpriteUVLTCorner", &l_WIP);
-	lua.set_function("GetSpriteUVLBCorner", &l_WIP);
-	lua.set_function("GetSpriteUVRTCorner", &l_WIP);
-	lua.set_function("GetSpriteUVRBCorner", &l_WIP);
-	lua.set_function("GetSpriteLTCorner", &l_WIP);
-	lua.set_function("GetSpriteLBCorner", &l_WIP);
-	lua.set_function("GetSpriteRTCorner", &l_WIP);
-	lua.set_function("GetSpriteRBCorner", &l_WIP);
+	lua.set_function("GetShowCursor", &l_GetShowCursor);
+	lua.set_function("GetTextMono", &l_GetTextMono);
+	lua.set_function("GetTextText", &l_GetTextText);
+	lua.set_function("GetTextHeight", &l_GetTextHeight);
+	lua.set_function("GetTextPosition", &l_GetTextPosition);
+	lua.set_function("GetTextFont", &l_GetTextFont);
+	lua.set_function("GetTextColor", &l_GetTextColor);
+	lua.set_function("GetSpriteUVCorner", &l_GetSpriteCorner);
+	lua.set_function("GetSpriteCorner", &l_GetSpriteCorner);
+	lua.set_function("GetUnicodeChar", &l_GetUnicodeChar);
+
 	lua.set_function("GetWindowTitle", &l_WIP);
 	lua.set_function("GetWindowAutoScale", &l_WIP);
 	lua.set_function("GetWindowResizable", &l_WIP);

@@ -1,10 +1,10 @@
-CreateWindow("window","")
+CreateWindow("window","(◕‿◕)")
 SetWindowMain("window")
 CreateScene("scene")
-SetSceneBackgroundColor("scene",Transparent)
+SetSceneBackgroundColor("scene",Black)
 SetWindowScene("window","scene")
  
-function Upravlenie()
+function CameraMovement()
     local PK = PressedKeys()
     
     local CameraSpeed = 0.05
@@ -15,10 +15,6 @@ function Upravlenie()
     
     if(PK["ctrl"])then
         CameraSpeed = 0.005
-    end
-    
-    if(PK["esc"])then
-        Exit()
     end
     
     local X = 0
@@ -43,7 +39,7 @@ function Upravlenie()
         SetCameraPosition("scene",Vector2.new(CameraPosition.x + (X/GetCameraZoom("scene")),CameraPosition.y + (Y/GetCameraZoom("scene"))))
     end
     
-    local ZoomSpeed = 0.1
+    local ZoomSpeed = 0.05
     local Zoom = 1
     
     if(PK["plus"])then
@@ -60,10 +56,7 @@ end
 SetCameraZoom("scene",1)
 
 CycleRender(function() 
-    Upravlenie() 
+    CameraMovement() 
 end)
 
-CreateText("text","scene","Hello I am a text!!! :) АА [SPACE SPACE] [NULL NULL]\nTest text tipa ny ti ponal da?\n0123456789 00 11 22 33 44 55 66 77 88 99")
-CreateText("text2","scene","Hello I am a text!!! :) АА [SPACE SPACE] [NULL NULL]\nTest text tipa ny ti ponal da?\n0123456789 00 11 22 33 44 55 66 77 88 99")
-SetTextPosition("scene","text2",Vector2.new(0,5))
-SetTextMono("scene","text2",true)
+CreateText("text","scene","крутые символы -> ≈≠〈〉⩽⩾≪≫√∫←→↑↓↔↕∞∑§$£₽€¥©™®∾°▖▗▘▙▚▛▜▝▞▟█▓▒░🙂🙁👍👎")

@@ -21,15 +21,16 @@
 #include "ResourceManager.h"
 #include "Discord.h"
 #include "WConst.h"
+#include "SessionInfo.h"
 
 using namespace std;
 
 string SGamePath = "";
-bool SessionInfoBroken = false;
 bool JGameBroken = false;
 bool JEngineBroken = false;
 bool JSettingsBroken = false;
 bool HasStartScript = true;
+
 bool DebugMode = false;/*›“Œ Õ≈ “–Œ√¿…! DebugMode (DebugVersion) ‚ÍÎ˛˜‡ÂÚ¸Òˇ ‚ Source.cpp!!!*/
 
 sol::function GameClosed = sol::nil;
@@ -75,7 +76,6 @@ void CheckFiles(string ev) {
 	GetOrCreateFolder(SGamePath + "woowzengine/temporary");
 
 	string TemporaryPath = SGamePath + "woowzengine/temporary";
-	string SessionInfoPath =  TemporaryPath+"/sessioninfo";
 	string OurGamePath = SGamePath + "game";
 	string JEngine = OurGamePath + "/engine.json";
 	string JGame = OurGamePath + "/game.json";
@@ -83,14 +83,12 @@ void CheckFiles(string ev) {
 
 	int Seed = (int)std::time(nullptr);
 	
-	GetOrCreateFile(SessionInfoPath);
-
-	if (!JSONValid(SessionInfoPath)) {
-		SessionInfoBroken = true;
+	map<string, string> SessionInfoInfo = { {"Debug",(DebugMode ? "true" : "false")},{"Seed",to_string(Seed)},{"GamePath",SGamePath},{"Version",ev},{"SourcePath",SGamePath + "game/"},{"EngineJson",JEngine},{"GameJson",JGame},{"SettingsJson",JSettings},{"TemporaryPath",TemporaryPath}};
+	for (const auto& pair : SessionInfoInfo) {
+		string id = pair.first;
+		string value = pair.second;
+		SetSessionInfoData(id, value);
 	}
-
-	map<string, string> SessionInfoInfo = { {"Debug",(DebugMode ? "true" : "false")},{"Seed",to_string(Seed)},{"GamePath",SGamePath},{"Version",ev},{"SourcePath",SGamePath + "game/"},{"EngineJson",JEngine},{"GameJson",JGame},{"SettingsJson",JSettings},{"SessionPath",SessionInfoPath},{"TemporaryPath",TemporaryPath}};
-	WriteToFile(SessionInfoPath, ConvertToJSON(SessionInfoInfo));
 
 	GetOrCreateFolder(OurGamePath);
 
@@ -212,9 +210,6 @@ void Install(string ev) {
 	}
 	else {
 		P("SAVEMOD", "Safe mode disabled!", 14);
-	}
-	if (SessionInfoBroken) {
-		PW("Sessioninfo has corrupted! File has been recreated!", "W0001");
 	}
 	if (JGameBroken) {
 		PW("game.json has corrupted or was not created! File has been recreated!", "W0002");

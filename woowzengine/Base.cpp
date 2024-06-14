@@ -23,6 +23,7 @@
 #include "GLFW.h"
 #include "time.h"
 #include "Base.h"
+#include "SessionInfo.h"
 #include "Console.h"
 #include "Easyer.h"
 #include "Files.h"
@@ -36,7 +37,6 @@ using namespace std;
 using json = nlohmann::json;
 
 string GamePath = "";
-string SessionInfoPath = "woowzengine/temporary/sessioninfo";
 string LogsStyle = "%b[%s:%m:%h][%t] %c";
 
 int ErrorsCount = 0;
@@ -120,10 +120,8 @@ float Random(bool dontsaveseed) {
 void BaseInstall(string GamePath_) {
 	GamePath = GamePath_;
 	std::setlocale(LC_NUMERIC, "POSIX");
-	if (JSONValid(GamePath + SessionInfoPath)) {
-		if (GetEngineInfoIE("LogStyle") != "WARN_EMPTY") {
-			LogsStyle = GetEngineInfo("LogStyle");
-		}
+	if (GetEngineInfoIE("LogStyle") != "WARN_EMPTY") {
+		LogsStyle = GetEngineInfo("LogStyle");
 	}
 	if (StringEmpty(LogsStyle)) { MessageBoxFatal("LogStyle (engine.json) can't be empty!", "C0014", true); }
 }
@@ -140,18 +138,58 @@ void Print(int Text, int Color, bool OnlyLog) {
 	Print(to_string(Text),Color, OnlyLog);
 }
 
+unordered_map<wchar_t, wchar_t> CharsUpperToLower = {
+	{L'А',L'а'},{L'Б',L'б'},{L'В',L'в'},{L'Г',L'г'},{L'Д',L'д'},{L'Е',L'е'},{L'Ё',L'ё'},{L'Ж',L'ж'},{L'З',L'з'},{L'И',L'и'},
+	{L'Й',L'й'},{L'К',L'к'},{L'Л',L'л'},{L'М',L'м'},{L'Н',L'н'},{L'О',L'о'},{L'П',L'п'},{L'Р',L'р'},{L'С',L'с'},{L'Т',L'т'},
+	{L'У',L'у'},{L'Ф',L'ф'},{L'Х',L'х'},{L'Ц',L'ц'},{L'Ч',L'ч'},{L'Ш',L'ш'},{L'Щ',L'щ'},{L'Ъ',L'ъ'},{L'Ы',L'ы'},{L'Ь',L'ь'},
+	{L'Э',L'э'},{L'Ю',L'ю'},{L'Я',L'я'},{L'A',L'a'},{L'B',L'b'},{L'C',L'c'},{L'D',L'd'},{L'E',L'e'},{L'F',L'f'},{L'G',L'g'},
+	{L'H',L'h'},{L'I',L'i'},{L'J',L'j'},{L'K',L'k'},{L'L',L'l'},{L'M',L'm'},{L'N',L'n'},{L'O',L'o'},{L'P',L'p'},{L'Q',L'q'},
+	{L'R',L'r'},{L'S',L's'},{L'T',L't'},{L'U',L'u'},{L'V',L'v'},{L'W',L'w'},{L'X',L'x'},{L'Y',L'y'},{L'Z',L'z'}
+};
+
 /*Делает символы в строке большими*/
 string Uppercase(string Str) {
-	transform(Str.begin(), Str.end(), Str.begin(),
-		[](unsigned char c) { return toupper(c); });
-	return Str;
+	unordered_map<wchar_t, wchar_t> CharsLowerToUpper;
+	for (const auto& entry : CharsUpperToLower) {
+		CharsLowerToUpper[entry.second] = entry.first;
+	}
+
+	wstring str = StringToWString(Str);
+	wstring result = L"";
+	for (wchar_t c : str) {
+		if (c == L'\0') {
+			break;
+		}
+
+		auto it = CharsLowerToUpper.find(c);
+		if (it != CharsLowerToUpper.end()) {
+			result += WCharToWString(CharsLowerToUpper[c]);
+		}
+		else {
+			result += WCharToWString(c);
+		}
+	}
+	return WStringToString(result);
 }
 
 /*Делает символы в строке маленькими*/
 string Lowercase(string Str) {
-	transform(Str.begin(), Str.end(), Str.begin(),
-		[](unsigned char c) { return tolower(c); }); //НАДО НАЙТИ БИБЛЕОТЕКУ ДЛЯ UNICODE
-	return Str;
+	wstring str = StringToWString(Str);
+	wstring result = L"";
+	for (wchar_t c : str) {
+		if (c == L'\0') {
+			break;
+		}
+
+		auto it = CharsUpperToLower.find(c);
+		if (it != CharsUpperToLower.end()) {
+			result += WCharToWString(CharsUpperToLower[c]);
+		}
+		else {
+			result += WCharToWString(c);
+		}
+	}
+	return WStringToString(result);
 }
 
 /*Первращает строку в сообщение для логов*/
@@ -292,7 +330,6 @@ string GetGameInfo(string ID) {
 	return ReadJson(p, ID);
 }
 string GetGameInfoIE(string ID) {
-	if (!HasDirectory(GamePath + SessionInfoPath)) { return "WARN_EMPTY"; }
 	string p = GetSessionInfoIE("GameJson");
 	if (!HasDirectory(p)) { return "WARN_EMPTY"; }
 	if (!JSONValid(p)) { PF("game.json corrupted!\nTry deleting the file!", "C0008", true); return "ERROR_C0008"; }
@@ -308,7 +345,6 @@ string GetEngineInfo(string ID) {
 	return ReadJson(p, ID);
 }
 string GetEngineInfoIE(string ID) {
-	if (!HasDirectory(GamePath + SessionInfoPath)) { return "WARN_EMPTY"; }
 	string p = GetSessionInfoIE("EngineJson");
 	if (p == "WARN_EMPTY") { return p; }
 	if (!HasDirectory(p)) { return "WARN_EMPTY"; }
@@ -327,20 +363,15 @@ string GetSettingsInfo(string ID) {
 
 /*Получить информацию из файла sessioninfo*/
 string GetSessionInfo(string ID) {
-	if (!HasDirectory(GamePath + SessionInfoPath)) { PF("Sessioninfo not found!", "C0001", true); return "ERROR_C0001"; }
-	if (!JSONValid(GamePath + SessionInfoPath)) { PF("Sessioninfo corrupted!", "C0002", true); return "ERROR_C0002"; }
-	return ReadJson(GamePath + SessionInfoPath, ID);
+	return GetSessionInfoData(ID);
 }
 string GetSessionInfoIE(string ID) {
-	if (!HasDirectory(GamePath + SessionInfoPath)) { return "WARN_EMPTY"; }
-	if (!JSONValid(GamePath + SessionInfoPath)) { PF("Sessioninfo corrupted!", "C0002", true); return "ERROR_C0002"; }
-	return ReadJson(GamePath + SessionInfoPath, ID, "WARN_EMPTY");
+	return GetSessionInfoData(ID);
 }
 
 /*Заменить информацию в файле sessioninfo*/
 void SetSessionInfo(string ID, string Value) {
-	if (!HasDirectory(GamePath + SessionInfoPath)) { PF("Sessioninfo not found!", "C0016", true); }
-	WriteToJson(GamePath + SessionInfoPath, ID, Value);
+	SetSessionInfoData(ID, Value);
 }
 
 /*Создать переменную в JSON если она не существует*/

@@ -174,7 +174,11 @@ string system_withresult(string command) {
 	string result_ = ReadFile(path);
 	RemoveFile(path);
 	if (result == 1) {
-		PE("Cmd command failed! (" + to_string(result) + ") Cmd('" + command + "')", "L0022");
+		PE("Cmd command failed! Cmd('" + command + "')", "L0022");
+		return "L0022";
+	}
+	else {
+		result_ = result_.erase(result_.size() - 1);
 	}
 	return result_;
 }

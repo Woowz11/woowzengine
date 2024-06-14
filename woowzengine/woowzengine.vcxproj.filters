@@ -126,6 +126,9 @@
     <ClCompile Include="ResourceManager.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="SessionInfo.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="OpenGame.h">
@@ -267,6 +270,9 @@
       <Filter>Исходные файлы\Elements\Lua</Filter>
     </ClInclude>
     <ClInclude Include="ResourceManager.h">
+      <Filter>Исходные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="SessionInfo.h">
       <Filter>Исходные файлы</Filter>
     </ClInclude>
   </ItemGroup>

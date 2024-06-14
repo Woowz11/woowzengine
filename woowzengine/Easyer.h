@@ -32,3 +32,4 @@ LPWSTR StringToLPWSTR(string str);
 string LPVOIDToString(LPVOID lpData);
 LPCTSTR StringToLPCTSTR(string str);
 PVOID StringToPVOID(string str);
+wstring WCharToWString(wchar_t c);

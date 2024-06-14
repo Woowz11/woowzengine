@@ -154,5 +154,14 @@ void SetTextColor(string sceneid, string id, l_Color col);
 void SetTextText(string sceneid, string id, string text_);
 void SetTextHeight(string sceneid, string id, float height);
 void ShowCursor_(string id, bool b);
-
 void SetTextMono(string sceneid, string id, bool b);
+string GetTextText(string sceneid, string id);
+bool GetTextMono(string sceneid, string id);
+float GetTextHeight(string sceneid, string id);
+void SetWindow(Window w);
+bool GetShowCursor(string id);
+l_Vector2 GetTextPosition(string sceneid, string id);
+l_Color GetTextColor(string sceneid, string id);
+string GetTextFont(string sceneid, string id);
+l_Vector2 GetSpriteCorner(string sceneid, string id, bool left, bool top);
+l_Vector2 GetSpriteCornerUV(string sceneid, string id, bool left, bool top);

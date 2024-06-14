@@ -79,29 +79,41 @@ void UpdateTexturesWindowCreated() {
 	}
 }
 
-unordered_map<int, string> Chars_IDS = {
-	{32," "},{48,"0"},{49,"1"},{50,"2"},{51,"3"},{52,"4"},{53,"5"},{54,"6"},{55,"7"},{56,"8"},{57,"9"},
-	{33,"!"},{63,"?"},{45,"-"},{43,"+"},{61,"="},{95,"_"},{35,"#"},{36,"№"},{64,"@"},{126,"~"},{96,"`"},{39,"'"},
-	{34,"\""},{58,":"},{59,";"},{46,"."},{44,","},{37,"%"},{94,"^"},{38,"&"},{42,"*"},{40,"("},{41,")"},
-	{91,"["},{93,"]"},{123,"{"},{125,"}"},{60,"<"},{62,">"},{92,"\\"},{124,"|"},{47,"/"},{65,"A"},{97,"a"},
-	{66,"B"},{98,"b"},{67,"C"},{99,"c"},{68,"D"},{100,"d"},{69,"E"},{101,"e"},{70,"F"},{102,"f"},{71,"G"},
-	{103,"g"},{72,"H"},{104,"h"},{73,"I"},{105,"i"},{74,"J"},{106,"j"},{75,"K"},{107,"k"},{76,"L"},{108,"l"},
-	{77,"M"},{109,"m"},{78,"N"},{110,"n"},{79,"O"},{111,"o"},{80,"P"},{112,"p"},{81,"Q"},{113,"q"},{82,"R"},{114,"r"},
-	{83,"S"},{115,"s"},{84,"T"},{116,"t"},{85,"U"},{117,"u"},{86,"V"},{118,"v"},{87,"W"},{119,"w"},{88,"X"},{120,"x"},
-	{89,"Y"},{121,"y"},{90,"Z"},{122,"z"}
+unordered_map<int, wstring> Chars_IDS = {
+	{32,L" "},{48,L"0"},{49,L"1"},{50,L"2"},{51,L"3"},{52,L"4"},{53,L"5"},{54,L"6"},{55,L"7"},{56,L"8"},{57,L"9"},
+	{33,L"!"},{63,L"?"},{45,L"-"},{43,L"+"},{61,L"="},{95,L"_"},{35,L"#"},{36,L"№"},{64,L"@"},{126,L"~"},{96,L"`"},{39,L"'"},
+	{34,L"\""},{58,L":"},{59,L";"},{46,L"."},{44,L",L"},{37,L"%"},{94,L"^"},{38,L"&"},{42,L"*"},{40,L"("},{41,L")"},
+	{91,L"["},{93,L"]"},{123,L"{"},{125,L"}"},{60,L"<"},{62,L">"},{92,L"\\"},{124,L"|"},{47,L"/"},{65,L"A"},{97,L"a"},
+	{66,L"B"},{98,L"b"},{67,L"C"},{99,L"c"},{68,L"D"},{100,L"d"},{69,L"E"},{101,L"e"},{70,L"F"},{102,L"f"},{71,L"G"},
+	{103,L"g"},{72,L"H"},{104,L"h"},{73,L"I"},{105,L"i"},{74,L"J"},{106,L"j"},{75,L"K"},{107,L"k"},{76,L"L"},{108,L"l"},
+	{77,L"M"},{109,L"m"},{78,L"N"},{110,L"n"},{79,L"O"},{111,L"o"},{80,L"P"},{112,L"p"},{81,L"Q"},{113,L"q"},{82,L"R"},{114,L"r"},
+	{83,L"S"},{115,L"s"},{84,L"T"},{116,L"t"},{85,L"U"},{117,L"u"},{86,L"V"},{118,L"v"},{87,L"W"},{119,L"w"},{88,L"X"},{120,L"x"},
+	{89,L"Y"},{121,L"y"},{90,L"Z"},{122,L"z"},{1072,L"а"},{1073,L"б"},{1074,L"в"},{1075,L"г"},{1076,L"д"},{1077,L"е"},
+	{1078,L"ж"},{1079,L"з"},{1080,L"и"},{1081,L"й"},{1082,L"к"},{1083,L"л"},{1084,L"м"},{1085,L"н"},{1086,L"о"},{1087,L"п"},{1088,L"р"},
+	{1089,L"с"},{1090,L"т"},{1091,L"у"},{1092,L"ф"},{1093,L"х"},{1094,L"ц"},{1095,L"ч"},{1096,L"ш"},{1097,L"щ"},{1098,L"ъ"},{1099,L"ы"},
+	{1100,L"ь"},{1101,L"э"},{1102,L"ю"},{1103,L"я"},{1105,L"ё"},
+	{1040,L"А"},{1041,L"Б"},{1042,L"В"},{1043,L"Г"},{1044,L"Д"},{1045,L"Е"},
+	{1046,L"Ж"},{1047,L"З"},{1048,L"И"},{1049,L"Й"},{1050,L"К"},{1051,L"Л"},{1052,L"М"},{1053,L"Н"},{1054,L"О"},{1055,L"П"},{1056,L"Р"},
+	{1057,L"С"},{1058,L"Т"},{1059,L"У"},{1060,L"Ф"},{1061,L"Х"},{1062,L"Ц"},{1063,L"Ч"},{1064,L"Ш"},{1065,L"Щ"},{1066,L"Ъ"},{1067,L"Ы"},
+	{1068,L"Ь"},{1069,L"Э"},{1070,L"Ю"},{1071,L"Я"},{1025,L"Ё"},
 };
 
-unordered_map<int, string> Chars_Pos = {
-	{0, " "}, {1, "0"}, {2, "1"}, {3, "2"}, {4, "3"}, {5, "4"}, {6, "5"}, {7, "6"}, {8, "7"}, {9, "8"}, {10, "9"},
-	{11, "!"}, {12, "?"}, {13, "-"}, {14, "+"}, {15, "="}, {16, "_"}, {17, "#"}, {18, "№"}, {19, "@"}, {20, "%"}, {21, "&"}, {22, "*"},
-	{23, "("}, {24, ")"}, {25, "["}, {26, "]"}, {27, "{"}, {28, "}"}, {29, "<"}, {30, ">"}, {31, "^"},
-	{32, "."}, {33, ","}, {34, ":"}, {35, ";"}, {36, "'"}, {37, "\""}, {38, "`"}, {39, "~"}, {40, "/"}, {41, "|"}, {42, "\\"},
-	{48, "A"}, {49, "a"}, {50, "B"}, {51, "b"}, {52, "C"}, {53, "c"}, {54, "D"}, {55, "d"}, {56, "E"}, {57, "e"}, {58, "F"}, {59, "f"}, {60, "G"}, {61, "g"}, {62, "H"},
-	{63, "h"}, {64, "I"}, {65, "i"}, {66, "J"}, {67, "j"}, {68, "K"}, {69, "k"}, {70, "L"}, {71, "l"}, {72, "M"}, {73, "m"}, {74, "N"}, {75, "n"}, {76, "O"}, {77, "o"},
-	{78, "P"}, {79, "p"}, {80, "Q"}, {81, "q"}, {82, "R"}, {83, "r"}, {84, "S"}, {85, "s"}, {86, "T"}, {87, "t"}, {88, "U"}, {89, "u"}, {90, "V"}, {91, "v"}, {92, "W"},
-	{93, "w"}, {94, "X"}, {95, "x"}, {96, "Y"}, {97, "y"}, {98, "Z"}, {99, "z"},
+unordered_map<int, wstring> Chars_Pos = {
+	{0,L" "}, {1,L"0"}, {2,L"1"}, {3,L"2"}, {4,L"3"}, {5,L"4"}, {6,L"5"}, {7,L"6"}, {8,L"7"}, {9,L"8"}, {10,L"9"},
+	{11,L"!"}, {12,L"?"}, {13,L"-"}, {14,L"+"}, {15,L"="}, {16,L"_"}, {17,L"#"}, {18,L"№"}, {19,L"@"}, {20,L"%"}, {21,L"&"}, {22,L"*"},
+	{23,L"("}, {24,L")"}, {25,L"["}, {26,L"]"}, {27,L"{"}, {28,L"}"}, {29,L"<"}, {30,L">"}, {31,L"^"},
+	{32,L"."}, {33,L",L"}, {34,L":"}, {35,L";"}, {36,L"'"}, {37,L"\""}, {38,L"`"}, {39,L"~"}, {40,L"/"}, {41,L"|"}, {42,L"\\"},
+	{48,L"A"}, {49,L"a"}, {50,L"B"}, {51,L"b"}, {52,L"C"}, {53,L"c"}, {54,L"D"}, {55,L"d"}, {56,L"E"}, {57,L"e"}, {58,L"F"}, {59,L"f"}, {60,L"G"}, {61,L"g"}, {62,L"H"},
+	{63,L"h"}, {64,L"I"}, {65,L"i"}, {66,L"J"}, {67,L"j"}, {68,L"K"}, {69,L"k"}, {70,L"L"}, {71,L"l"}, {72,L"M"}, {73,L"m"}, {74,L"N"}, {75,L"n"}, {76,L"O"}, {77,L"o"},
+	{78,L"P"}, {79,L"p"}, {80,L"Q"}, {81,L"q"}, {82,L"R"}, {83,L"r"}, {84,L"S"}, {85,L"s"}, {86,L"T"}, {87,L"t"}, {88,L"U"}, {89,L"u"}, {90,L"V"}, {91,L"v"}, {92,L"W"},
+	{93,L"w"}, {94,L"X"}, {95,L"x"}, {96,L"Y"}, {97,L"y"}, {98,L"Z"}, {99,L"z"},
+	{112,L"А"},{113,L"а"},{114,L"Б"},{115,L"б"},{116,L"В"},{117,L"в"},{118,L"Г"},{119,L"г"},{120,L"Д"},{121,L"д"},{122,L"Е"},{123,L"е"},{124,L"Ж"},{125,L"ж"},
+	{126,L"З"},{127,L"з"},{128,L"И"},{129,L"и"},{130,L"Й"},{131,L"й"},{132,L"К"},{133,L"к"},{134,L"Л"},{135,L"л"},{136,L"М"},{137,L"м"},{138,L"Н"},{139,L"н"},
+	{140,L"О"},{141,L"о"},{142,L"П"},{143,L"п"},{144,L"Р"},{145,L"р"},{146,L"С"},{147,L"с"},{148,L"Т"},{149,L"т"},{150,L"У"},{151,L"у"},{152,L"Ф"},{153,L"ф"},
+	{154,L"Х"},{155,L"х"},{156,L"Ц"},{157,L"ц"},{158,L"Ч"},{159,L"ч"},{160,L"Ш"},{161,L"ш"},{162,L"Щ"},{163,L"щ"},{164,L"Ъ"},{165,L"ъ"},{166,L"Ы"},{167,L"ы"},
+	{168,L"Ь"},{169,L"ь"},{170,L"Э"},{171,L"э"},{172,L"Ю"},{173,L"ю"},{174,L"Я"},{175,L"я"},
 
-	{255, "error"}
+	{255,L"error"}
 };
 
 void StopGLFW() {
@@ -173,7 +185,7 @@ bool GenerateFont_(l_Font font, string sceneid) {
 
 				unordered_map<string, float> CharInfo_;
 
-				string charid = "Font (" + font.id + ") " + Chars_Pos[c];
+				string charid = "Font (" + font.id + ") " + WStringToString(Chars_Pos[c]);
 				Texture texture = Texture("");
 				texture.sceneid = sceneid;
 				texture.id = charid;
@@ -183,13 +195,13 @@ bool GenerateFont_(l_Font font, string sceneid) {
 				GLuint texture_ = LoadSprite_(texture, chartexture, cw, ch, numchan);
 				Textures[texture.TextureID] = texture_;
 
-				if (Chars_Pos[c] == " " && otstyp == 0) {
+				if (Chars_Pos[c] == L" " && otstyp == 0) {
 					otstyp = 0.5;
 				}
 				CharInfo_["otstyp"] = otstyp;
 
-				chars[Chars_Pos[c]] = texture_;
-				charsInfo[Chars_Pos[c]] = CharInfo_;
+				chars[WStringToString(Chars_Pos[c])] = texture_;
+				charsInfo[WStringToString(Chars_Pos[c])] = CharInfo_;
 			}
 		}
 		Chars[font.id] = chars;
@@ -782,6 +794,7 @@ void RenderSprite(Window window, string id, l_Sprite sprite, int width, int heig
 void RenderText(Window window, string id, l_Text text, int width, int height, Scene scene) {
 	if (text.id != "" && text.font != "") {
 		l_Font font = Fonts[text.font];
+		wstring wtext = StringToWString(text.text);
 
 		float x = text.position.x;
 		float y = text.position.y;
@@ -792,9 +805,9 @@ void RenderText(Window window, string id, l_Text text, int width, int height, Sc
 
 		float Zoom = scene.CameraZoom;
 
-		int length = text.text.length();
+		int length = wtext.length();
 		for (int i = 0; i < length; i++) {
-			char c = text.text[i];
+			wchar_t c = wtext[i];
 
 			float bearingx = 0;
 			float bearingy = 0;
@@ -813,9 +826,9 @@ void RenderText(Window window, string id, l_Text text, int width, int height, Sc
 			float xw = float(width);
 			float yw = float(height);
 
-			string charid = Chars_IDS[c];
-			if (charid == "") {
-				charid = "error";
+			wstring charid = Chars_IDS[int(c)];
+			if (charid == L"") {
+				charid = L"error";
 			}
 
 			float BLX = xpos;
@@ -847,7 +860,7 @@ void RenderText(Window window, string id, l_Text text, int width, int height, Sc
 				dontrender = true;
 			}
 			if (!dontrender) {
-				GLuint texture = Chars[text.font][charid];
+				GLuint texture = Chars[text.font][WStringToString(charid)];
 				glBindTexture(GL_TEXTURE_2D, texture);
 				UpdateShader(window, text.shader, text.color, width, height, false, text.height, i, length, Zoom);
 
@@ -860,7 +873,7 @@ void RenderText(Window window, string id, l_Text text, int width, int height, Sc
 			}
 			float otstyp = (text.mono? 0 : -0.5/Zoom);
 			if (!donthaschar && !text.mono) {
-				unordered_map<string, float> info = CharsInfo[text.font][charid];
+				unordered_map<string, float> info = CharsInfo[text.font][WStringToString(charid)];
 				otstyp = (info["otstyp"]==0?0:0.128/Zoom) - (1-info["otstyp"])/Zoom;
 			}
 			if (!((c >= 1 && c <= 8) || c == 10) || c == 0) { x += (sizex + otstyp * Zoom) * scale; }
@@ -1269,6 +1282,21 @@ void SetTextPosition(string sceneid, string id, l_Vector2 pos) {
 	SetText(text);
 }
 
+l_Vector2 GetTextPosition(string sceneid, string id) {
+	l_Text text = GetText(sceneid, id);
+	return text.position;
+}
+
+l_Color GetTextColor(string sceneid, string id) {
+	l_Text text = GetText(sceneid, id);
+	return text.color;
+}
+
+string GetTextFont(string sceneid, string id) {
+	l_Text text = GetText(sceneid, id);
+	return text.font;
+}
+
 void SetTextText(string sceneid, string id, string text_) {
 	l_Text text = GetText(sceneid, id);
 	text.text = text_;
@@ -1285,6 +1313,21 @@ void SetTextHeight(string sceneid, string id, float height) {
 	l_Text text = GetText(sceneid, id);
 	text.height = height;
 	SetText(text);
+}
+
+string GetTextText(string sceneid, string id) {
+	l_Text text = GetText(sceneid, id);
+	return text.text;
+}
+
+bool GetTextMono(string sceneid, string id) {
+	l_Text text = GetText(sceneid, id);
+	return text.mono;
+}
+
+float GetTextHeight(string sceneid, string id) {
+	l_Text text = GetText(sceneid, id);
+	return text.height;
 }
 
 void SetTextColor(string sceneid, string id, l_Color col) {
@@ -1399,6 +1442,46 @@ void SetSpriteCornerUV(string sceneid, string id, l_Vector2 pos, bool left, bool
 		}
 	}
 	SetSprite(sprite);
+}
+
+l_Vector2 GetSpriteCorner(string sceneid, string id, bool left, bool top) {
+	l_Sprite sprite = GetSprite(sceneid, id);
+	if (left) {
+		if (top) {
+			return sprite.LT;
+		}
+		else {
+			return sprite.LB;
+		}
+	}
+	else {
+		if (top) {
+			return sprite.RT;
+		}
+		else {
+			return sprite.RB;
+		}
+	}
+}
+
+l_Vector2 GetSpriteCornerUV(string sceneid, string id, bool left, bool top) {
+	l_Sprite sprite = GetSprite(sceneid, id);
+	if (left) {
+		if (top) {
+			return sprite.UVLT;
+		}
+		else {
+			return sprite.UVLB;
+		}
+	}
+	else {
+		if (top) {
+			return sprite.UVRT;
+		}
+		else {
+			return sprite.UVRB;
+		}
+	}
 }
 
 void CreateTexture(string id, string path, bool savecolors) {
@@ -1843,6 +1926,11 @@ Window GetWindowByID(string id) {
 	}
 }
 
+void SetWindow(Window w) {
+	Windows[w.id] = w;
+	Windows_2[w.glfw] = w.id;
+}
+
 /*Получить айди по GLFWwindow*/
 string GetIDByWindow(GLFWwindow* window) {
 	auto it = Windows_2.find(window);
@@ -1894,7 +1982,14 @@ int GetWindowSize(string id, bool thatY) {
 
 /*Показывает или прячет курсор в окне*/
 void ShowCursor_(string id, bool b) {
-	glfwSetInputMode(GetWindowByID(id).glfw, GLFW_CURSOR, (b ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_HIDDEN));
+	Window win = GetWindowByID(id);
+	win.ShowCursor = b;
+	glfwSetInputMode(win.glfw, GLFW_CURSOR, (b ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_HIDDEN));
+	SetWindow(win);
+}
+
+bool GetShowCursor(string id) {
+	return GetWindowByID(id).ShowCursor;
 }
 
 /*Изменение авторазмера OpenGL*/
