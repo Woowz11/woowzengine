@@ -1,4 +1,4 @@
-#pragma warning(disable : 4244)
+п»ї#pragma warning(disable : 4244)
 #pragma warning(disable : 4305)
 #pragma warning(disable : 4267)
 
@@ -12,7 +12,7 @@
 #include <vector>
 #include <string>
 #include <functional>
-//---- Графика ----
+//---- Р“СЂР°С„РёРєР° ----
 #include <glad/gl.h>
 #define GLFW_INCLUDE_NONE
 #include <glfw3.h>
@@ -81,39 +81,50 @@ void UpdateTexturesWindowCreated() {
 
 unordered_map<int, wstring> Chars_IDS = {
 	{32,L" "},{48,L"0"},{49,L"1"},{50,L"2"},{51,L"3"},{52,L"4"},{53,L"5"},{54,L"6"},{55,L"7"},{56,L"8"},{57,L"9"},
-	{33,L"!"},{63,L"?"},{45,L"-"},{43,L"+"},{61,L"="},{95,L"_"},{35,L"#"},{36,L"№"},{64,L"@"},{126,L"~"},{96,L"`"},{39,L"'"},
-	{34,L"\""},{58,L":"},{59,L";"},{46,L"."},{44,L",L"},{37,L"%"},{94,L"^"},{38,L"&"},{42,L"*"},{40,L"("},{41,L")"},
+	{33,L"!"},{63,L"?"},{45,L"-"},{43,L"+"},{61,L"="},{95,L"_"},{35,L"#"},{8470,L"в„–"},{64,L"@"},{126,L"~"},{96,L"`"},{39,L"'"},
+	{34,L"\""},{58,L":"},{59,L";"},{46,L"."},{44,L","},{37,L"%"},{94,L"^"},{38,L"&"},{42,L"*"},{40,L"("},{41,L")"},
 	{91,L"["},{93,L"]"},{123,L"{"},{125,L"}"},{60,L"<"},{62,L">"},{92,L"\\"},{124,L"|"},{47,L"/"},{65,L"A"},{97,L"a"},
 	{66,L"B"},{98,L"b"},{67,L"C"},{99,L"c"},{68,L"D"},{100,L"d"},{69,L"E"},{101,L"e"},{70,L"F"},{102,L"f"},{71,L"G"},
 	{103,L"g"},{72,L"H"},{104,L"h"},{73,L"I"},{105,L"i"},{74,L"J"},{106,L"j"},{75,L"K"},{107,L"k"},{76,L"L"},{108,L"l"},
 	{77,L"M"},{109,L"m"},{78,L"N"},{110,L"n"},{79,L"O"},{111,L"o"},{80,L"P"},{112,L"p"},{81,L"Q"},{113,L"q"},{82,L"R"},{114,L"r"},
 	{83,L"S"},{115,L"s"},{84,L"T"},{116,L"t"},{85,L"U"},{117,L"u"},{86,L"V"},{118,L"v"},{87,L"W"},{119,L"w"},{88,L"X"},{120,L"x"},
-	{89,L"Y"},{121,L"y"},{90,L"Z"},{122,L"z"},{1072,L"а"},{1073,L"б"},{1074,L"в"},{1075,L"г"},{1076,L"д"},{1077,L"е"},
-	{1078,L"ж"},{1079,L"з"},{1080,L"и"},{1081,L"й"},{1082,L"к"},{1083,L"л"},{1084,L"м"},{1085,L"н"},{1086,L"о"},{1087,L"п"},{1088,L"р"},
-	{1089,L"с"},{1090,L"т"},{1091,L"у"},{1092,L"ф"},{1093,L"х"},{1094,L"ц"},{1095,L"ч"},{1096,L"ш"},{1097,L"щ"},{1098,L"ъ"},{1099,L"ы"},
-	{1100,L"ь"},{1101,L"э"},{1102,L"ю"},{1103,L"я"},{1105,L"ё"},
-	{1040,L"А"},{1041,L"Б"},{1042,L"В"},{1043,L"Г"},{1044,L"Д"},{1045,L"Е"},
-	{1046,L"Ж"},{1047,L"З"},{1048,L"И"},{1049,L"Й"},{1050,L"К"},{1051,L"Л"},{1052,L"М"},{1053,L"Н"},{1054,L"О"},{1055,L"П"},{1056,L"Р"},
-	{1057,L"С"},{1058,L"Т"},{1059,L"У"},{1060,L"Ф"},{1061,L"Х"},{1062,L"Ц"},{1063,L"Ч"},{1064,L"Ш"},{1065,L"Щ"},{1066,L"Ъ"},{1067,L"Ы"},
-	{1068,L"Ь"},{1069,L"Э"},{1070,L"Ю"},{1071,L"Я"},{1025,L"Ё"},
+	{89,L"Y"},{121,L"y"},{90,L"Z"},{122,L"z"},{1072,L"Р°"},{1073,L"Р±"},{1074,L"РІ"},{1075,L"Рі"},{1076,L"Рґ"},{1077,L"Рµ"},
+	{1078,L"Р¶"},{1079,L"Р·"},{1080,L"Рё"},{1081,L"Р№"},{1082,L"Рє"},{1083,L"Р»"},{1084,L"Рј"},{1085,L"РЅ"},{1086,L"Рѕ"},{1087,L"Рї"},{1088,L"СЂ"},
+	{1089,L"СЃ"},{1090,L"С‚"},{1091,L"Сѓ"},{1092,L"С„"},{1093,L"С…"},{1094,L"С†"},{1095,L"С‡"},{1096,L"С€"},{1097,L"С‰"},{1098,L"СЉ"},{1099,L"С‹"},
+	{1100,L"СЊ"},{1101,L"СЌ"},{1102,L"СЋ"},{1103,L"СЏ"},{1105,L"С‘"},
+	{1040,L"Рђ"},{1041,L"Р‘"},{1042,L"Р’"},{1043,L"Р“"},{1044,L"Р”"},{1045,L"Р•"},
+	{1046,L"Р–"},{1047,L"Р—"},{1048,L"Р"},{1049,L"Р™"},{1050,L"Рљ"},{1051,L"Р›"},{1052,L"Рњ"},{1053,L"Рќ"},{1054,L"Рћ"},{1055,L"Рџ"},{1056,L"Р "},
+	{1057,L"РЎ"},{1058,L"Рў"},{1059,L"РЈ"},{1060,L"Р¤"},{1061,L"РҐ"},{1062,L"Р¦"},{1063,L"Р§"},{1064,L"РЁ"},{1065,L"Р©"},{1066,L"РЄ"},{1067,L"Р«"},
+	{1068,L"Р¬"},{1069,L"Р­"},{1070,L"Р®"},{1071,L"РЇ"},{1025,L"РЃ"},{8592,L"в†ђ"},{8594,L"в†’"},{8593,L"в†‘"},{8595,L"в†“"},
+	{8709,L"в€…"},{8733,L"в€ќ"},{176,L"В°"},{8747,L"в€«"},{8804,L"в‰¤"},{8805,L"в‰Ґ"},{8730,L"в€љ"},{8318,L"вЃѕ"},{8317,L"вЃЅ"},{8316,L"вЃј"},{8315,L"вЃ»"},{8314,L"вЃє"},
+	{8304,L"вЃ°"},{185,L"В№"},{178,L"ВІ"},{179,L"Ві"},{8308,L"вЃґ"},{8309,L"вЃµ"},{8310,L"вЃ¶"},{8313,L"вЃ№"},{8312,L"вЃё"},{8311,L"вЃ·"},
+	{8776,L"в‰€"},{8800,L"в‰ "},{8766,L"в€ѕ"},{8734,L"в€ћ"},{8721,L"в€‘"},{247,L"Г·"},{177,L"В±"},{183,L"В·"},{167,L"В§"},{172,L"В¬"},
+	{9608,L"в–€"},{9619,L"в–“"},{9618,L"в–’"},{9617,L"в–‘"},{169,L"В©"},{174,L"В®"},{8482,L"в„ў"},{36,L"$"},{8364,L"в‚¬"},{163,L"ВЈ"},{165,L"ВҐ"},{8381,L"в‚Ѕ"},
+	{9786,L"вє"},{9785,L"в№"},{198,L"Г†"},{230,L"Г¦"},{162,L"Вў"},{175,L"ВЇ"},{164,L"В¤"},{166,L"В¦"},{161,L"ВЎ"},{191,L"Вї"},{171,L"В«"},{187,L"В»"},{402,L"Ж’"},{8801,L"в‰Ў"},{10004,L"вњ”"},{10060,L"вќЊ"},
+	{9765,L"вҐ"},{10013,L"вњќ"},{21325,L"еЌЌ"},{21328,L"еЌђ"},{9664,L"в—Ђ"},{9654,L"в–¶"},{9650,L"в–І"},{9660,L"в–ј"},{9888,L"вљ "},{9762,L"вў"},{9889,L"вљЎ"},{9872,L"вљђ"},{9774,L"в®"},{9775,L"вЇ"},{9773,L"в­"},{9675,L"в—‹"},
+	{8723,L"в€“"},{916,L"О”"},{8704,L"в€Ђ"},{9001,L"вЊ©"},{9002,L"вЊЄ"},{8942,L"в‹®"},{8943,L"в‹Ї"},{8748,L"в€¬"},{8741,L"в€Ґ"},{8742,L"в€¦"},{9633,L"в–Ў"},{8834,L"вЉ‚"},{8835,L"вЉѓ"},{8745,L"в€©"},{8746,L"в€Є"},{9702,L"в—¦"},
+	{8227,L"вЂЈ"},{9724,L"в—ј"},{9726,L"в—ѕ"},{9679,L"в—Џ"},{9630,L"в–ћ"},{937,L"О©"},{945,L"О±"},{946,L"ОІ"},{947,L"Оі"},{948,L"Оґ"},{952,L"Оё"},{9829,L"в™Ґ"},{9733,L"в…"},{9792,L"в™Ђ"},{9794,L"в™‚"},{9835,L"в™«"},
 };
 
 unordered_map<int, wstring> Chars_Pos = {
-	{0,L" "}, {1,L"0"}, {2,L"1"}, {3,L"2"}, {4,L"3"}, {5,L"4"}, {6,L"5"}, {7,L"6"}, {8,L"7"}, {9,L"8"}, {10,L"9"},
-	{11,L"!"}, {12,L"?"}, {13,L"-"}, {14,L"+"}, {15,L"="}, {16,L"_"}, {17,L"#"}, {18,L"№"}, {19,L"@"}, {20,L"%"}, {21,L"&"}, {22,L"*"},
-	{23,L"("}, {24,L")"}, {25,L"["}, {26,L"]"}, {27,L"{"}, {28,L"}"}, {29,L"<"}, {30,L">"}, {31,L"^"},
-	{32,L"."}, {33,L",L"}, {34,L":"}, {35,L";"}, {36,L"'"}, {37,L"\""}, {38,L"`"}, {39,L"~"}, {40,L"/"}, {41,L"|"}, {42,L"\\"},
-	{48,L"A"}, {49,L"a"}, {50,L"B"}, {51,L"b"}, {52,L"C"}, {53,L"c"}, {54,L"D"}, {55,L"d"}, {56,L"E"}, {57,L"e"}, {58,L"F"}, {59,L"f"}, {60,L"G"}, {61,L"g"}, {62,L"H"},
-	{63,L"h"}, {64,L"I"}, {65,L"i"}, {66,L"J"}, {67,L"j"}, {68,L"K"}, {69,L"k"}, {70,L"L"}, {71,L"l"}, {72,L"M"}, {73,L"m"}, {74,L"N"}, {75,L"n"}, {76,L"O"}, {77,L"o"},
-	{78,L"P"}, {79,L"p"}, {80,L"Q"}, {81,L"q"}, {82,L"R"}, {83,L"r"}, {84,L"S"}, {85,L"s"}, {86,L"T"}, {87,L"t"}, {88,L"U"}, {89,L"u"}, {90,L"V"}, {91,L"v"}, {92,L"W"},
-	{93,L"w"}, {94,L"X"}, {95,L"x"}, {96,L"Y"}, {97,L"y"}, {98,L"Z"}, {99,L"z"},
-	{112,L"А"},{113,L"а"},{114,L"Б"},{115,L"б"},{116,L"В"},{117,L"в"},{118,L"Г"},{119,L"г"},{120,L"Д"},{121,L"д"},{122,L"Е"},{123,L"е"},{124,L"Ж"},{125,L"ж"},
-	{126,L"З"},{127,L"з"},{128,L"И"},{129,L"и"},{130,L"Й"},{131,L"й"},{132,L"К"},{133,L"к"},{134,L"Л"},{135,L"л"},{136,L"М"},{137,L"м"},{138,L"Н"},{139,L"н"},
-	{140,L"О"},{141,L"о"},{142,L"П"},{143,L"п"},{144,L"Р"},{145,L"р"},{146,L"С"},{147,L"с"},{148,L"Т"},{149,L"т"},{150,L"У"},{151,L"у"},{152,L"Ф"},{153,L"ф"},
-	{154,L"Х"},{155,L"х"},{156,L"Ц"},{157,L"ц"},{158,L"Ч"},{159,L"ч"},{160,L"Ш"},{161,L"ш"},{162,L"Щ"},{163,L"щ"},{164,L"Ъ"},{165,L"ъ"},{166,L"Ы"},{167,L"ы"},
-	{168,L"Ь"},{169,L"ь"},{170,L"Э"},{171,L"э"},{172,L"Ю"},{173,L"ю"},{174,L"Я"},{175,L"я"},
-
-	{255,L"error"}
+	{0,L"error"},{1,L"notfound"},{2,L" "},{3,L"special"},
+	{16,L"0"},{17,L"1"},{18,L"2"},{19,L"3"},{20,L"4"},{21,L"5"},{22,L"6"},{23,L"7"},{24,L"8"},{25,L"9"},{26,L"+"},{27,L"-"},{28,L"="},{29,L"("},{30,L")"},{31,L"_"},
+	{32,L"*"},{33,L"/"},{34,L"|"},{35,L"\\"},{36,L"\""},{37,L"#"},{38,L"%"},{39,L"&"},{40,L"<"},{41,L">"},{42,L"^"},{43,L"["},{44,L"]"},{45,L"{"},{46,L"}"},{47,L"~"},
+	{48,L"."},{49,L","},{50,L":"},{51,L";"},{52,L"'"},{53,L"`"},{54,L"в„–"},{55,L"!"},{56,L"?"},{57,L"@"},{58,L"В±"},{59,L"в‰¤"},{60,L"в‰Ґ"},{61,L"в‰€"},{62,L"в€ћ"},{63,L"$"},
+	{64,L"A"},{65,L"a"},{66,L"B"},{67,L"b"},{68,L"C"},{69,L"c"},{70,L"D"},{71,L"d"},{72,L"E"},{73,L"e"},{74,L"F"},{75,L"f"},{76,L"G"},{77,L"g"},{78,L"H"},{79,L"h"},
+	{80,L"I"},{81,L"i"},{82,L"J"},{83,L"j"},{84,L"K"},{85,L"k"},{86,L"L"},{87,L"l"},{88,L"M"},{89,L"m"},{90,L"N"},{91,L"n"},{92,L"O"},{93,L"o"},{94,L"P"},{95,L"p"},
+	{96,L"Q"},{97,L"q"},{98,L"R"},{99,L"r"},{100,L"S"},{101,L"s"},{102,L"T"},{103,L"t"},{104,L"U"},{105,L"u"},{106,L"V"},{107,L"v"},{108,L"W"},{109,L"w"},{110,L"X"},{111,L"x"},
+	{112,L"Y"},{113,L"y"},{114,L"Z"},{115,L"z"},{116,L"В©"},{117,L"В®"},{118,L"в„ў"},{119,L"в€љ"},{120,L"в‰ "},{121,L"В§"},{122,L"в–€"},{123,L"в–“"},{124,L"в–’"},{125,L"в–‘"},{126,L"Г·"},{127,L"В¬"},
+	{128,L"Рђ"},{129,L"Р°"},{130,L"Р‘"},{131,L"Р±"},{132,L"Р’"},{133,L"РІ"},{134,L"Р“"},{135,L"Рі"},{136,L"Р”"},{137,L"Рґ"},{138,L"Р•"},{139,L"Рµ"},{140,L"Р–"},{141,L"Р¶"},{142,L"Р—"},{143,L"Р·"},
+	{144,L"Р"},{145,L"Рё"},{146,L"Р™"},{147,L"Р№"},{148,L"Рљ"},{149,L"Рє"},{150,L"Р›"},{151,L"Р»"},{152,L"Рњ"},{153,L"Рј"},{154,L"Рќ"},{155,L"РЅ"},{156,L"Рћ"},{157,L"Рѕ"},{158,L"Рџ"},{159,L"Рї"},
+	{160,L"Р "},{161,L"СЂ"},{162,L"РЎ"},{163,L"СЃ"},{164,L"Рў"},{165,L"С‚"},{166,L"РЈ"},{167,L"Сѓ"},{168,L"Р¤"},{169,L"С„"},{170,L"РҐ"},{171,L"С…"},{172,L"Р¦"},{173,L"С†"},{174,L"Р§"},{175,L"С‡"},
+	{176,L"РЁ"},{177,L"С€"},{178,L"Р©"},{179,L"С‰"},{180,L"РЄ"},{181,L"СЉ"},{182,L"Р«"},{183,L"С‹"},{184,L"Р¬"},{185,L"СЊ"},{186,L"Р­"},{187,L"СЌ"},{188,L"Р®"},{189,L"СЋ"},{190,L"РЇ"},{191,L"СЏ"},
+	{192,L"РЃ"},{193,L"С‘"},{194,L"в‚¬"},{195,L"в‚Ѕ"},{196,L"ВЈ"},{197,L"ВҐ"},{198,L"в†ђ"},{199,L"в†’"},{200,L"в†‘"},{201,L"в†“"},{202,L"в€«"},{203,L"В·"},{204,L"В°"},{205,L"в€ѕ"},{206,L"в€ќ"},{207,L"в€…"},
+	{208,L"вЃ°"},{209,L"В№"},{210,L"ВІ"},{211,L"Ві"},{212,L"вЃґ"},{213,L"вЃµ"},{214,L"вЃ¶"},{215,L"вЃ·"},{216,L"вЃё"},{217,L"вЃ№"},{218,L"вЃє"},{219,L"вЃ»"},{220,L"вЃј"},{221,L"вЃЅ"},{222,L"вЃѕ"},{223,L"в€‘"},
+	{224,L"вє"},{225,L"в№"},{226,L"Г†"},{227,L"Г¦"},{228,L"Вў"},{229,L"ВЇ"},{230,L"В¤"},{231,L"В¦"},{232,L"ВЎ"},{233,L"Вї"},{234,L"В«"},{235,L"В»"},{236,L"Ж’"},{237,L"в‰Ў"},{238,L"вњ”"},{239,L"вќЊ"},
+	{240,L"вҐ"},{241,L"вњќ"},{242,L"еЌЌ"},{243,L"еЌђ"},{244,L"в—Ђ"},{245,L"в–¶"},{246,L"в–І"},{247,L"в–ј"},{248,L"вљ "},{249,L"вў"},{250,L"вљЎ"},{251,L"вљђ"},{252,L"в®"},{253,L"вЇ"},{254,L"в­"},{255,L"в—‹"},
+	{256,L"в€“"},{257,L"О”"},{258,L"в€Ђ"},{259,L"вЊ©"},{260,L"вЊЄ"},{261,L"в‹®"},{262,L"в‹Ї"},{263,L"в€¬"},{264,L"в€Ґ"},{265,L"в€¦"},{266,L"в–Ў"},{267,L"вЉ‚"},{268,L"вЉѓ"},{269,L"в€©"},{270,L"в€Є"},{271,L"в—¦"},
+	{272,L"вЂЈ"},{273,L"в—ј"},{274,L"в—ѕ"},{275,L"в—Џ"},{276,L"в–ћ"},{277,L"О©"},{278,L"О±"},{279,L"ОІ"},{280,L"Оі"},{281,L"Оґ"},{282,L"Оё"},{283,L"в™Ґ"},{284,L"в…"},{285,L"в™Ђ"},{286,L"в™‚"},{287,L"в™«"},
 };
 
 void StopGLFW() {
@@ -125,13 +136,13 @@ bool GenerateFont_(l_Font font, string sceneid) {
 	if (find(fonts.begin(), fonts.end(), font.id) == fonts.end()) {
 		int x, y, numchan;
 		unsigned char* fonttexture = LoadTexture(font.image, &x, &y, &numchan);
-		if (x != y) {
-			PE("", "");
+		if (x % 16 != 0) {
+			PE("Incorrect font texture width! GenerateFont_('"+font.id+"','"+sceneid+"')", "E0040");
 			delete[] fonttexture;
 			return false;
 		}
-		if (x % 16 != 0) {
-			PE("", "");
+		if (!(GetFractionalPart(float(y) / 16) == 0 || GetFractionalPart(float(y) / 16) == 0.5)) {
+			PE("Incorrect font texture height! GenerateFont_('" + font.id + "','" + sceneid + "')", "E0041");
 			delete[] fonttexture;
 			return false;
 		}
@@ -153,8 +164,8 @@ bool GenerateFont_(l_Font font, string sceneid) {
 		unordered_map<string, GLuint> chars;
 		unordered_map<string, unordered_map<string,float>> charsInfo;
 		int nx = 0;
-		int ny = 15;
-		for (int c = 0; c < 256; c++) {
+		int ny = (y/size)-1;
+		for (int c = 0; c < (y/size * 16); c++) {
 				int cx = nx * size;
 				int cy = ny * size;
 				int cw = size;
@@ -198,6 +209,9 @@ bool GenerateFont_(l_Font font, string sceneid) {
 				if (Chars_Pos[c] == L" " && otstyp == 0) {
 					otstyp = 0.5;
 				}
+				if (Chars_Pos[c] == L"в–€" || Chars_Pos[c] == L"в–“" || Chars_Pos[c] == L"в–’" || Chars_Pos[c] == L"в–‘" || Chars_Pos[c] == L"в–ћ") {
+					otstyp = 1;
+				}
 				CharInfo_["otstyp"] = otstyp;
 
 				chars[WStringToString(Chars_Pos[c])] = texture_;
@@ -226,7 +240,7 @@ void CreateFont(string id, string path) {
 	}
 }
 
-/*Загрузка текстуры через stb_image*/
+/*Р—Р°РіСЂСѓР·РєР° С‚РµРєСЃС‚СѓСЂС‹ С‡РµСЂРµР· stb_image*/
 unsigned char* LoadTexture(string path, int* x, int* y, int* numchannel) {
 	bool error = false;
 	stbi_set_flip_vertically_on_load(true);
@@ -481,7 +495,7 @@ void PE_GLFW() {
 	}
 }
 
-/*Рендер*/
+/*Р РµРЅРґРµСЂ*/
 
 GLuint CompileShader(string shadercode, bool ThatVertex) {
 	GLuint Shader = glCreateShader(ThatVertex ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER);
@@ -528,7 +542,7 @@ GLuint CompileShaderProgram(GLuint Vertex, GLuint Fragment) {
 	return Shader;
 }
 
-/*Методы*/
+/*РњРµС‚РѕРґС‹*/
 
 GLuint GetTexture(l_Sprite sprite) {
 	unordered_map<string, GLuint> Textures_ = Textures;
@@ -803,6 +817,8 @@ void RenderText(Window window, string id, l_Text text, int width, int height, Sc
 		float mirrory = 1;
 		float mirrorx = 1;
 
+		float specialotstyp = 1;
+
 		float Zoom = scene.CameraZoom;
 
 		int length = wtext.length();
@@ -830,6 +846,12 @@ void RenderText(Window window, string id, l_Text text, int width, int height, Sc
 			if (charid == L"") {
 				charid = L"error";
 			}
+			else {
+				auto it = Chars[text.font].find(WStringToString(charid));
+				if (it == Chars[text.font].end()) {
+					charid = L"notfound";
+				}
+			}
 
 			float BLX = xpos;
 			float BLY = ypos;
@@ -852,7 +874,7 @@ void RenderText(Window window, string id, l_Text text, int width, int height, Sc
 
 			bool dontrender = false;
 			bool donthaschar = false;
-			if (c == 0 || (c >= 1 && c <= 8) || c == 10) {
+			if (c == 0 || (c >= 1 && c <= 12)) {
 				donthaschar = true;
 				dontrender = true;
 			}
@@ -871,15 +893,15 @@ void RenderText(Window window, string id, l_Text text, int width, int height, Sc
 					RB.x - CamPosX,RB.y - CamPosY, 0,    mirrorx,0
 				});
 			}
-			float otstyp = (text.mono? 0 : -0.5/Zoom);
+			float otstyp = (text.mono? 0 : -0.5 / Zoom);
 			if (!donthaschar && !text.mono) {
 				unordered_map<string, float> info = CharsInfo[text.font][WStringToString(charid)];
-				otstyp = (info["otstyp"]==0?0:0.128/Zoom) - (1-info["otstyp"])/Zoom;
+				otstyp = (info["otstyp"]==0?0:(0.128*specialotstyp/Zoom)) - (1-info["otstyp"])/Zoom;
 			}
-			if (!((c >= 1 && c <= 8) || c == 10) || c == 0) { x += (sizex + otstyp * Zoom) * scale; }
+			if (!((c >= 1 && c <= 12)) || c == 0) { x += (sizex + otstyp * Zoom) * scale; }
 
 			if (c == 10) {
-				y -= (sizey + 0.128) * scale;
+				y -= (sizey + 0.128*specialotstyp) * scale;
 				x = text.position.x;
 			}
 			if (c == 1) {
@@ -906,6 +928,12 @@ void RenderText(Window window, string id, l_Text text, int width, int height, Sc
 			if (c == 7) {
 				charscalesymbol /= 1.1;
 			}
+			if (c == 12) {
+				specialotstyp++;
+			}
+			if (c == 11) {
+				specialotstyp--;
+			}
 		}
 
 		glFlush();
@@ -929,7 +957,7 @@ void Render() {
 				glfwGetFramebufferSize(window.glfw, &width, &height);
 				float scale = window.scale;
 				glViewport(0, 0, round(width * scale), round(height * scale));
-				/*----------------[Рисование]------------------*/
+				/*----------------[Р РёСЃРѕРІР°РЅРёРµ]------------------*/
 				if (window.scene != "") {
 					Scene scene = GetScene(window.scene);
 					if (scene.CameraZoom != 0) {
@@ -975,7 +1003,7 @@ void Render() {
 					ErrorScene("Empty scene");
 				}
 				glfwSwapBuffers(window.glfw);
-				/*------------[Конец рисования]----------------*/
+				/*------------[РљРѕРЅРµС† СЂРёСЃРѕРІР°РЅРёСЏ]----------------*/
 				PE_GLFW();
 			}
 			else {
@@ -1872,7 +1900,7 @@ string GetWindowByScene(string sceneid) {
 
 /*---------------------------*/
 
-/*Проверяет есть окно в данных или нет*/
+/*РџСЂРѕРІРµСЂСЏРµС‚ РµСЃС‚СЊ РѕРєРЅРѕ РІ РґР°РЅРЅС‹С… РёР»Рё РЅРµС‚*/
 bool HasWindow(string id) {
 	auto it = Windows.find(id);
 	if (it != Windows.end()) {
@@ -1883,7 +1911,7 @@ bool HasWindow(string id) {
 	}
 }
 
-/*Сделать окно главным*/
+/*РЎРґРµР»Р°С‚СЊ РѕРєРЅРѕ РіР»Р°РІРЅС‹Рј*/
 void SetWindowToMain(string id) {
 	if (HasWindow(id)) {
 		MainWindow = id;
@@ -1894,14 +1922,14 @@ void SetWindowToMain(string id) {
 	}
 }
 
-/*Получить позицию экрана*/
+/*РџРѕР»СѓС‡РёС‚СЊ РїРѕР·РёС†РёСЋ СЌРєСЂР°РЅР°*/
 int GetWindowPosition(string id, bool ThatX) {
 	int x; int y;
 	glfwGetWindowPos(GetWindowByID(id).glfw, &x, &y);
 	return (ThatX ?x:y);
 }
 
-/*Установить позицию окна*/
+/*РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РїРѕР·РёС†РёСЋ РѕРєРЅР°*/
 void SetWindowPosition(string id, int pos, bool ThatX) {
 	int x; int y;
 	Window window = GetWindowByID(id);
@@ -1909,12 +1937,12 @@ void SetWindowPosition(string id, int pos, bool ThatX) {
 	glfwSetWindowPos(window.glfw, (ThatX?pos:x), (!ThatX ? pos:y));
 }
 
-/*Задаёт новое название окна*/
+/*Р—Р°РґР°С‘С‚ РЅРѕРІРѕРµ РЅР°Р·РІР°РЅРёРµ РѕРєРЅР°*/
 void SetWindowTitle(string id, string title) {
 	glfwSetWindowTitle(GetWindowByID(id).glfw, StringToConstChar(title));
 }
 
-/*Получить окно по айди*/
+/*РџРѕР»СѓС‡РёС‚СЊ РѕРєРЅРѕ РїРѕ Р°Р№РґРё*/
 Window GetWindowByID(string id) {
 	auto it = Windows.find(id);
 	if (it != Windows.end()) {
@@ -1931,7 +1959,7 @@ void SetWindow(Window w) {
 	Windows_2[w.glfw] = w.id;
 }
 
-/*Получить айди по GLFWwindow*/
+/*РџРѕР»СѓС‡РёС‚СЊ Р°Р№РґРё РїРѕ GLFWwindow*/
 string GetIDByWindow(GLFWwindow* window) {
 	auto it = Windows_2.find(window);
 	if (it != Windows_2.end()) {
@@ -1943,12 +1971,12 @@ string GetIDByWindow(GLFWwindow* window) {
 	}
 }
 
-/*Получить окно по GLFWwindow*/
+/*РџРѕР»СѓС‡РёС‚СЊ РѕРєРЅРѕ РїРѕ GLFWwindow*/
 Window GetWindowByWindow(GLFWwindow* window) {
 	return GetWindowByID(GetIDByWindow(window));
 }
 
-/*Изменить размер окна*/
+/*РР·РјРµРЅРёС‚СЊ СЂР°Р·РјРµСЂ РѕРєРЅР°*/
 void SetWindowSize(string id, bool thatY, int size) {
 	int x = GetWindowSize(id, false), y = GetWindowSize(id, true);
 	bool error = false;
@@ -1968,7 +1996,7 @@ void SetWindowSize(string id, bool thatY, int size) {
 	}
 }
 
-/*Получить размер окна*/
+/*РџРѕР»СѓС‡РёС‚СЊ СЂР°Р·РјРµСЂ РѕРєРЅР°*/
 int GetWindowSize(string id, bool thatY) {
 	int x, y;
 	glfwGetWindowSize(GetWindowByID(id).glfw, &x, &y);
@@ -1980,7 +2008,7 @@ int GetWindowSize(string id, bool thatY) {
 	}
 }
 
-/*Показывает или прячет курсор в окне*/
+/*РџРѕРєР°Р·С‹РІР°РµС‚ РёР»Рё РїСЂСЏС‡РµС‚ РєСѓСЂСЃРѕСЂ РІ РѕРєРЅРµ*/
 void ShowCursor_(string id, bool b) {
 	Window win = GetWindowByID(id);
 	win.ShowCursor = b;
@@ -1992,14 +2020,14 @@ bool GetShowCursor(string id) {
 	return GetWindowByID(id).ShowCursor;
 }
 
-/*Изменение авторазмера OpenGL*/
+/*РР·РјРµРЅРµРЅРёРµ Р°РІС‚РѕСЂР°Р·РјРµСЂР° OpenGL*/
 void SetWindowAutosize(string id, bool b) {
 	Window w = GetWindowByID(id);
 	w.AutoResize = b;
 	Windows[id] = w;
 }
 
-/*Добавить сцену*/
+/*Р”РѕР±Р°РІРёС‚СЊ СЃС†РµРЅСѓ*/
 void SetWindowScene(string id, string b, bool DontPrint) {
 	if (!DontPrint) { P("SCENE", "Scene [" + b + "] applied to window [" + id + "]"); }
 	Window w = GetWindowByID(id);
@@ -2011,7 +2039,7 @@ void SetWindowScene(string id, string b, bool DontPrint) {
 	UpdateTexturesWindowCreated();
 }
 
-/*Изменение маштаба*/
+/*РР·РјРµРЅРµРЅРёРµ РјР°С€С‚Р°Р±Р°*/
 void SetWindowScale(string id, float scale) {
 	if (scale <= 0) { PE("Scale cannot be <= 0! SetWindowScale('"+id+"',"+to_string(scale) + ")", "E0009"); }
 	else {
@@ -2021,7 +2049,7 @@ void SetWindowScale(string id, float scale) {
 	}
 }
 
-/*Установить прозрачность окна*/
+/*РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РїСЂРѕР·СЂР°С‡РЅРѕСЃС‚СЊ РѕРєРЅР°*/
 void SetWindowTransparency(string id, int alpha) {
 	Window w = GetWindowByID(id);
 	w.Transparency = alpha;
@@ -2029,60 +2057,60 @@ void SetWindowTransparency(string id, int alpha) {
 	Windows[id] = w;
 }
 
-/*Получить прозрачность окна*/
+/*РџРѕР»СѓС‡РёС‚СЊ РїСЂРѕР·СЂР°С‡РЅРѕСЃС‚СЊ РѕРєРЅР°*/
 int GetWindowTransparency(string id) {
 	Window w = GetWindowByID(id);
 	return w.Transparency;
 }
 
-/*Запретить менять размер окна или нет*/
+/*Р—Р°РїСЂРµС‚РёС‚СЊ РјРµРЅСЏС‚СЊ СЂР°Р·РјРµСЂ РѕРєРЅР° РёР»Рё РЅРµС‚*/
 void SetWindowResizable(string id, bool b) {
 	glfwSetWindowAttrib(GetWindowByID(id).glfw,GLFW_RESIZABLE,b);
 }
 
-/*Ивент при закрытии окна*/
+/*РРІРµРЅС‚ РїСЂРё Р·Р°РєСЂС‹С‚РёРё РѕРєРЅР°*/
 void SetWindowClosedEvent(string id, sol::function f) {
 	Window w = GetWindowByID(id);
 	w.WindowClosed = f;
 	Windows[id] = w;
 }
 
-/*Нажатие клавиши в окне*/
+/*РќР°Р¶Р°С‚РёРµ РєР»Р°РІРёС€Рё РІ РѕРєРЅРµ*/
 void SetWindowKPEvent(string id, sol::function f) {
 	Window w = GetWindowByID(id);
 	w.WindowKeyPress = f;
 	Windows[id] = w;
 }
 
-/*Отжатие клавиши в окне*/
+/*РћС‚Р¶Р°С‚РёРµ РєР»Р°РІРёС€Рё РІ РѕРєРЅРµ*/
 void SetWindowKREvent(string id, sol::function f) {
 	Window w = GetWindowByID(id);
 	w.WindowKeyRelease = f;
 	Windows[id] = w;
 }
 
-/*Зажатие клавиши в окне*/
+/*Р—Р°Р¶Р°С‚РёРµ РєР»Р°РІРёС€Рё РІ РѕРєРЅРµ*/
 void SetWindowKHEvent(string id, sol::function f) {
 	Window w = GetWindowByID(id);
 	w.WindowKeyRepeat = f;
 	Windows[id] = w;
 }
 
-/*Нажатие клавиши в мышке в окне*/
+/*РќР°Р¶Р°С‚РёРµ РєР»Р°РІРёС€Рё РІ РјС‹С€РєРµ РІ РѕРєРЅРµ*/
 void SetWindowMPEvent(string id, sol::function f) {
 	Window w = GetWindowByID(id);
 	w.WindowMousePress = f;
 	Windows[id] = w;
 }
 
-/*Отжатие клавиши в мышке в окне*/
+/*РћС‚Р¶Р°С‚РёРµ РєР»Р°РІРёС€Рё РІ РјС‹С€РєРµ РІ РѕРєРЅРµ*/
 void SetWindowMREvent(string id, sol::function f) {
 	Window w = GetWindowByID(id);
 	w.WindowMouseRelease = f;
 	Windows[id] = w;
 }
 
-/*Зажатие клавиши в мышке в окне*/
+/*Р—Р°Р¶Р°С‚РёРµ РєР»Р°РІРёС€Рё РІ РјС‹С€РєРµ РІ РѕРєРЅРµ*/
 void SetWindowMHEvent(string id, sol::function f) {
 	Window w = GetWindowByID(id);
 	w.WindowMouseRepeat = f;
@@ -2105,7 +2133,7 @@ map<int, string> Keys = {
 map<int, int> PressedKeys = {};
 map<int, int> PressedMouse = {};
 
-/*Получить клавишу по айди*/
+/*РџРѕР»СѓС‡РёС‚СЊ РєР»Р°РІРёС€Сѓ РїРѕ Р°Р№РґРё*/
 string GetKeyFromID(int i) {
 	string key = "key_"+to_string(i);
 	if (Keys.find(i) != Keys.end()) {
@@ -2114,7 +2142,7 @@ string GetKeyFromID(int i) {
 	return key;
 }
 
-/*Получить в данный момент зажатые клавиши*/
+/*РџРѕР»СѓС‡РёС‚СЊ РІ РґР°РЅРЅС‹Р№ РјРѕРјРµРЅС‚ Р·Р°Р¶Р°С‚С‹Рµ РєР»Р°РІРёС€Рё*/
 map<string, int> GetPressedKeys() {
 	map<string, int> k = {};
 	if (Windows.size() > 1) {

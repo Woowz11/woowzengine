@@ -1,7 +1,7 @@
 CreateWindow("window","(◕‿◕)")
 SetWindowMain("window")
 CreateScene("scene")
-SetSceneBackgroundColor("scene",Black)
+SetSceneBackgroundColor("scene",Transparent)
 SetWindowScene("window","scene")
  
 function CameraMovement()
@@ -59,4 +59,5 @@ CycleRender(function()
     CameraMovement() 
 end)
 
-CreateText("text","scene","крутые символы -> ≈≠〈〉⩽⩾≪≫√∫←→↑↓↔↕∞∑§$£₽€¥©™®∾°▖▗▘▙▚▛▜▝▞▟█▓▒░🙂🙁👍👎")
+CreateText("text","scene","█░░████\n█░░█░░░\n█░░█░░░\n███████\n░░░█░░█\n░░░█░░█\n████░░█\n")
+SetTextColor("scene","text",Color.new(128,0,0,255))
