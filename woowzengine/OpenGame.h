@@ -18,4 +18,4 @@ void CheckFiles(string);
 void Install(string);
 void Cycle();
 void GameInstall();
-void OpenGame(string, string, bool);
+void OpenGame(string, string, bool, string);

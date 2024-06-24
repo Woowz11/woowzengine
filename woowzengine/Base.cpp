@@ -86,6 +86,27 @@ void Exit() {
 	exit(EXIT_SUCCESS);
 }
 
+/*Разделить строку*/
+vector<string> StringSplit(string str_, char delimiter) {
+	std::vector<std::string> res;
+	char* arr = StringToCharArray(str_);
+	int i = 0;
+
+	string s;
+	while (arr[i] != '\0') {
+		if (arr[i] != delimiter) {
+			s += arr[i];
+		}
+		else {
+			res.push_back(s);
+			s.clear();
+		}
+		i++;
+	}
+	res.push_back(s);
+	return res;
+}
+
 /*Получить дробную часть*/
 float GetFractionalPart(float f) {
 	int znak = GetNumberZnak(f);

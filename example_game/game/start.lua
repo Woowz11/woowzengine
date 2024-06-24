@@ -1,1 +1,3 @@
-TestFunction("F:/woowzengine/example_game/game/particles.png.tde","F:/woowzengine/example_game/game/test.png")
+CreateWindow("Window","omg")
+
+TestFunction()

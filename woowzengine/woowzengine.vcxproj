@@ -183,7 +183,6 @@
   <ItemGroup>
     <Image Include="..\resources\icon.ico" />
     <Image Include="..\resources\icon.png" />
-    <Image Include="Res\default-font.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="l_Sound.h" />

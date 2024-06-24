@@ -1,7 +1,7 @@
 @echo off
 REM run.bat file WoowzEngine
 
-woowzengine.exe run %~dp0
+"%~dp0woowzengine.exe" run
 
 for /F "skip=2 tokens=2*" %%a in ('REG QUERY "HKEY_CURRENT_USER\Control Panel\International" /v "LocaleName"') do set "OSLanguage=%%b"
 if "%OSLanguage%"=="ru-RU" || "%OSLanguage%"=="uk-UA" || "%OSLanguage%"=="be-BY" || "%OSLanguage%"=="kk-KZ" || "%OSLanguage%"=="tt-RU" || "%OSLanguage%"=="ky-KG" || "%OSLanguage%"=="tk-TM" || "%OSLanguage%"=="uz-Latn-UZ" || "%OSLanguage%"=="az-Latn-AZ" || "%OSLanguage%"=="th-Cyrl-TJ" || "%OSLanguage%"=="ba-RU" || "%OSLanguage%"=="sah-RU" || "%OSLanguage%"=="uz-Cyrl-UZ" || "%OSLanguage%"=="sr-Cyrl-ME" (

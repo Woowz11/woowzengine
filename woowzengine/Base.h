@@ -73,3 +73,4 @@ bool CheckPathToSymbols(string path);
 void SetSessionInfo(string ID, string Value);
 string ReplaceString(string,string,string);
 bool StringHasString(string Str, string WhatNeedFound);
+vector<string> StringSplit(string str_, char delimiter);

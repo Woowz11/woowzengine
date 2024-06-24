@@ -201,3 +201,5 @@ const string StartScriptCode = R"(--This script is run when the game is started.
 
 CheckLua()
 )";
+
+const string GitIgnore = R"(woowzengine/log)";

@@ -32,6 +32,7 @@ bool JSettingsBroken = false;
 bool HasStartScript = true;
 
 bool DebugMode = false;/*ЭТО НЕ ТРОГАЙ! DebugMode (DebugVersion) включаеться в Source.cpp!!!*/
+string ExeName = "";
 
 sol::function GameClosed = sol::nil;
 
@@ -45,11 +46,11 @@ void DebugPrint(float f) {
 }
 void DebugPrint_(string text) {
 	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 8);
-	wcout << StringToWString(text) << "\n";
+	wcout << StringToWString(text) << endl;
 }
 void DebugPrint_w(wstring text) {
 	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 8);
-	wcout << text << "\n";
+	wcout << text << endl;
 }
 void DebugPrint_(float f) {
 	DebugPrint_(to_string(f));
@@ -160,6 +161,11 @@ void CheckFiles(string ev) {
 	CreateValueJson(JSettings, "Console", "true");
 	CreateValueJson(JSettings, "SafeMode", "true");
 
+	GetOrCreateFile(SGamePath+"/.gitignore");
+	if (ReadFile(SGamePath + "/.gitignore") == "") {
+		WriteToFile(SGamePath + "/.gitignore", GitIgnore);
+	}
+
 	SetRandomSeed(Seed);
 }
 
@@ -186,7 +192,7 @@ void GameInstall() {
 		LuaCompile();
 	}
 	else {
-		PF("StartScript ["+ GetEngineInfo("StartScript") +"] cannot be empty or contain incompatible characters with Windows","C0027");
+		PF("StartScript ["+ GetEngineInfo("StartScript") +".lua] cannot be empty or contain incompatible characters with Windows","C0027");
 	}
 }
 
@@ -224,9 +230,10 @@ void Install(string ev) {
 	GLFWInstall();
 }
 
-void OpenGame(string GamePath_,string EngineVersion_, bool DebugVersion) {
+void OpenGame(string GamePath_,string EngineVersion_, bool DebugVersion, string EngineName_) {
 	SGamePath = StringToPath(GamePath_);
 	DebugMode = DebugVersion;
+	ExeName = EngineName_;
 	Install(EngineVersion_);
 
 	/*===========[Тестовая зона]===========*/
@@ -236,9 +243,9 @@ void OpenGame(string GamePath_,string EngineVersion_, bool DebugVersion) {
 	/*=====================================*/
 
 	if (StringToBool(GetEngineInfo("OnlyOne"))) {
-		CreateMutexA(0, FALSE, StringToLPCSTR(GetSessionInfo("GamePath")+"woowzengine.exe"));
+		CreateMutexA(0, FALSE, StringToLPCSTR(GetSessionInfo("GamePath")+ ExeName));
 		if (GetLastError() == ERROR_ALREADY_EXISTS) {
-			P("ENGINE", "Game alredy started!");
+			P("ENGINE", "Project alredy started! Project is shutting down...");
 			Exit();
 		}
 	}

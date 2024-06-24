@@ -1829,26 +1829,6 @@ vector<string> GetSpritesOnScene(string sceneid) {
 	return sortedList;
 }
 
-vector<string> split(string str_, char delimiter) {
-	std::vector<std::string> res;
-	char* arr = StringToCharArray(str_);
-	int i = 0;
-
-	string s;
-	while (arr[i] != '\0') {
-		if (arr[i] != delimiter) {
-			s += arr[i];
-		}
-		else {
-			res.push_back(s);
-			s.clear();
-		}
-		i++;
-	}
-	res.push_back(s);
-	return res;
-}
-
 vector<l_Color> GetTextureColors(string textureid) {
 	Texture texture = GetTextureByID(textureid);
 	string id = textureid;
@@ -1867,10 +1847,10 @@ vector<l_Color> GetTextureColors(string textureid) {
 			}
 			as.pop_back();
 		}
-		vector<string> rs_ = split(ReplaceString(rs, " ", ""), ',');
-		vector<string> gs_ = split(ReplaceString(gs, " ", ""), ',');
-		vector<string> bs_ = split(ReplaceString(bs, " ", ""), ',');
-		vector<string> as_ = split(ReplaceString(as, " ", ""), ',');
+		vector<string> rs_ = StringSplit(ReplaceString(rs, " ", ""), ',');
+		vector<string> gs_ = StringSplit(ReplaceString(gs, " ", ""), ',');
+		vector<string> bs_ = StringSplit(ReplaceString(bs, " ", ""), ',');
+		vector<string> as_ = StringSplit(ReplaceString(as, " ", ""), ',');
 		int j = 0;
 		for (int j = 0; j < size; j++) {
 			result.push_back(l_Color(StringToInt(rs_[j]), StringToInt(gs_[j]), StringToInt(bs_[j]), StringToInt(as_[j])));

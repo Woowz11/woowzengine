@@ -127,7 +127,6 @@ bool GetSpriteVisible(string sceneid, string id);
 bool HasTexture(string id);
 void SetTextureBlur(string id, bool blur);
 vector<l_Color> GetTextureColors(string textureid);
-vector<string> split(string str, char delimiter);
 void CreateTextureByArray(string id, int sizex, int sizey, vector<l_Color> colors, bool savecolors = false);
 void WriteImage(string path, int sizex, int sizey, vector<l_Color> colors);
 void WriteImage(string path, int sizex, int sizey, unsigned char* colors_result, int numchan, bool rotate = false, bool flip = false);

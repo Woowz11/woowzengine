@@ -291,9 +291,6 @@
     <Image Include="..\resources\icon.ico">
       <Filter>Файлы ресурсов</Filter>
     </Image>
-    <Image Include="Res\default-font.png">
-      <Filter>Файлы ресурсов</Filter>
-    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="l_Sound.h">

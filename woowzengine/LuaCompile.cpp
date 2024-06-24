@@ -1668,7 +1668,7 @@ string l_WIP() {
 }
 
 /*Функция для теста других функций (ЧИСТО ДЛЯ WOOWZ11)*/
-void l_TestFunction(string input, string output) {
+void l_TestFunction(string winid) {
 	if (StringToBool(GetSettingsInfo("Console")) && !SafeMode()) {
 		
 		
