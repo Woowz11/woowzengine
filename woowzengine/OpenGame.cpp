@@ -127,7 +127,7 @@ void CheckFiles(string ev) {
 	GetOrCreateFolder(FontsPath);
 	if (!HasDirectory(FontsPath + "/default.png")) {
 		CreateFile(FontsPath + "/default.png");
-		WriteImage(FontsPath + "/default.png", 128, 128, DefaultFontImage, { {'0',l_Color(0,0,0,0)} ,{'1',l_Color(255,255,255)} });
+		WriteImage(FontsPath + "/default.png", 128, DefaultFontImageHeight, DefaultFontImage, { {'0',l_Color(0,0,0,0)} ,{'1',l_Color(255,255,255,255)} });
 	}
 
 	GetOrCreateFile(JEngine);

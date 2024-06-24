@@ -13,6 +13,7 @@ public:
 	string text = "Default text!";
 	bool Visible = true;
 	bool mono = false;
+	bool alwaysrender = false;
 	l_Vector2 position = l_Vector2(0, 0);
 	float scale = 1;
 	float height = 0;

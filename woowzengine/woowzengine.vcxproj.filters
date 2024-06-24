@@ -275,6 +275,9 @@
     <ClInclude Include="SessionInfo.h">
       <Filter>Исходные файлы</Filter>
     </ClInclude>
+    <ClInclude Include="Enum.h">
+      <Filter>Исходные файлы</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="woowzengine.rc">

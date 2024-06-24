@@ -1,0 +1,12 @@
+{
+    "DiscordActivities": "true",
+    "DiscordApplicationID": "1240635259221970954",
+    "LogErrors": "-ERRORS",
+    "LogFatal": "-FATAL",
+    "LogFormat": "%y-%mn-%d-%h-%m-%s-%ms%f",
+    "LogStyle": "%b[%h:%m:%s:%ms][%t] %c",
+    "LogType": "log",
+    "Logs": "true",
+    "OnlyOne": "true",
+    "StartScript": "start"
+}

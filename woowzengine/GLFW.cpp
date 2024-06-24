@@ -61,8 +61,8 @@ unordered_map<string, Scene> Scenes;
 
 unordered_map<string, l_Font> Fonts;
 unordered_map <string, vector<string>> SceneFonts;
-unordered_map<string, unordered_map<string, GLuint>> Chars;
-unordered_map<string, unordered_map<string, unordered_map<string, float>>> CharsInfo;
+unordered_map<string, unordered_map<string, unordered_map<string, GLuint>>> Chars;
+unordered_map<string, unordered_map<string, unordered_map<string, unordered_map<string, float>>>> CharsInfo;
 
 string NowWindow;
 
@@ -78,6 +78,8 @@ void UpdateTexturesWindowCreated() {
 		}
 	}
 }
+
+const string ErrorScene = "error_scene";
 
 unordered_map<int, wstring> Chars_IDS = {
 	{32,L" "},{48,L"0"},{49,L"1"},{50,L"2"},{51,L"3"},{52,L"4"},{53,L"5"},{54,L"6"},{55,L"7"},{56,L"8"},{57,L"9"},
@@ -104,6 +106,7 @@ unordered_map<int, wstring> Chars_IDS = {
 	{9765,L"☥"},{10013,L"✝"},{21325,L"卍"},{21328,L"卐"},{9664,L"◀"},{9654,L"▶"},{9650,L"▲"},{9660,L"▼"},{9888,L"⚠"},{9762,L"☢"},{9889,L"⚡"},{9872,L"⚐"},{9774,L"☮"},{9775,L"☯"},{9773,L"☭"},{9675,L"○"},
 	{8723,L"∓"},{916,L"Δ"},{8704,L"∀"},{9001,L"〈"},{9002,L"〉"},{8942,L"⋮"},{8943,L"⋯"},{8748,L"∬"},{8741,L"∥"},{8742,L"∦"},{9633,L"□"},{8834,L"⊂"},{8835,L"⊃"},{8745,L"∩"},{8746,L"∪"},{9702,L"◦"},
 	{8227,L"‣"},{9724,L"◼"},{9726,L"◾"},{9679,L"●"},{9630,L"▞"},{937,L"Ω"},{945,L"α"},{946,L"β"},{947,L"γ"},{948,L"δ"},{952,L"θ"},{9829,L"♥"},{9733,L"★"},{9792,L"♀"},{9794,L"♂"},{9835,L"♫"},
+	{8355,L"₣"},{949,L"ε"},{960,L"π"},{9612,L"▌"},{9616,L"▐"},{9600,L"▀"},{9604,L"▄"},{9622,L"▖"},{9623,L"▗"},{9624,L"▘"},{9629,L"▝"},{9625,L"▙"},{9631,L"▟"},{9627,L"▛"},{9628,L"▜"},{9993,L"✉"},
 };
 
 unordered_map<int, wstring> Chars_Pos = {
@@ -125,7 +128,15 @@ unordered_map<int, wstring> Chars_Pos = {
 	{240,L"☥"},{241,L"✝"},{242,L"卍"},{243,L"卐"},{244,L"◀"},{245,L"▶"},{246,L"▲"},{247,L"▼"},{248,L"⚠"},{249,L"☢"},{250,L"⚡"},{251,L"⚐"},{252,L"☮"},{253,L"☯"},{254,L"☭"},{255,L"○"},
 	{256,L"∓"},{257,L"Δ"},{258,L"∀"},{259,L"〈"},{260,L"〉"},{261,L"⋮"},{262,L"⋯"},{263,L"∬"},{264,L"∥"},{265,L"∦"},{266,L"□"},{267,L"⊂"},{268,L"⊃"},{269,L"∩"},{270,L"∪"},{271,L"◦"},
 	{272,L"‣"},{273,L"◼"},{274,L"◾"},{275,L"●"},{276,L"▞"},{277,L"Ω"},{278,L"α"},{279,L"β"},{280,L"γ"},{281,L"δ"},{282,L"θ"},{283,L"♥"},{284,L"★"},{285,L"♀"},{286,L"♂"},{287,L"♫"},
+	{288,L"₣"},{289,L"ε"},{290,L"π"},{291,L"▌"},{292,L"▐"},{293,L"▀"},{294,L"▄"},{295,L"▖"},{296,L"▗"},{297,L"▘"},{298,L"▝"},{299,L"▙"},{300,L"▟"},{301,L"▛"},{302,L"▜"},{303,L"✉"},
 };
+
+string GetEngineChar(int i) {
+	int id = abs(i);
+	int count = floor((float)id / (float)Chars_Pos.size());
+	id = id - count * Chars_Pos.size();
+	return WStringToString(Chars_Pos[id]);
+}
 
 void StopGLFW() {
 	glfwTerminate();
@@ -218,8 +229,12 @@ bool GenerateFont_(l_Font font, string sceneid) {
 				charsInfo[WStringToString(Chars_Pos[c])] = CharInfo_;
 			}
 		}
-		Chars[font.id] = chars;
-		CharsInfo[font.id] = charsInfo;
+		unordered_map<string, unordered_map<string, GLuint>> chars_ = Chars[sceneid];
+		chars_[font.id] = chars;
+		Chars[sceneid] = chars_;
+		unordered_map<string, unordered_map<string, unordered_map<string, float>>> charsinfo_ = CharsInfo[sceneid];
+		charsinfo_[font.id] = charsInfo;
+		CharsInfo[sceneid] = charsinfo_;
 
 		fonts.push_back(font.id);
 		SceneFonts[sceneid] = fonts;
@@ -484,6 +499,11 @@ void GLFWInstall() {
 	CreateTexture("error", GetSessionInfo("SourcePath") + "engine/error.png");
 
 	CreateFont("default", GetSessionInfo("SourcePath") + "engine/fonts/default.png");
+
+	CreateScene(ErrorScene);
+	SetSceneBackgroundColor(ErrorScene, Color(255,0,0));
+	//CreateText("error_text", ErrorScene, "sex");
+	//GenerateFont_(Fonts["default"], ErrorScene);
 }
 
 void PE_GLFW() {
@@ -809,6 +829,7 @@ void RenderText(Window window, string id, l_Text text, int width, int height, Sc
 	if (text.id != "" && text.font != "") {
 		l_Font font = Fonts[text.font];
 		wstring wtext = StringToWString(text.text);
+		int length = wtext.length();
 
 		float x = text.position.x;
 		float y = text.position.y;
@@ -821,7 +842,10 @@ void RenderText(Window window, string id, l_Text text, int width, int height, Sc
 
 		float Zoom = scene.CameraZoom;
 
-		int length = wtext.length();
+		float xw = float(width);
+		float yw = float(height);
+
+		float HeightScale = (pow(2, -text.height));
 		for (int i = 0; i < length; i++) {
 			wchar_t c = wtext[i];
 
@@ -838,9 +862,6 @@ void RenderText(Window window, string id, l_Text text, int width, int height, Sc
 
 			float CamPosX = scene.CameraPosition.x * Zoom;
 			float CamPosY = scene.CameraPosition.y * Zoom;
-
-			float xw = float(width);
-			float yw = float(height);
 
 			wstring charid = Chars_IDS[int(c)];
 			if (charid == L"") {
@@ -866,11 +887,10 @@ void RenderText(Window window, string id, l_Text text, int width, int height, Sc
 			l_Vector2 LT = l_Vector2(TLX, TLY);
 			l_Vector2 RB = l_Vector2(BRX, BRY);
 			l_Vector2 RT = l_Vector2(TRX, TRY);
-			l_Vector2 CENTER = l_Vector2(xpos+w/2,ypos+h/2);
+			l_Vector2 CENTER = l_Vector2(xpos + w / 2, ypos + h / 2);
 
-			float HeightScale = (pow(2, -text.height));
 			float OutNumber = 400 * Zoom * HeightScale;
-			bool Out = PointOutside(window, CENTER.x, CENTER.y, scene, xw, yw, FloatToInt(OutNumber));
+			bool Out = (text.alwaysrender? false : PointOutside(window, CENTER.x, CENTER.y, scene, xw, yw, FloatToInt(OutNumber)));
 
 			bool dontrender = false;
 			bool donthaschar = false;
@@ -882,7 +902,7 @@ void RenderText(Window window, string id, l_Text text, int width, int height, Sc
 				dontrender = true;
 			}
 			if (!dontrender) {
-				GLuint texture = Chars[text.font][WStringToString(charid)];
+				GLuint texture = Chars[text.sceneid][text.font][WStringToString(charid)];
 				glBindTexture(GL_TEXTURE_2D, texture);
 				UpdateShader(window, text.shader, text.color, width, height, false, text.height, i, length, Zoom);
 
@@ -891,17 +911,17 @@ void RenderText(Window window, string id, l_Text text, int width, int height, Sc
 					LT.x - CamPosX,LT.y - CamPosY, 0,    0,      mirrory,
 					RT.x - CamPosX,RT.y - CamPosY, 0,    mirrorx,mirrory,
 					RB.x - CamPosX,RB.y - CamPosY, 0,    mirrorx,0
-				});
+					});
 			}
-			float otstyp = (text.mono? 0 : -0.5 / Zoom);
+			float otstyp = (text.mono ? 0 : -0.5 / Zoom);
 			if (!donthaschar && !text.mono) {
-				unordered_map<string, float> info = CharsInfo[text.font][WStringToString(charid)];
-				otstyp = (info["otstyp"]==0?0:(0.128*specialotstyp/Zoom)) - (1-info["otstyp"])/Zoom;
+				unordered_map<string, float> info = CharsInfo[text.sceneid][text.font][WStringToString(charid)];
+				otstyp = (info["otstyp"] == 0 ? 0 : (0.128 * specialotstyp / Zoom)) - (1 - info["otstyp"]) / Zoom;
 			}
 			if (!((c >= 1 && c <= 12)) || c == 0) { x += (sizex + otstyp * Zoom) * scale; }
 
 			if (c == 10) {
-				y -= (sizey + 0.128*specialotstyp) * scale;
+				y -= (sizey + 0.128 * specialotstyp) * scale;
 				x = text.position.x;
 			}
 			if (c == 1) {
@@ -911,7 +931,7 @@ void RenderText(Window window, string id, l_Text text, int width, int height, Sc
 				mirrorx = mirrorx * -1;
 			}
 			if (c == 2) {
-				y += 0.2  * scale;
+				y += 0.2 * scale;
 			}
 			if (c == 3) {
 				y -= 0.2 * scale;
@@ -940,10 +960,10 @@ void RenderText(Window window, string id, l_Text text, int width, int height, Sc
 	}
 }
 
-void ErrorScene(string text) {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	glClearColor(0,0,0,1);
+void SetErrorScene(string text, Window window) {
+	if (window.scene != ErrorScene) {
+		SetWindowScene(window.id, ErrorScene, true);
+	}
 }
 
 void Render() {
@@ -996,11 +1016,11 @@ void Render() {
 						}
 					}
 					else {
-						ErrorScene("Camera zoom cannot be equal to 0!");
+						SetErrorScene("Camera zoom cannot be equal to 0!", window);
 					}
 				}
 				else {
-					ErrorScene("Empty scene");
+					SetErrorScene("Empty scene", window);
 				}
 				glfwSwapBuffers(window.glfw);
 				/*------------[Конец рисования]----------------*/

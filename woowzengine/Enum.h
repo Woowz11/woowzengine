@@ -1,0 +1,36 @@
+#pragma once
+
+#include <unordered_map>
+#include "Base.h"
+
+using namespace std;
+
+unordered_map<string, long> EnumMessageBoxType{
+    {"",MB_ICONINFORMATION},{"Warning",MB_ICONWARNING},{"Warn",MB_ICONWARNING},{"W",MB_ICONWARNING},{"Information",MB_ICONINFORMATION},{"Info",MB_ICONINFORMATION},{"I",MB_ICONINFORMATION},{"Question",MB_ICONQUESTION},{"Quest",MB_ICONQUESTION},{"Q",MB_ICONQUESTION},{"Error",MB_ICONERROR},{"Err",MB_ICONERROR},{"E",MB_ICONERROR}
+};
+
+unordered_map<string, long> EnumMessageBoxButtons{
+    {"",MB_OK},{"OK",MB_OK},
+    {"CANCEL,TRY,CONTINUE",MB_CANCELTRYCONTINUE},{"CANCEL,CONTINUE,TRY",MB_CANCELTRYCONTINUE},
+    {"TRY,CANCEL,CONTINUE",MB_CANCELTRYCONTINUE},{"TRY,CONTINUE,CANCEL",MB_CANCELTRYCONTINUE},
+    {"CONTINUE,TRY,CANCEL",MB_CANCELTRYCONTINUE},{"CONTINUE,CANCEL,TRY",MB_CANCELTRYCONTINUE},
+    {"STOP,TRY,SKIP",MB_ABORTRETRYIGNORE},{"STOP,SKIP,TRY",MB_ABORTRETRYIGNORE},
+    {"TRY,STOP,SKIP",MB_ABORTRETRYIGNORE},{"TRY,SKIP,STOP",MB_ABORTRETRYIGNORE},
+    {"SKIP,TRY,STOP",MB_ABORTRETRYIGNORE},{"SKIP,STOP,TRY",MB_ABORTRETRYIGNORE},
+    {"OK,CANCEL",MB_OKCANCEL},{"CANCEL,OK",MB_OKCANCEL},{"RETRY,CANCEL",MB_RETRYCANCEL},{"CANCEL,RETRY",MB_RETRYCANCEL},
+    {"YES,NO",MB_YESNO},{"NO,YES",MB_YESNO},
+    {"YES,NO,CANCEL",MB_YESNOCANCEL},{"YES,CANCEL,NO",MB_YESNOCANCEL},
+    {"NO,YES,CANCEL",MB_YESNOCANCEL},{"NO,CANCEL,YES",MB_YESNOCANCEL},
+    {"CANCEL,NO,YES",MB_YESNOCANCEL},{"CANCEL,YES,NO",MB_YESNOCANCEL}
+};
+
+long GetFromMap(unordered_map<string, long> map , string key) {
+    auto it = map.find(key);
+    if (it != map.end()) {
+        return it->second;
+    }
+    else {
+        PW("Not found value in map<string,long>! GetFromMap(map,'"+key+"')","W0001");
+        return map[""];
+    }
+}

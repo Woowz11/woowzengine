@@ -1,6 +1,8 @@
 ﻿#pragma warning(disable : 4244)
 #pragma warning(disable : 4267)
 
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <lua/lua.hpp>
 #include <sol/sol.hpp>
 #include <filesystem>
@@ -22,6 +24,7 @@
 #include "fcntl.h"
 #include "io.h"
 #include "stdio.h"
+#include "Enum.h"
 
 #include "Color.h"
 #include "Vector2.h"
@@ -1564,6 +1567,85 @@ string l_GetUnicodeChar(int i) {
 	return WStringToString(WCharToWString(c));
 }
 
+/*Создаёт message box*/
+void l_MessageBox(sol::object title, sol::object text, sol::object messageboxtype, sol::object messageboxbuttons, bool blockprogram, sol::function button1, sol::function button2, sol::function button3) {
+	if (SafeMode()) {
+		PW("Function [MessageBox('" + ToString(title, "New Message Box") + "','" + ToString(text, "Hello world!") + "','" + ToString(messageboxtype,"") + "')] cannot be started in SafeMode!", "LW0042");
+	}
+	else {
+		long icon = GetFromMap(EnumMessageBoxType, ToString(messageboxtype, ""));
+		long buttons = GetFromMap(EnumMessageBoxButtons, ToString(messageboxbuttons, ""));
+		int result = MessageBoxW(NULL, StringToLPCWSTR(ToString(text, "Hello world!")), ConstCharToConstWChar(StringToConstChar(ToString(title,"New Message Box"))), icon | buttons | (blockprogram?MB_TASKMODAL:MB_APPLMODAL));
+		if (buttons == MB_OK) {
+			if (result == IDOK) {
+				button1();
+			}
+		}
+		else if (buttons == MB_ABORTRETRYIGNORE) {
+			if (result == IDABORT) {
+				button1();
+			}
+			else if (result == IDRETRY) {
+				button2();
+			}
+			else if (result == IDIGNORE) {
+				button3();
+			}
+		}
+		else if (buttons == MB_CANCELTRYCONTINUE) {
+			if (result == IDCANCEL) {
+				button1();
+			}
+			else if (result == IDTRYAGAIN) {
+				button2();
+			}
+			else if (result == IDCONTINUE) {
+				button3();
+			}
+		}
+		else if (buttons == MB_OKCANCEL) {
+			if (result == IDOK) {
+				button1();
+			}
+			else if (result == IDCANCEL) {
+				button2();
+			}
+		}
+		else if (buttons == MB_RETRYCANCEL) {
+			if (result == IDRETRY) {
+				button1();
+			}
+			else if (result == IDCANCEL) {
+				button2();
+			}
+		}
+		else if (buttons == MB_YESNO) {
+			if (result == IDYES) {
+				button1();
+			}
+			else if (result == IDNO) {
+				button2();
+			}
+		}
+		else if (buttons == MB_YESNOCANCEL) {
+			if (result == IDYES) {
+				button1();
+			}
+			else if (result == IDNO) {
+				button2();
+			}
+			else if (result == IDCANCEL) {
+				button3();
+			}
+		}
+	}
+}
+
+/*Получить символ из woowzengine таблицы*/
+string l_GetEngineChar(int i) {
+	return GetEngineChar(i);
+}
+
 /*Зона woowzengine*/
 
 l_Color ObjToColor(sol::object obj, l_Color ifnil) {
@@ -1586,13 +1668,14 @@ string l_WIP() {
 }
 
 /*Функция для теста других функций (ЧИСТО ДЛЯ WOOWZ11)*/
-void l_TestFunction(int i) {
+void l_TestFunction(string input, string output) {
 	if (StringToBool(GetSettingsInfo("Console")) && !SafeMode()) {
-		wchar_t c(i);
-		wcout << WCharToWString(c) << endl;
+		
+		
+
 	}
 	else {
-		PW("This function is a test function! It can be called only when the console is enabled, also it may change every version of the engine, it cannot be used. TestFunction()", "LW0041");
+		PW("This function is a test function! It can be called only when the console is enabled and safe mode disabled, also it may change every version of the engine, it cannot be used. TestFunction()", "LW0041");
 	}
 }
 
@@ -2026,7 +2109,7 @@ void LuaCompile() {
 	lua.set_function("FRandom", &l_FRandom);
 	lua.set_function("FRRandom", &l_FRRandom);
 	lua.set_function("GetSprites", &l_GetSprites);
-	lua.set_function("NoWait", &l_NoWait);
+	lua.set_function("NewThread", &l_NoWait);
 	lua.set_function("GetLanguage", &l_GetLanguage);
 	lua.set_function("GetSystemLanguage", &l_GetSystemLanguage);
 	lua.set_function("HasSprite", &l_HasSprite);
@@ -2093,6 +2176,8 @@ void LuaCompile() {
 	lua.set_function("GetSpriteUVCorner", &l_GetSpriteCorner);
 	lua.set_function("GetSpriteCorner", &l_GetSpriteCorner);
 	lua.set_function("GetUnicodeChar", &l_GetUnicodeChar);
+	lua.set_function("GetEngineChar", &l_GetEngineChar);
+	lua.set_function("MessageBox", &l_MessageBox);
 
 	lua.set_function("GetWindowTitle", &l_WIP);
 	lua.set_function("GetWindowAutoScale", &l_WIP);

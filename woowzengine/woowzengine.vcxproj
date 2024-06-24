@@ -133,6 +133,7 @@
     <ClInclude Include="Cycles.h" />
     <ClInclude Include="Discord.h" />
     <ClInclude Include="Easyer.h" />
+    <ClInclude Include="Enum.h" />
     <ClInclude Include="Files.h" />
     <ClInclude Include="GLFW.h" />
     <ClInclude Include="LIBS\discord-files\achievement_manager.h" />

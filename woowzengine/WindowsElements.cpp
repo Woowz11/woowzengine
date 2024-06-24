@@ -39,7 +39,7 @@ void MessageBoxFatal(string Error, string Code, bool BrokenLogs) {
 	if (!BrokenLogs) { LogsFatal(); }
 	string LookAtLog = "Look at log!";
 	if (BrokenLogs) { LookAtLog = "Logs corrupted!"; }
-	int MBID = MessageBox(NULL, StringToLPCWSTR(Error+"\n"+LookAtLog+" ("+Code+")"), (LPCWSTR)L"WoowzEngine fatal error!", MB_OK | MB_ICONERROR);
+	int MBID = MessageBox(NULL, StringToLPCWSTR(Error+"\n"+LookAtLog+" ("+Code+")"), ConstCharToConstWChar(StringToConstChar("WoowzEngine fatal error (" + Code + ")!")), MB_OK | MB_ICONERROR);
 
 	if (MBID == IDOK) {
 		Exit();
