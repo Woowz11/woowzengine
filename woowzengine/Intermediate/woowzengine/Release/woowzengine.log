@@ -1,7 +1,7 @@
-﻿  OpenGame.cpp
+﻿  GLFW.cpp
   Создание кода
-  373 of 19389 functions ( 1.9%) were compiled, the rest were copied from previous compilation.
-    10 functions were new in current compilation
-    173 functions had inline decision re-evaluated but remain unchanged
+  2 of 21134 functions (<0.1%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    185 functions had inline decision re-evaluated but remain unchanged
   Создание кода завершено
   woowzengine.vcxproj -> F:\woowzengine\WoowzEngine\Build\woowzengine\Release\woowzengine.exe

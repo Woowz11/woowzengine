@@ -34,7 +34,8 @@ void RenderSprite(Window window, string id, l_Sprite sprite, int width, int heig
 void Render();
 bool HasWindow(string id);
 Window GetWindowByID(string id);
-void SetWindowToMain(string id);
+void SetWindowMain(string id);
+void SetWindowImGui(string id);
 void SetWindowScale(string id, float scale = 1);
 void PE_GLFW();
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -164,3 +165,4 @@ string GetTextFont(string sceneid, string id);
 l_Vector2 GetSpriteCorner(string sceneid, string id, bool left, bool top);
 l_Vector2 GetSpriteCornerUV(string sceneid, string id, bool left, bool top);
 string GetEngineChar(int i);
+int GetCharsCount();

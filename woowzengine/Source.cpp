@@ -18,7 +18,7 @@
 
 using namespace std;
 
-string EngineVersion = "0.0.2f";
+string EngineVersion = "0.0.3";
 bool DebugVersion = false;
 
 string EngineName = "woowzengine.exe";

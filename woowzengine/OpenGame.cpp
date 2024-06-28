@@ -21,6 +21,7 @@
 #include "ResourceManager.h"
 #include "Discord.h"
 #include "WConst.h"
+#include "ImGui_.h"
 #include "SessionInfo.h"
 
 using namespace std;
@@ -152,7 +153,7 @@ void CheckFiles(string ev) {
 	}
 	CreateValueJson(JGame, "Name", "Example Game");
 	CreateValueJson(JGame, "Version", "0.0.0");
-	CreateValueJson(JGame, "Author", "Unknown");
+	CreateValueJson(JGame, "Author", "Anonymous");
 
 	GetOrCreateFile(JSettings);
 	if (!JSONValid(JSettings)) {

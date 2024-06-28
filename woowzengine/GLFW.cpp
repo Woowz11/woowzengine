@@ -34,6 +34,10 @@
 #include "Cycles.h"
 #include "Texture.h"
 #include "WConst.h"
+#include "imgui.h"
+#include "imgui_impl_opengl3.h"
+#include "imgui_impl_glfw.h"
+#include "ImGui_.h"
 
 #include "Color.h"
 #include "Vector2.h"
@@ -53,6 +57,7 @@ unordered_map<string, GLuint> Textures;
 unordered_map<string, Texture> Textures_;
 unordered_map<string, unordered_map<string, string>> Textures_Info;
 string MainWindow = "";
+string ImGuiWindow = "";
 
 unordered_map <string, vector <l_Sprite>> SceneSprites;
 unordered_map <string, vector <l_Text>> SceneTexts;
@@ -65,6 +70,41 @@ unordered_map<string, unordered_map<string, unordered_map<string, GLuint>>> Char
 unordered_map<string, unordered_map<string, unordered_map<string, unordered_map<string, float>>>> CharsInfo;
 
 string NowWindow;
+
+//unordered_map<string, ImGuiContext*> ImGuiContexts;
+ImGuiContext* MainImGuiContext = nullptr;
+GLFWwindow* MainImGuiContextW = nullptr;
+
+void AddContext(string id, GLFWwindow* window) {
+	if (MainImGuiContext != nullptr) {
+		glfwMakeContextCurrent(MainImGuiContextW);
+		ImGui_ImplOpenGL3_Shutdown();
+		ImGui_ImplGlfw_Shutdown();
+		ImGui::DestroyContext(MainImGuiContext);
+	}
+	if (window != nullptr) {
+		glfwMakeContextCurrent(window);
+		MainImGuiContextW = window;
+		MainImGuiContext = ImGui::CreateContext();
+		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+
+		ImGui_ImplGlfw_InitForOpenGL(window, true);
+		ImGui_ImplOpenGL3_Init("#version 330");
+		ImGuiStyle_();
+	}
+	else {
+		MainImGuiContextW = nullptr;
+		MainImGuiContext = nullptr;
+	}
+}
+
+/*void RemoveContext(string id) {
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
+	ImGuiContexts.erase(id);
+}*/
 
 void UpdateTexturesWindowCreated() {
 	for (auto pair : Windows) {
@@ -130,6 +170,9 @@ unordered_map<int, wstring> Chars_Pos = {
 	{272,L"‣"},{273,L"◼"},{274,L"◾"},{275,L"●"},{276,L"▞"},{277,L"Ω"},{278,L"α"},{279,L"β"},{280,L"γ"},{281,L"δ"},{282,L"θ"},{283,L"♥"},{284,L"★"},{285,L"♀"},{286,L"♂"},{287,L"♫"},
 	{288,L"₣"},{289,L"ε"},{290,L"π"},{291,L"▌"},{292,L"▐"},{293,L"▀"},{294,L"▄"},{295,L"▖"},{296,L"▗"},{297,L"▘"},{298,L"▝"},{299,L"▙"},{300,L"▟"},{301,L"▛"},{302,L"▜"},{303,L"✉"},
 };
+int GetCharsCount() {
+	return Chars_Pos.size();
+}
 
 string GetEngineChar(int i) {
 	int id = abs(i);
@@ -138,7 +181,11 @@ string GetEngineChar(int i) {
 	return WStringToString(Chars_Pos[id]);
 }
 
+wstring FullBlockSymbols = L"█▓▒░卍卐◀▶▲▼▞▌▐▀▄▖▗▘▝▙▟▛▜";
+
 void StopGLFW() {
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
 	glfwTerminate();
 }
 
@@ -220,7 +267,7 @@ bool GenerateFont_(l_Font font, string sceneid) {
 				if (Chars_Pos[c] == L" " && otstyp == 0) {
 					otstyp = 0.5;
 				}
-				if (Chars_Pos[c] == L"█" || Chars_Pos[c] == L"▓" || Chars_Pos[c] == L"▒" || Chars_Pos[c] == L"░" || Chars_Pos[c] == L"▞") {
+				if (FullBlockSymbols.find(Chars_Pos[c]) != wstring::npos && otstyp != 0) {
 					otstyp = 1;
 				}
 				CharInfo_["otstyp"] = otstyp;
@@ -493,7 +540,10 @@ void GLFWInstall() {
 	Windows_2[window_.glfw] = "";
 	if (!StringToBool(GetSessionInfo("Debug"))) { glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE); }
 
+	glfwSwapInterval(1); /*Включает vsync*/
+
 	SetSessionInfo("MainWindow", "");
+	SetSessionInfo("ImGui", "");
 
 	CreateTexture("default", GetSessionInfo("SourcePath") + "engine/default.png");
 	CreateTexture("error", GetSessionInfo("SourcePath") + "engine/error.png");
@@ -502,8 +552,9 @@ void GLFWInstall() {
 
 	CreateScene(ErrorScene);
 	SetSceneBackgroundColor(ErrorScene, Color(255,0,0));
-	//CreateText("error_text", ErrorScene, "sex");
-	//GenerateFont_(Fonts["default"], ErrorScene);
+
+	IMGUI_CHECKVERSION();
+	P("ImGui","ImGui Loaded! (minor-"+to_string(IMGUI_VERSION_NUM / 10000)+",major-" + to_string((IMGUI_VERSION_NUM / 100)%100) + ",patch-" + to_string(IMGUI_VERSION_NUM % 100) + ")");
 }
 
 void PE_GLFW() {
@@ -971,30 +1022,35 @@ void Render() {
 		for (auto const& [id, window] : Windows) {
 			NowWindow = id;
 			if (!glfwWindowShouldClose(window.glfw)) {
-				glfwMakeContextCurrent(window.glfw);
 				glfwPollEvents();
+				glfwMakeContextCurrent(window.glfw);
+
 				int width = 1, height = 1;
 				glfwGetFramebufferSize(window.glfw, &width, &height);
 				float scale = window.scale;
 				glViewport(0, 0, round(width * scale), round(height * scale));
 				/*----------------[Рисование]------------------*/
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				glEnable(GL_BLEND);
+				glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+				if (window.scene == "") {
+					glClearColor(0, 0, 1, 1);
+				}
+				else {
+					Scene scene = GetScene(window.scene);
+					if (scene.windowid != "") {
+						float alpha = scene.BackgroundColor.GetA();
+						glClearColor(scene.BackgroundColor.GetR() * alpha, scene.BackgroundColor.GetG() * alpha, scene.BackgroundColor.GetB() * alpha, alpha);
+					}
+					else {
+						glClearColor(0, 0, 1, 1);
+					}
+				}
+				glEnable(GL_TEXTURE_2D);
+
 				if (window.scene != "") {
 					Scene scene = GetScene(window.scene);
 					if (scene.CameraZoom != 0) {
-						glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-						glEnable(GL_BLEND);
-						glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-
-						if (scene.windowid != "") {
-							float alpha = scene.BackgroundColor.GetA();
-							glClearColor(scene.BackgroundColor.GetR() * alpha, scene.BackgroundColor.GetG() * alpha, scene.BackgroundColor.GetB() * alpha, alpha);
-						}
-						else {
-							glClearColor(0, 0, 0, 1);
-						}
-
-
-						glEnable(GL_TEXTURE_2D);
 						vector<l_Sprite> sprites = SceneSprites[window.scene];
 						if (sprites.size() > 0) {
 
@@ -1022,6 +1078,23 @@ void Render() {
 				else {
 					SetErrorScene("Empty scene", window);
 				}
+
+				if (id != "" && id == ImGuiWindow) {
+					ImGui::SetCurrentContext(MainImGuiContext);
+
+					ImGui_ImplGlfw_NewFrame();
+					ImGui_ImplOpenGL3_NewFrame();
+
+					ImGui::NewFrame();
+					{
+						ImGuiRender(id);
+					}
+					ImGui::EndFrame();
+
+					ImGui::Render();
+					ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+				}
+
 				glfwSwapBuffers(window.glfw);
 				/*------------[Конец рисования]----------------*/
 				PE_GLFW();
@@ -1912,13 +1985,30 @@ bool HasWindow(string id) {
 }
 
 /*Сделать окно главным*/
-void SetWindowToMain(string id) {
+void SetWindowMain(string id) {
 	if (HasWindow(id)) {
 		MainWindow = id;
-		SetSessionInfo("MainWindow",id);
+		SetSessionInfo("MainWindow", id);
 	}
 	else {
-		PW("Window not found! SetWindowToMain('"+id+"')","W0005");
+		PW("Window not found! SetWindowToMain('" + id + "')", "W0005");
+	}
+}
+
+/*Установить окну ImGui*/
+void SetWindowImGui(string id) {
+	if (id == "") {
+		ImGuiWindow = id;
+		SetSessionInfo("ImGui", id);
+		AddContext(id,nullptr);
+	}
+	if (HasWindow(id)) {
+		ImGuiWindow = id;
+		SetSessionInfo("ImGui", id);
+		AddContext(id,GetWindowByID(id).glfw);
+	}
+	else {
+		PW("Window not found! SetWindowImGui('" + id + "')", "W0008");
 	}
 }
 
@@ -2153,30 +2243,41 @@ map<string, int> GetPressedKeys() {
 		}
 	}
 	else {
-		PE("Can't get pressed keys! There's no window for that!","E0016");
+		PE("Can't get pressed keys! You need at least one window to use it! GetPressedKeys()","E0016");
 	}
 	return k;
 }
 
 void MouseCallback(GLFWwindow* window_, int key_, int action, int mods) {
+	ImGuiIO& io = ImGui::GetIO();
 	Window window = GetWindowByWindow(window_);
-	if (action == GLFW_PRESS) {
-		if (window.WindowMousePress.valid()) {
-			StartFunction(window.WindowMousePress, { key_ + 1 });
-		}
-		PressedMouse[key_] = 1;
+
+	bool b = false;
+	if (MainImGuiContextW!=nullptr) {
+		b = io.WantCaptureMouse;
 	}
-	if (action == GLFW_RELEASE) {
-		if (window.WindowMouseRelease.valid()) {
-			StartFunction(window.WindowMouseRelease, { key_ + 1 });
-		}
-		PressedMouse[key_] = 0;
+	if (b) {
+		io.MouseDown[key_] = (action == GLFW_PRESS || action == GLFW_REPEAT);
 	}
-	if (action == GLFW_REPEAT) {
-		if (window.WindowMouseRepeat.valid()) {
-			StartFunction(window.WindowMouseRepeat, { key_ + 1 });
+	else {
+		if (action == GLFW_PRESS) {
+			if (window.WindowMousePress.valid()) {
+				StartFunction(window.WindowMousePress, { key_ + 1 });
+			}
+			PressedMouse[key_] = 1;
 		}
-		PressedMouse[key_] = PressedMouse[key_] + 1;
+		if (action == GLFW_RELEASE) {
+			if (window.WindowMouseRelease.valid()) {
+				StartFunction(window.WindowMouseRelease, { key_ + 1 });
+			}
+			PressedMouse[key_] = 0;
+		}
+		if (action == GLFW_REPEAT) {
+			if (window.WindowMouseRepeat.valid()) {
+				StartFunction(window.WindowMouseRepeat, { key_ + 1 });
+			}
+			PressedMouse[key_] = PressedMouse[key_] + 1;
+		}
 	}
 }
 
@@ -2214,10 +2315,14 @@ Window CreateWindowGLFW(string id, int sizex, int sizey, string title) {
 				return Window();
 			}
 			glfwMakeContextCurrent(window);
+
 			Window window_ = Window(id,window);
 			CreateBuffers(window_);
 			window_.StartSizeX = 500;
 			window_.StartSizeY = 500;
+
+			//AddContext(id,window);
+
 			glfwSetKeyCallback(window, KeyCallback);
 			glfwSetMouseButtonCallback(window, MouseCallback);
 
@@ -2252,6 +2357,7 @@ void DestroyWindowGLFW(string id) {
 		for (auto it = window.Shaders.begin(); it != window.Shaders.end(); ++it) {
 			glDeleteProgram(it->second);
 		}
+		//RemoveContext(id);
 		glfwDestroyWindow(window.glfw);
 		P("WINDOW", "Window [" + id + "] destroyed!");
 		Windows_2.erase(window.glfw);

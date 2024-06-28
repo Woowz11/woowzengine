@@ -25,6 +25,7 @@
 #include "io.h"
 #include "stdio.h"
 #include "Enum.h"
+#include "ImGui_.h"
 
 #include "Color.h"
 #include "Vector2.h"
@@ -53,6 +54,8 @@ string EmptyTexture = "New Texture";
 string EmptyText = "New Text";
 string EmptyShader = "default";
 string EmptyFont = "default";
+string EmptyImGuiWindow = "New ImGui Window";
+string EmptyImGuiElement = "New ImGui Element";
 string EmptyDUser = "495215150165524481";
 string EmptyImage;
 
@@ -549,7 +552,7 @@ bool l_HasWindow(sol::object id) {
 
 /*Делает окно главным*/
 void l_SetWindowMain(sol::object id) {
-	SetWindowToMain(ToString(id,EmptyWindow));
+	SetWindowMain(ToString(id,EmptyWindow));
 }
 
 /*Получить айди главного окна*/
@@ -1646,6 +1649,42 @@ string l_GetEngineChar(int i) {
 	return GetEngineChar(i);
 }
 
+/*Делает окно для ImGui*/
+void l_SetWindowImGui(sol::object id) {
+	SetWindowImGui(ToString(id, EmptyWindow));
+}
+
+/*Создать окно в ImGui*/
+void l_CreateImGuiWindow(sol::object id, sol::object title) {
+	CreateImGuiWindow(ToString(id,EmptyImGuiWindow),ToString(title,"New ImGui"));
+}
+
+/*Создать элемент в окне ImGui*/
+void l_CreateImGuiElement(sol::object id, sol::object windowid, sol::object type) {
+	CreateImGuiElement(ToString(id,EmptyImGuiElement),ToString(windowid,EmptyImGuiWindow),ToString(type,"Text"));
+}
+
+/*Изменить текст элемента ImGui*/
+void l_SetImGuiElementText(sol::object id, sol::object text) {
+	SetImGuiElementText(ToString(id,EmptyImGuiElement),ToString(text,"New Text!"));
+}
+
+/*Изменить цвет элемента ImGui*/
+void l_SetImGuiElementColor(sol::object id, sol::object color) {
+	SetImGuiElementColor(ToString(id, EmptyImGuiElement),ObjToColor(color,l_Color(255,255,255)));
+}
+
+/*Возвращает случайный цвет*/
+l_Color l_RandomColor(bool WithAlpha) {
+	return l_Color(l_FRRandom(0, 255), l_FRRandom(0, 255), l_FRRandom(0, 255), (WithAlpha ? l_FRRandom(0, 255) : 255));
+}
+
+/*Изменить ивент элемента ImGui*/
+void l_SetImGuiElementEvent(sol::object id, sol::function func) {
+	SetImGuiElementEvent(ToString(id, EmptyImGuiElement), func);
+}
+
+
 /*Зона woowzengine*/
 
 l_Color ObjToColor(sol::object obj, l_Color ifnil) {
@@ -1960,6 +1999,7 @@ void LuaCompile() {
 	lua["Back"] = sol::as_table(l_Vector3(0, 0, -1));
 	lua["ErrorColor"] = sol::as_table(ErrorColor);
 	lua["StringMax"] = sol::as_table(4294967295);
+	lua["EngineChars"] = sol::as_table(GetCharsCount());
 
 	/*Функции*/
 	lua.set_function("CheckLua", &l_CheckLua);
@@ -2178,12 +2218,22 @@ void LuaCompile() {
 	lua.set_function("GetUnicodeChar", &l_GetUnicodeChar);
 	lua.set_function("GetEngineChar", &l_GetEngineChar);
 	lua.set_function("MessageBox", &l_MessageBox);
+	lua.set_function("SetWindowImGui", &l_SetWindowImGui);
+	lua.set_function("CreateImGuiWindow", &l_CreateImGuiWindow);
+	lua.set_function("CreateImGuiElement", &l_CreateImGuiElement);
+	lua.set_function("SetImGuiElementText", &l_SetImGuiElementText);
+	lua.set_function("SetImGuiElementColor", &l_SetImGuiElementColor);
+	lua.set_function("RandomColor", &l_RandomColor);
+	lua.set_function("SetImGuiElementEvent", &l_SetImGuiElementEvent);
 
 	lua.set_function("GetWindowTitle", &l_WIP);
 	lua.set_function("GetWindowAutoScale", &l_WIP);
 	lua.set_function("GetWindowResizable", &l_WIP);
 	lua.set_function("GetTextureBlur", &l_WIP);
 	lua.set_function("GetSceneBackgroundColor", &l_WIP);
+	lua.set_function("GetWindowImGui", &l_WIP);
+	lua.set_function("GetImGuiElementText", &l_WIP);
+	lua.set_function("GetImGuiElementColor", &l_WIP);
 
 	P("LUA", "Lua functions and etc. are loaded!");
 	P("LUA", "Start '"+ GetEngineInfo("StartScript") +".lua' script...");

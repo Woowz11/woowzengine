@@ -61,7 +61,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>F:\woowzengine\woowzengine\LIBS\glad;F:\woowzengine\woowzengine\LIBS\KHR;F:\woowzengine\woowzengine\LIBS;F:\woowzengine\woowzengine\LIBS\GLM;F:\woowzengine\woowzengine\LIBS\JSON\include;F:\woowzengine\woowzengine\LIBS\GLFW;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>F:\woowzengine\woowzengine\imgui;F:\woowzengine\woowzengine\LIBS\glad;F:\woowzengine\woowzengine\LIBS\KHR;F:\woowzengine\woowzengine\LIBS;F:\woowzengine\woowzengine\LIBS\GLM;F:\woowzengine\woowzengine\LIBS\JSON\include;F:\woowzengine\woowzengine\LIBS\GLFW;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile />
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -80,7 +80,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>F:\woowzengine\woowzengine\LIBS\glad;F:\woowzengine\woowzengine\LIBS\KHR;F:\woowzengine\woowzengine\LIBS;F:\woowzengine\woowzengine\LIBS\GLM;F:\woowzengine\woowzengine\LIBS\JSON\include;F:\woowzengine\woowzengine\LIBS\GLFW;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>F:\woowzengine\woowzengine\imgui;F:\woowzengine\woowzengine\LIBS\glad;F:\woowzengine\woowzengine\LIBS\KHR;F:\woowzengine\woowzengine\LIBS;F:\woowzengine\woowzengine\LIBS\GLM;F:\woowzengine\woowzengine\LIBS\JSON\include;F:\woowzengine\woowzengine\LIBS\GLFW;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile />
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -101,6 +101,14 @@
     <ClCompile Include="Easyer.cpp" />
     <ClCompile Include="Files.cpp" />
     <ClCompile Include="GLFW.cpp" />
+    <ClCompile Include="imgui\imgui.cpp" />
+    <ClCompile Include="imgui\imgui_demo.cpp" />
+    <ClCompile Include="imgui\imgui_draw.cpp" />
+    <ClCompile Include="imgui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="imgui\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="imgui\imgui_tables.cpp" />
+    <ClCompile Include="imgui\imgui_widgets.cpp" />
+    <ClCompile Include="ImGui_.cpp" />
     <ClCompile Include="LIBS\discord-files\achievement_manager.cpp" />
     <ClCompile Include="LIBS\discord-files\activity_manager.cpp" />
     <ClCompile Include="LIBS\discord-files\application_manager.cpp" />
@@ -136,6 +144,18 @@
     <ClInclude Include="Enum.h" />
     <ClInclude Include="Files.h" />
     <ClInclude Include="GLFW.h" />
+    <ClInclude Include="ImGuiElement_.h" />
+    <ClInclude Include="ImGuiWindow_.h" />
+    <ClInclude Include="imgui\imconfig.h" />
+    <ClInclude Include="imgui\imgui.h" />
+    <ClInclude Include="imgui\imgui_impl_glfw.h" />
+    <ClInclude Include="imgui\imgui_impl_opengl3.h" />
+    <ClInclude Include="imgui\imgui_impl_opengl3_loader.h" />
+    <ClInclude Include="imgui\imgui_internal.h" />
+    <ClInclude Include="imgui\imstb_rectpack.h" />
+    <ClInclude Include="imgui\imstb_textedit.h" />
+    <ClInclude Include="imgui\imstb_truetype.h" />
+    <ClInclude Include="ImGui_.h" />
     <ClInclude Include="LIBS\discord-files\achievement_manager.h" />
     <ClInclude Include="LIBS\discord-files\activity_manager.h" />
     <ClInclude Include="LIBS\discord-files\application_manager.h" />
