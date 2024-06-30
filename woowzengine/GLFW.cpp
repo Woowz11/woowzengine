@@ -71,7 +71,6 @@ unordered_map<string, unordered_map<string, unordered_map<string, unordered_map<
 
 string NowWindow;
 
-//unordered_map<string, ImGuiContext*> ImGuiContexts;
 ImGuiContext* MainImGuiContext = nullptr;
 GLFWwindow* MainImGuiContextW = nullptr;
 
@@ -87,7 +86,20 @@ void AddContext(string id, GLFWwindow* window) {
 		MainImGuiContextW = window;
 		MainImGuiContext = ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		io.IniFilename = NULL;
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+
+		ImFontConfig fc;
+		fc.OversampleH = 1;
+		fc.OversampleV = 1;
+		fc.PixelSnapH = 1;
+
+		static const ImWchar ranges[] = {
+			0x0020, 0x00FF,
+			0x0400, 0x044F,
+			0,
+		};
+		io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\Tahoma.ttf", 14, &fc, ranges);
 
 		ImGui_ImplGlfw_InitForOpenGL(window, true);
 		ImGui_ImplOpenGL3_Init("#version 330");
@@ -98,13 +110,6 @@ void AddContext(string id, GLFWwindow* window) {
 		MainImGuiContext = nullptr;
 	}
 }
-
-/*void RemoveContext(string id) {
-	ImGui_ImplOpenGL3_Shutdown();
-	ImGui_ImplGlfw_Shutdown();
-	ImGui::DestroyContext();
-	ImGuiContexts.erase(id);
-}*/
 
 void UpdateTexturesWindowCreated() {
 	for (auto pair : Windows) {
@@ -2321,8 +2326,6 @@ Window CreateWindowGLFW(string id, int sizex, int sizey, string title) {
 			window_.StartSizeX = 500;
 			window_.StartSizeY = 500;
 
-			//AddContext(id,window);
-
 			glfwSetKeyCallback(window, KeyCallback);
 			glfwSetMouseButtonCallback(window, MouseCallback);
 
@@ -2357,7 +2360,6 @@ void DestroyWindowGLFW(string id) {
 		for (auto it = window.Shaders.begin(); it != window.Shaders.end(); ++it) {
 			glDeleteProgram(it->second);
 		}
-		//RemoveContext(id);
 		glfwDestroyWindow(window.glfw);
 		P("WINDOW", "Window [" + id + "] destroyed!");
 		Windows_2.erase(window.glfw);

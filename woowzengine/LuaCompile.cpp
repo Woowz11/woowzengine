@@ -1666,7 +1666,7 @@ void l_CreateImGuiElement(sol::object id, sol::object windowid, sol::object type
 
 /*Изменить текст элемента ImGui*/
 void l_SetImGuiElementText(sol::object id, sol::object text) {
-	SetImGuiElementText(ToString(id,EmptyImGuiElement),ToString(text,"New Text!"));
+	SetImGuiElementText(ToString(id,EmptyImGuiElement),ToString(text,"New Text"));
 }
 
 /*Изменить цвет элемента ImGui*/
@@ -1682,6 +1682,26 @@ l_Color l_RandomColor(bool WithAlpha) {
 /*Изменить ивент элемента ImGui*/
 void l_SetImGuiElementEvent(sol::object id, sol::function func) {
 	SetImGuiElementEvent(ToString(id, EmptyImGuiElement), func);
+}
+
+/*Добавить точку к элементу ImGui*/
+void l_SetImGuiElementPoint(sol::object id, bool b) {
+	SetImGuiElementPoint(ToString(id, EmptyImGuiElement), b);
+}
+
+/*Добавить переменную (строку) к ImGui*/
+void l_SetImGuiElementStringValue(sol::object id, sol::object str) {
+	SetImGuiElementStringValue(ToString(id, EmptyImGuiElement), ToString(str, "String value!"));
+}
+
+/*Заставить элемент присоеденится к прошлому ImGui*/
+void l_SetImGuiElementConnect(sol::object id, bool b) {
+	SetImGuiElementConnect(ToString(id, EmptyImGuiElement), b);
+}
+
+/*Добавить подсказку к ImGui*/
+void l_SetImGuiElementTooltip(sol::object id, sol::object str) {
+	SetImGuiElementTooltip(ToString(id, EmptyImGuiElement), ToString(str, "New Tooltip"));
 }
 
 
@@ -2234,6 +2254,11 @@ void LuaCompile() {
 	lua.set_function("GetWindowImGui", &l_WIP);
 	lua.set_function("GetImGuiElementText", &l_WIP);
 	lua.set_function("GetImGuiElementColor", &l_WIP);
+
+	lua.set_function("SetImGuiElementPoint", &l_SetImGuiElementPoint);
+	lua.set_function("SetImGuiElementStringValue", &l_SetImGuiElementStringValue);
+	lua.set_function("SetImGuiElementConnect", &l_SetImGuiElementConnect);
+	lua.set_function("SetImGuiElementTooltip", &l_SetImGuiElementTooltip);
 
 	P("LUA", "Lua functions and etc. are loaded!");
 	P("LUA", "Start '"+ GetEngineInfo("StartScript") +".lua' script...");
