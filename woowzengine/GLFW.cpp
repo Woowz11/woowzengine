@@ -523,7 +523,7 @@ void GLFWInstall() {
 	}
 	else {
 		glfwGetVersion(&major, &minor, &revision);
-		P("GLFW", "GLFW Loaded! (minor-" + to_string(minor) + ",major-" + to_string(major) + ",revision-" + to_string(revision) + ")");
+		P("GLFW", "GLFW Loaded! ("+ to_string(major) +"."+ to_string(minor) +"."+ to_string(revision) +")");
 	}
 
 	if (!StringToBool(GetSessionInfo("Debug"))) { glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); }
@@ -531,7 +531,7 @@ void GLFWInstall() {
 
 	glfwMakeContextCurrent(window);
 	int version = gladLoadGL((GLADloadfunc)glfwGetProcAddress);
-	P("OpenGL", "OpenGL Loaded! (minor-" + to_string(GLAD_VERSION_MINOR(version)) + ",major-" + to_string(GLAD_VERSION_MAJOR(version)) + ")");
+	P("OpenGL", "OpenGL Loaded! ("+ to_string(GLAD_VERSION_MAJOR(version)) +"." + to_string(GLAD_VERSION_MINOR(version)) + ")");
 	if(SupportedWindowsVersion()){
 		glDebugMessageCallback(PE_OPENGL, nullptr);
 	}
@@ -559,7 +559,7 @@ void GLFWInstall() {
 	SetSceneBackgroundColor(ErrorScene, Color(255,0,0));
 
 	IMGUI_CHECKVERSION();
-	P("ImGui","ImGui Loaded! (minor-"+to_string(IMGUI_VERSION_NUM / 10000)+",major-" + to_string((IMGUI_VERSION_NUM / 100)%100) + ",patch-" + to_string(IMGUI_VERSION_NUM % 100) + ")");
+	P("ImGui","ImGui Loaded! ("+ to_string((IMGUI_VERSION_NUM / 100) % 100) +"."+ to_string(IMGUI_VERSION_NUM / 10000) +"."+ to_string(IMGUI_VERSION_NUM % 100) +")");
 }
 
 void PE_GLFW() {

@@ -1,4 +1,4 @@
-#pragma warning(disable : 4244)
+п»ї#pragma warning(disable : 4244)
 #pragma warning(disable : 4267)
 
 #define NOMINMAX 1
@@ -41,7 +41,7 @@ string LogsStyle = "%b[%s:%m:%h][%t] %c";
 
 int ErrorsCount = 0;
 
-/*Получить знак числа, минус или плюс*/
+/*РџРѕР»СѓС‡РёС‚СЊ Р·РЅР°Рє С‡РёСЃР»Р°, РјРёРЅСѓСЃ РёР»Рё РїР»СЋСЃ*/
 int GetNumberZnak(float num) {
 	int result = 1;
 	if (num < 0) {
@@ -50,7 +50,7 @@ int GetNumberZnak(float num) {
 	return result;
 }
 
-/*Тоже самое что to_string() только без нулей в конце*/
+/*РўРѕР¶Рµ СЃР°РјРѕРµ С‡С‚Рѕ to_string() С‚РѕР»СЊРєРѕ Р±РµР· РЅСѓР»РµР№ РІ РєРѕРЅС†Рµ*/
 string DoubleToString(double value) {
 	std::ostringstream stream;
 	stream << std::fixed << std::setprecision(15) << value;
@@ -62,22 +62,22 @@ string DoubleToString(double value) {
 	return str;
 }
 
-/*Получить путь без файла*/
+/*РџРѕР»СѓС‡РёС‚СЊ РїСѓС‚СЊ Р±РµР· С„Р°Р№Р»Р°*/
 string GetPathWithoutFileName(string path) {
 	return ReplaceString(path, FileName(path), "");
 }
 
-/*Получить название файла*/
+/*РџРѕР»СѓС‡РёС‚СЊ РЅР°Р·РІР°РЅРёРµ С„Р°Р№Р»Р°*/
 string FileName(string path) {
 	return path.substr(path.find_last_of("/\\") + 1);
 }
 
-/*Проверяем безопасный режим включен или нет*/
+/*РџСЂРѕРІРµСЂСЏРµРј Р±РµР·РѕРїР°СЃРЅС‹Р№ СЂРµР¶РёРј РІРєР»СЋС‡РµРЅ РёР»Рё РЅРµС‚*/
 bool SafeMode() {
 	return StringToBool(GetSettingsInfo("SafeMode"));
 }
 
-/*Выход из приложения*/
+/*Р’С‹С…РѕРґ РёР· РїСЂРёР»РѕР¶РµРЅРёСЏ*/
 void Exit() {
 	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 8);
 	HANDLE hProcess = GetCurrentProcess();
@@ -86,7 +86,7 @@ void Exit() {
 	exit(EXIT_SUCCESS);
 }
 
-/*Разделить строку*/
+/*Р Р°Р·РґРµР»РёС‚СЊ СЃС‚СЂРѕРєСѓ*/
 vector<string> StringSplit(string str_, char delimiter) {
 	std::vector<std::string> res;
 	char* arr = StringToCharArray(str_);
@@ -107,19 +107,19 @@ vector<string> StringSplit(string str_, char delimiter) {
 	return res;
 }
 
-/*Получить дробную часть*/
+/*РџРѕР»СѓС‡РёС‚СЊ РґСЂРѕР±РЅСѓСЋ С‡Р°СЃС‚СЊ*/
 float GetFractionalPart(float f) {
 	int znak = GetNumberZnak(f);
 	return (abs(f) - floor(abs(f)))*znak;
 }
 
-/*Установить сид*/
+/*РЈСЃС‚Р°РЅРѕРІРёС‚СЊ СЃРёРґ*/
 void SetRandomSeed(int seed, bool dontsaveseed) {
 	srand(seed);
 	if (!dontsaveseed) { SetSessionInfo("Seed", to_string(seed)); }
 }
 
-/*Получить случайное число*/
+/*РџРѕР»СѓС‡РёС‚СЊ СЃР»СѓС‡Р°Р№РЅРѕРµ С‡РёСЃР»Рѕ*/
 float Random(float min,float max,bool dontsaveseed) {
 	if (min > max) { PE("Minimum number cannot be > maximum number! Random(" + to_string(min) + "," + to_string(max) + ")", "E0004"); return -1; }
 	else {
@@ -137,7 +137,7 @@ float Random(bool dontsaveseed) {
 	return (float)static_cast<double>(rand()) / RAND_MAX;
 }
 
-/*Установка Base.cpp в проект*/
+/*РЈСЃС‚Р°РЅРѕРІРєР° Base.cpp РІ РїСЂРѕРµРєС‚*/
 void BaseInstall(string GamePath_) {
 	GamePath = GamePath_;
 	std::setlocale(LC_NUMERIC, "POSIX");
@@ -148,7 +148,7 @@ void BaseInstall(string GamePath_) {
 }
 
 #pragma region ConsoleZone
-/*Отправка сообщения в консоль и остальное*/
+/*РћС‚РїСЂР°РІРєР° СЃРѕРѕР±С‰РµРЅРёСЏ РІ РєРѕРЅСЃРѕР»СЊ Рё РѕСЃС‚Р°Р»СЊРЅРѕРµ*/
 void Print(string Text, int Color, bool OnlyLog) {
 	if (!OnlyLog) {
 		PrintToConsole(Text, Color);
@@ -160,15 +160,15 @@ void Print(int Text, int Color, bool OnlyLog) {
 }
 
 unordered_map<wchar_t, wchar_t> CharsUpperToLower = {
-	{L'А',L'а'},{L'Б',L'б'},{L'В',L'в'},{L'Г',L'г'},{L'Д',L'д'},{L'Е',L'е'},{L'Ё',L'ё'},{L'Ж',L'ж'},{L'З',L'з'},{L'И',L'и'},
-	{L'Й',L'й'},{L'К',L'к'},{L'Л',L'л'},{L'М',L'м'},{L'Н',L'н'},{L'О',L'о'},{L'П',L'п'},{L'Р',L'р'},{L'С',L'с'},{L'Т',L'т'},
-	{L'У',L'у'},{L'Ф',L'ф'},{L'Х',L'х'},{L'Ц',L'ц'},{L'Ч',L'ч'},{L'Ш',L'ш'},{L'Щ',L'щ'},{L'Ъ',L'ъ'},{L'Ы',L'ы'},{L'Ь',L'ь'},
-	{L'Э',L'э'},{L'Ю',L'ю'},{L'Я',L'я'},{L'A',L'a'},{L'B',L'b'},{L'C',L'c'},{L'D',L'd'},{L'E',L'e'},{L'F',L'f'},{L'G',L'g'},
+	{L'Рђ',L'Р°'},{L'Р‘',L'Р±'},{L'Р’',L'РІ'},{L'Р“',L'Рі'},{L'Р”',L'Рґ'},{L'Р•',L'Рµ'},{L'РЃ',L'С‘'},{L'Р–',L'Р¶'},{L'Р—',L'Р·'},{L'Р',L'Рё'},
+	{L'Р™',L'Р№'},{L'Рљ',L'Рє'},{L'Р›',L'Р»'},{L'Рњ',L'Рј'},{L'Рќ',L'РЅ'},{L'Рћ',L'Рѕ'},{L'Рџ',L'Рї'},{L'Р ',L'СЂ'},{L'РЎ',L'СЃ'},{L'Рў',L'С‚'},
+	{L'РЈ',L'Сѓ'},{L'Р¤',L'С„'},{L'РҐ',L'С…'},{L'Р¦',L'С†'},{L'Р§',L'С‡'},{L'РЁ',L'С€'},{L'Р©',L'С‰'},{L'РЄ',L'СЉ'},{L'Р«',L'С‹'},{L'Р¬',L'СЊ'},
+	{L'Р­',L'СЌ'},{L'Р®',L'СЋ'},{L'РЇ',L'СЏ'},{L'A',L'a'},{L'B',L'b'},{L'C',L'c'},{L'D',L'd'},{L'E',L'e'},{L'F',L'f'},{L'G',L'g'},
 	{L'H',L'h'},{L'I',L'i'},{L'J',L'j'},{L'K',L'k'},{L'L',L'l'},{L'M',L'm'},{L'N',L'n'},{L'O',L'o'},{L'P',L'p'},{L'Q',L'q'},
 	{L'R',L'r'},{L'S',L's'},{L'T',L't'},{L'U',L'u'},{L'V',L'v'},{L'W',L'w'},{L'X',L'x'},{L'Y',L'y'},{L'Z',L'z'}
 };
 
-/*Делает символы в строке большими*/
+/*Р”РµР»Р°РµС‚ СЃРёРјРІРѕР»С‹ РІ СЃС‚СЂРѕРєРµ Р±РѕР»СЊС€РёРјРё*/
 string Uppercase(string Str) {
 	unordered_map<wchar_t, wchar_t> CharsLowerToUpper;
 	for (const auto& entry : CharsUpperToLower) {
@@ -193,7 +193,7 @@ string Uppercase(string Str) {
 	return WStringToString(result);
 }
 
-/*Делает символы в строке маленькими*/
+/*Р”РµР»Р°РµС‚ СЃРёРјРІРѕР»С‹ РІ СЃС‚СЂРѕРєРµ РјР°Р»РµРЅСЊРєРёРјРё*/
 string Lowercase(string Str) {
 	wstring str = StringToWString(Str);
 	wstring result = L"";
@@ -213,21 +213,21 @@ string Lowercase(string Str) {
 	return WStringToString(result);
 }
 
-/*Первращает строку в сообщение для логов*/
+/*РџРµСЂРІСЂР°С‰Р°РµС‚ СЃС‚СЂРѕРєСѓ РІ СЃРѕРѕР±С‰РµРЅРёРµ РґР»СЏ Р»РѕРіРѕРІ*/
 string ConvertTextToConsoleLogMessage(string Text, string Module, string c) {
 	return ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(ReplaceString(LogsStyle, "%ms", GetTime("ms")), "%tt", Uppercase(Module)), "%c", Text), "%t", Uppercase(FillString(Module, 7, ' '))), "%b", c), "%w", GetTime("w")), "%y", GetTime("y")), "%mn", GetTime("mn")), "%d", GetTime("d")), "%h", GetTime("h")), "%m", GetTime("m")), "%s", GetTime("s"));
 }
-/*Отправить сообщение*/
+/*РћС‚РїСЂР°РІРёС‚СЊ СЃРѕРѕР±С‰РµРЅРёРµ*/
 void P(string Module, string Text, int color, string ch) {
 	bool next = RunPrintFunction(Text, "Unknown", Module, "", color, ch);
 	Print(ConvertTextToConsoleLogMessage(Text, Module, ch), color, !next);
 }
-/*Отправить обычное сообщение*/
+/*РћС‚РїСЂР°РІРёС‚СЊ РѕР±С‹С‡РЅРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ*/
 void PP(string Text) {
 	bool next = RunPrintFunction(Text, "Print", "PRINT", "", 7, "*");
 	Print(ConvertTextToConsoleLogMessage(Text, "PRINT", "*"), 7, !next);
 }
-/*Отправить ошибку*/
+/*РћС‚РїСЂР°РІРёС‚СЊ РѕС€РёР±РєСѓ*/
 void PE(string Text,string ErrorCode) {
 	bool next = RunPrintFunction(Text, "Error", "ERROR", ErrorCode, 12, "!");
 	ErrorsCount++;
@@ -236,12 +236,12 @@ void PE(string Text,string ErrorCode) {
 		LogsErrors();
 	}
 }
-/*Отправить предупреждение*/
+/*РћС‚РїСЂР°РІРёС‚СЊ РїСЂРµРґСѓРїСЂРµР¶РґРµРЅРёРµ*/
 void PW(string Text,string Code) {
 	bool next = RunPrintFunction(Text, "Warning", "WARN", Code, 14, "?");
 	Print(ConvertTextToConsoleLogMessage(Text + " - " + Code, "WARN", "?"), 14, !next);
 }
-/*Отправить фатальую ошибку*/
+/*РћС‚РїСЂР°РІРёС‚СЊ С„Р°С‚Р°Р»СЊСѓСЋ РѕС€РёР±РєСѓ*/
 void PF(string Text,string Code, bool DontPrint) {
 	RunPrintFunction(Text, "Fatal", "FATAL", Code, 4, "*");
 	if (!DontPrint) { Print(ConvertTextToConsoleLogMessage(Text+" - "+Code, "FATAL", "#"), 4); }
@@ -250,7 +250,7 @@ void PF(string Text,string Code, bool DontPrint) {
 }
 #pragma endregion ConsoleZone
 
-/*Создаёт папку если её нету*/
+/*РЎРѕР·РґР°С‘С‚ РїР°РїРєСѓ РµСЃР»Рё РµС‘ РЅРµС‚Сѓ*/
 bool GetOrCreateFolder(string Dir) {
 	if (HasDirectory(Dir)) {
 		return true;
@@ -259,7 +259,7 @@ bool GetOrCreateFolder(string Dir) {
 	return false;
 }
 
-/*Создаёт файл если его нету*/
+/*РЎРѕР·РґР°С‘С‚ С„Р°Р№Р» РµСЃР»Рё РµРіРѕ РЅРµС‚Сѓ*/
 bool GetOrCreateFile(string Dir) {
 	if (HasDirectory(Dir)) {
 		return true;
@@ -268,7 +268,7 @@ bool GetOrCreateFile(string Dir) {
 	return false;
 }
 
-/*Остановить процесс на определённое кол-во милисекунд (Milliseconds > 0)*/
+/*РћСЃС‚Р°РЅРѕРІРёС‚СЊ РїСЂРѕС†РµСЃСЃ РЅР° РѕРїСЂРµРґРµР»С‘РЅРЅРѕРµ РєРѕР»-РІРѕ РјРёР»РёСЃРµРєСѓРЅРґ (Milliseconds > 0)*/
 void Wait(int Milliseconds) {
 	if (Milliseconds <= 0) { PE("Wait(" + to_string(Milliseconds) + ") function only accepts a number >0!", "E0000"); }
 	else {
@@ -276,7 +276,7 @@ void Wait(int Milliseconds) {
 	}
 }
 
-/*Уберает пробелы с конца и начал строки*/
+/*РЈР±РµСЂР°РµС‚ РїСЂРѕР±РµР»С‹ СЃ РєРѕРЅС†Р° Рё РЅР°С‡Р°Р» СЃС‚СЂРѕРєРё*/
 string Trim(string s) {
 	int i = 0, j;
 	while ((s[i] == ' ') || (s[i] == '\t'))
@@ -304,7 +304,7 @@ string Trim(string s) {
 	return s;
 }
 
-/*Есть кириллица или нет*/
+/*Р•СЃС‚СЊ РєРёСЂРёР»Р»РёС†Р° РёР»Рё РЅРµС‚*/
 bool OnlyASCII(const std::string& str) {
 	for (char c : str) {
 		if (static_cast<unsigned char>(c) > 127) {
@@ -314,7 +314,7 @@ bool OnlyASCII(const std::string& str) {
 	return true;
 }
 
-/*Может называться в windows*/
+/*РњРѕР¶РµС‚ РЅР°Р·С‹РІР°С‚СЊСЃСЏ РІ windows*/
 bool NameWindowsAccept(string Str, bool ThatEnd, bool ThatPath) {
 	bool result = FindChar(Str, '*') || FindChar(Str, '?') || FindChar(Str, '"') || FindChar(Str, '<') || FindChar(Str, '>') || FindChar(Str, '|') || FindChar(Str, '+');
 	if (ThatEnd) {
@@ -326,24 +326,24 @@ bool NameWindowsAccept(string Str, bool ThatEnd, bool ThatPath) {
 	return !result;
 }
 
-/*Ищет симбол в строке*/
+/*РС‰РµС‚ СЃРёРјР±РѕР» РІ СЃС‚СЂРѕРєРµ*/
 bool FindChar(string Str, char chr) {
 	return Str.find(chr) != string::npos;
 }
 
-/*Проверяет пустая строка или нет*/
+/*РџСЂРѕРІРµСЂСЏРµС‚ РїСѓСЃС‚Р°СЏ СЃС‚СЂРѕРєР° РёР»Рё РЅРµС‚*/
 bool StringEmpty(string Str) {
 	if (Str.empty()) { return true; }
 	string Str_ = Trim(Str);
 	return Str_.empty();
 }
 
-/*Получить название файла из пути*/
+/*РџРѕР»СѓС‡РёС‚СЊ РЅР°Р·РІР°РЅРёРµ С„Р°Р№Р»Р° РёР· РїСѓС‚Рё*/
 string GetFileName(string Path) {
 	return Path.substr(Path.find_last_of("/\\") + 1);
 }
 
-/*Получить информацию из файла game.json*/
+/*РџРѕР»СѓС‡РёС‚СЊ РёРЅС„РѕСЂРјР°С†РёСЋ РёР· С„Р°Р№Р»Р° game.json*/
 string GetGameInfo(string ID) {
 	string p = GetSessionInfo("GameJson");
 	if (!HasDirectory(p)) { PF("game.json not found!", "C0007", true); return "ERROR_C0007"; }
@@ -357,7 +357,7 @@ string GetGameInfoIE(string ID) {
 	return ReadJson(p, ID, "WARN_EMPTY");
 }
 
-/*Получить информацию из файла engine.json*/
+/*РџРѕР»СѓС‡РёС‚СЊ РёРЅС„РѕСЂРјР°С†РёСЋ РёР· С„Р°Р№Р»Р° engine.json*/
 string GetEngineInfo(string ID) {
 	string p = GetSessionInfo("EngineJson");
 	if (p == "WARN_EMPTY") { return p; }
@@ -373,7 +373,7 @@ string GetEngineInfoIE(string ID) {
 	return ReadJson(p, ID, "WARN_EMPTY");
 }
 
-/*Получить информацию из файла settings.json*/
+/*РџРѕР»СѓС‡РёС‚СЊ РёРЅС„РѕСЂРјР°С†РёСЋ РёР· С„Р°Р№Р»Р° settings.json*/
 string GetSettingsInfo(string ID) {
 	string p = GetSessionInfo("SettingsJson");
 	if (p == "WARN_EMPTY") { return p; }
@@ -382,7 +382,7 @@ string GetSettingsInfo(string ID) {
 	return ReadJson(p, ID);
 }
 
-/*Получить информацию из файла sessioninfo*/
+/*РџРѕР»СѓС‡РёС‚СЊ РёРЅС„РѕСЂРјР°С†РёСЋ РёР· С„Р°Р№Р»Р° sessioninfo*/
 string GetSessionInfo(string ID) {
 	return GetSessionInfoData(ID);
 }
@@ -390,19 +390,19 @@ string GetSessionInfoIE(string ID) {
 	return GetSessionInfoData(ID);
 }
 
-/*Заменить информацию в файле sessioninfo*/
+/*Р—Р°РјРµРЅРёС‚СЊ РёРЅС„РѕСЂРјР°С†РёСЋ РІ С„Р°Р№Р»Рµ sessioninfo*/
 void SetSessionInfo(string ID, string Value) {
 	SetSessionInfoData(ID, Value);
 }
 
-/*Создать переменную в JSON если она не существует*/
+/*РЎРѕР·РґР°С‚СЊ РїРµСЂРµРјРµРЅРЅСѓСЋ РІ JSON РµСЃР»Рё РѕРЅР° РЅРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚*/
 void CreateValueJson(string Path, string ID, string DefaultValue) {
 	if (ReadJson(Path, ID, "notfound") == "notfound") {
 		WriteToJson(Path, ID, DefaultValue);
 	}
 }
 
-/*Записать переменную в JSON*/
+/*Р—Р°РїРёСЃР°С‚СЊ РїРµСЂРµРјРµРЅРЅСѓСЋ РІ JSON*/
 void WriteToJson(string Path, string ID, string Value) {
 	json data = json::parse(ReadFile(Path));
 	data[ID] = Value;
@@ -411,7 +411,7 @@ void WriteToJson(string Path, string ID, string Value) {
 	output_file.close();
 }
 
-/*Проверить путь на запрещёные символы*/
+/*РџСЂРѕРІРµСЂРёС‚СЊ РїСѓС‚СЊ РЅР° Р·Р°РїСЂРµС‰С‘РЅС‹Рµ СЃРёРјРІРѕР»С‹*/
 bool CheckPathToSymbols(string path) {
 	if (NameWindowsAccept(path,false,true)) {
 		return true;
@@ -421,7 +421,7 @@ bool CheckPathToSymbols(string path) {
 	}
 }
 
-/*Прочитать переменную в JSON*/
+/*РџСЂРѕС‡РёС‚Р°С‚СЊ РїРµСЂРµРјРµРЅРЅСѓСЋ РІ JSON*/
 string ReadJson(string Path, string ID, string IfNotFound) {
 	if (JSONValid(Path)) {
 		string JSON = ReadFile(Path);
@@ -445,7 +445,7 @@ string ReadJson(string Path, string ID, string IfNotFound) {
 	}
 }
 
-/*Получить переменные из JSON*/
+/*РџРѕР»СѓС‡РёС‚СЊ РїРµСЂРµРјРµРЅРЅС‹Рµ РёР· JSON*/
 map<string,string> ReadAllJson(string Path) {
 	if (JSONValid(Path)) {
 		string JSON = ReadFile(Path);
@@ -462,7 +462,7 @@ map<string,string> ReadAllJson(string Path) {
 	}
 }
 
-/*Заполняет пустоты символом*/
+/*Р—Р°РїРѕР»РЅСЏРµС‚ РїСѓСЃС‚РѕС‚С‹ СЃРёРјРІРѕР»РѕРј*/
 string FillString(string Str, int Width, char Symbol, bool Invert) {
 	if (Width <= 0) { return Str; }
 	string Result = Str;
@@ -479,16 +479,16 @@ string FillString(string Str, int Width, char Symbol, bool Invert) {
 	return Result;
 }
 
-/*Получить часть времени используя теги*/
+/*РџРѕР»СѓС‡РёС‚СЊ С‡Р°СЃС‚СЊ РІСЂРµРјРµРЅРё РёСЃРїРѕР»СЊР·СѓСЏ С‚РµРіРё*/
 /*
-   "s"  - Возвращает секунды
-   "m"  - Возвращает минуты
-   "h"  - Возвращает часы
-   "d"  - Возвращает дни
-   "mn" - Возвращает месяца
-   "y"  - Возвращает года
-   "w"  - Возвращает недели
-   "ms" - Возвращает миллисекунды
+   "s"  - Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРµРєСѓРЅРґС‹
+   "m"  - Р’РѕР·РІСЂР°С‰Р°РµС‚ РјРёРЅСѓС‚С‹
+   "h"  - Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡Р°СЃС‹
+   "d"  - Р’РѕР·РІСЂР°С‰Р°РµС‚ РґРЅРё
+   "mn" - Р’РѕР·РІСЂР°С‰Р°РµС‚ РјРµСЃСЏС†Р°
+   "y"  - Р’РѕР·РІСЂР°С‰Р°РµС‚ РіРѕРґР°
+   "w"  - Р’РѕР·РІСЂР°С‰Р°РµС‚ РЅРµРґРµР»Рё
+   "ms" - Р’РѕР·РІСЂР°С‰Р°РµС‚ РјРёР»Р»РёСЃРµРєСѓРЅРґС‹
 */
 string GetTimeComponent(std::chrono::system_clock::time_point Time, string Tag) {
 	std::time_t time = std::chrono::system_clock::to_time_t(Time);
@@ -534,22 +534,23 @@ string GetTimeComponent(std::chrono::system_clock::time_point Time, string Tag) 
 	return FillString(to_string(Val), AddZeros, '0', true);
 }
 
-/*Превращает строку в bool*/
+vector<string> BoolsOn = {"true","yes","1","y","t","+","ok","okay","РѕРє","РѕРєРµР№","РґР°","Рґ","РїСЂР°РІРґР°","plus","РїР»СЋСЃ","РѕРґРёРЅ","one","РєРѕРЅРµС‡РЅРѕ","СЃРѕРіР»Р°СЃРµРЅ","РїСЂРёРЅСЏС‚СЊ","РїСЂРёРЅРёРјР°СЋ","СѓРіСѓ","on","o","1.0","1.00","1.000","1.000","1,0","1,00","1,000","1,000","вњ”","1.","1,"};
+/*РџСЂРµРІСЂР°С‰Р°РµС‚ СЃС‚СЂРѕРєСѓ РІ bool*/
 bool StringToBool(string Str) {
 	string Bool = Lowercase(Str);
 	bool result = false;
-	if (Bool == "true" || Bool == "yes" || Bool == "1" || Bool == "y" || Bool == "t" || Bool == "+") {
+	if (find(BoolsOn.begin(), BoolsOn.end(), Bool) != BoolsOn.end()) {
 		result = true;
 	}
 	return result;
 }
 
-/*Получить текущее время используя теги*/
+/*РџРѕР»СѓС‡РёС‚СЊ С‚РµРєСѓС‰РµРµ РІСЂРµРјСЏ РёСЃРїРѕР»СЊР·СѓСЏ С‚РµРіРё*/
 string GetTime(string Tag) {
 	return GetTimeComponent(std::chrono::system_clock::now(),Tag);
 }
 
-/*Получить Value из Map используя Key*/
+/*РџРѕР»СѓС‡РёС‚СЊ Value РёР· Map РёСЃРїРѕР»СЊР·СѓСЏ Key*/
 template <typename K, typename V>
 V GetFromMapExtra(const map<K, V>& m, const K& key) {
 	auto it = m.find(key);
@@ -584,7 +585,7 @@ map<string,int> GetFromMap(map<string, map<string, int>> map, string id) {
 	return GetFromMapExtra(map, id);
 }
 
-/*Получить элемент из list по номеру*/
+/*РџРѕР»СѓС‡РёС‚СЊ СЌР»РµРјРµРЅС‚ РёР· list РїРѕ РЅРѕРјРµСЂСѓ*/
 template <typename T>
 T GetFromListExtra(const std::list<T>& myList, int index) {
 	if (index < 0 || index >= myList.size()) {
@@ -601,7 +602,7 @@ Vertex GetFromList(std::list<Vertex> list, int i) {
 	return GetFromListExtra(list, i);
 }
 
-/*Конвертирует список в JSON формат*/
+/*РљРѕРЅРІРµСЂС‚РёСЂСѓРµС‚ СЃРїРёСЃРѕРє РІ JSON С„РѕСЂРјР°С‚*/
 string ConvertToJSON(map<string, string> KeysValues) {
 	string result = "{";
 	for (auto Key_ = KeysValues.begin(); Key_ != KeysValues.end(); ++Key_) {
@@ -617,18 +618,18 @@ string ConvertToJSON(map<string, string> KeysValues) {
 	return data.dump(4);
 }
 
-/*Проверяет содержит ли JSON ошибки*/
+/*РџСЂРѕРІРµСЂСЏРµС‚ СЃРѕРґРµСЂР¶РёС‚ Р»Рё JSON РѕС€РёР±РєРё*/
 bool JSONValid(string Path) {
 	if (!HasDirectory(Path)) { return false; }
 	return json::accept(ReadFile(Path));
 }
 
-/*Получить данные из файла*/
+/*РџРѕР»СѓС‡РёС‚СЊ РґР°РЅРЅС‹Рµ РёР· С„Р°Р№Р»Р°*/
 string ReadFile(string Path) {
 	return GetFileInfo(Path);
 }
 
-/*Вписать данные в файл*/
+/*Р’РїРёСЃР°С‚СЊ РґР°РЅРЅС‹Рµ РІ С„Р°Р№Р»*/
 void WriteToFile(string Path, string Text, bool AddToNextLine) {
 	if (AddToNextLine) {
 		AddFileInfo(Path,Text);
@@ -638,7 +639,7 @@ void WriteToFile(string Path, string Text, bool AddToNextLine) {
 	}
 }
 
-/*Заменяет символы в строке*/
+/*Р—Р°РјРµРЅСЏРµС‚ СЃРёРјРІРѕР»С‹ РІ СЃС‚СЂРѕРєРµ*/
 string ReplaceString(string Str, string That = " ", string ToThat = "") {
 	string result = Str;
 	size_t pos = Str.find(That);
@@ -649,7 +650,7 @@ string ReplaceString(string Str, string That = " ", string ToThat = "") {
 	return result;
 }
 
-/*Говорит есть в строке строка*/
+/*Р“РѕРІРѕСЂРёС‚ РµСЃС‚СЊ РІ СЃС‚СЂРѕРєРµ СЃС‚СЂРѕРєР°*/
 bool StringHasString(string Str, string WhatNeedFound) {
 	if (Str.find(WhatNeedFound) != std::string::npos) {
 		return true;

@@ -8,7 +8,7 @@ struct ImGuiElement_ {
 public:
 	string windowid = "";
 	string id = "";
-	string type = "empty";
+	string type = "error";
 	int zindex = 0;
 
 	string text = "New Element";
@@ -54,12 +54,6 @@ public:
 		}
 		else if (type == "edit rgb" || type == "edit rgba" || type == "edit rgb extended" || type == "edit rgba extended") {
 			text = "New Edit Color";
-		}
-		else
-		{
-			if (type != "test") {
-				type = "empty";
-			}
 		}
 	}
 

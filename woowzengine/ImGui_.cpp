@@ -18,27 +18,73 @@ vector<string> ElementTypes{"text","button","checkbox"};
 unordered_map<string, ImGuiWindow_> Windows;
 unordered_map<string, ImGuiElement_> Elements;
 
-void CreateImGuiWindow(string id, string title) {
-	ImGuiWindow_ IGW = ImGuiWindow_(id);
-	IGW.title = title;
-	Windows[id] = IGW;
+string ErrorElement = "tfgw3gsss#^@g eg12t g dsgsegkfk0wf03_#gef#tfqgeg#t 3 gwg @#g gg@#gsdg vegwe 3 g";
+
+void CreateImGuiWindow(string id, string title, bool visible) {
+	if (Windows.find(id) == Windows.end()) {
+		ImGuiWindow_ IGW = ImGuiWindow_(id);
+		IGW.title = title;
+		IGW.active = visible;
+		Windows[id] = IGW;
+	}
+	else {
+		PE("ImGui window with this ID ['"+id+"'] already exists! CreateImGuiWindow('"+id+"','"+title+"')","L0043");
+	}
 }
 
 int zindexs = 0;
 unordered_map<int, string> zpos;
 void CreateImGuiElement(string id, string window, string type) {
-	zindexs++;
-	ImGuiElement_ IGE = ImGuiElement_(id, window, type, zindexs);
-	Elements[id] = IGE;
-	zpos[zindexs] = id;
+	if (Elements.find(id) == Elements.end()) {
+		zindexs++;
+		ImGuiElement_ IGE = ImGuiElement_(id, window, type, zindexs);
+		Elements[id] = IGE;
+		zpos[zindexs] = id;
+		if (Windows.find(window) == Windows.end()) {
+			PW("Selected window ['"+window+"'] was not found. CreateImGuiElements('" + id + "','" + window + "','" + type + "')","LW0043");
+		}
+	}
+	else {
+		PE("ImGui element with this ID ['" + id + "'] already exists! CreateImGuiElements('" + id + "','" + window + "','"+type+"')", "L0044");
+	}
+}
+
+void AcceptWindow(ImGuiWindow_ IGE) {
+	if (IGE.id != ErrorElement) {
+		Windows[IGE.id] = IGE;
+	}
+}
+
+ImGuiWindow_ GetWindow(string id) {
+	if (Windows.find(id) != Windows.end()) {
+		return Windows[id];
+	}
+	else {
+		PE("ImGui window ['" + id + "'] was not found! GetWindow('" + id + "')", "E0044");
+		return ImGuiWindow_(ErrorElement);
+	}
+}
+
+void SetImGuiWindowActive(string id, bool b) {
+	ImGuiWindow_ IGW = GetWindow(id);
+	IGW.active = b;
+	AcceptWindow(IGW);
 }
 
 void AcceptElement(ImGuiElement_ IGE) {
-	Elements[IGE.id] = IGE;
+	if (IGE.id != ErrorElement) {
+		Elements[IGE.id] = IGE;
+	}
 }
 
 ImGuiElement_ GetElement(string id) {
-	return Elements[id];
+	if (Elements.find(id) != Elements.end()) {
+		return Elements[id];
+	}
+	else {
+		PE("ImGui element ['"+id+"'] was not found! GetElement('"+id+"')","E0043");
+		return ImGuiElement_(ErrorElement,"","error",0);
+	}
 }
 
 void SetImGuiElementText(string id, string text) {
@@ -83,9 +129,20 @@ void SetImGuiElementTooltip(string id, string str) {
 	AcceptElement(IGE);
 }
 
+float globalfontsize = 1;
+void SetImGuiFontSize(float size) {
+	globalfontsize = size;
+}
+
 void RenderText(ImGuiElement_ IGE) {
 	ImGui::PushStyleColor(ImGuiCol_Text, ImVec4((float)IGE.color.r / 255, (float)IGE.color.g / 255, (float)IGE.color.b / 255, (float)IGE.color.a / 255));
 	ImGui::TextUnformatted(StringToConstChar(IGE.text));
+	ImGui::PopStyleColor();
+}
+
+void RenderError(ImGuiElement_ IGE) {
+	ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1,0,0,1));
+	ImGui::TextUnformatted("!Error Element!");
 	ImGui::PopStyleColor();
 }
 
@@ -491,8 +548,13 @@ void RenderWindow(ImGuiWindow_ IGW) {
 			else if (type == "test") {
 				
 			}
+			else if (type == "error") {
+				RenderError(el);
+			}
 			else {
-				PW("TYPE ['"+type+"'] NOT FOUND","?");
+				PE("This type ['"+el.type+"'] of ImGui element does not exist! RenderWindow()","E0042");
+				el.type = "error";
+				AcceptElement(el);
 			}
 
 			if (el.tooltip != "") {
@@ -566,8 +628,12 @@ void ImGuiStyle_() {
 }
 
 void ImGuiRender(string windowid) {
+	ImGuiIO& io = ImGui::GetIO();
+	io.FontGlobalScale = globalfontsize;
+
 	for (const auto& pair : Windows) {
-		RenderWindow(pair.second);
+		if (pair.second.active) {
+			RenderWindow(pair.second);
+		}
 	}
-	//ImGui::ShowDemoWindow();
 }

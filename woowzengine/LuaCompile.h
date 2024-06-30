@@ -11,5 +11,7 @@ void StartFunction(sol::function func, list<any> params);
 sol::object AnyToObject(any obj);
 void CompileScript(string Path);
 void LuaCompile();
+bool ToBool(sol::object obj, bool IfNil = false);
+float ToFloat(sol::object obj, float IfNil = 0);
 string ToString(sol::object text, string IfNil = "nil");
 float ToNumber(sol::object obj);

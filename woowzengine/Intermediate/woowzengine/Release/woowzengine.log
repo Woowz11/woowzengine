@@ -1,6 +1,8 @@
-﻿  GLFW.cpp
+﻿  Base.cpp
+F:\woowzengine\WoowzEngine\Base.cpp(537,296): warning C4566: символ, представленный универсальным именем символа "\u2714", невозможно представить в текущей кодовой странице (1251)
+  GLFW.cpp
   Создание кода
-  2 of 21840 functions (<0.1%) were compiled, the rest were copied from previous compilation.
+  410 of 21764 functions ( 1.9%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
     209 functions had inline decision re-evaluated but remain unchanged
   Создание кода завершено

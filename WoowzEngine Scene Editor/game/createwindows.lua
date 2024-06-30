@@ -8,6 +8,12 @@ cw.CreateWindows = function()
 
 end
 
+cw.ApplyImGui = function()
+	
+	SetImGuiFontScale(1.2)
+	
+end
+
 cw.CreateScenes = function()
 
 	CreateScene("Scene")

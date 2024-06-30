@@ -508,15 +508,8 @@ string l_SubStr(sol::object Str_, int pos, int size) {
 }
 
 /*Превращает строку в число*/
-float l_ToNumber(sol::object Str_, sol::object IfError) {
-	string Str = ToString(Str_, "");
-	if (Str == "") { PE("String cannot be empty! ToNumber('" + Str + "')", "L0016"); return 0; }
-	if (GetObjectType(IfError) != "number") {
-		return StringToFloat(Str);
-	}
-	else {
-		return StringToFloat(Str,ToNumber(IfError));
-	}
+float l_ToNumber(sol::object Str_, sol::object IfNil) {
+	return ToFloat(Str_,ToFloat(IfNil,0));
 }
 
 /*Запуск команды cmd*/
@@ -587,13 +580,8 @@ void l_SetWindowTitle(sol::object id, sol::object title) {
 }
 
 /*Изменение авторазмера у окна*/
-void l_SetWindowAutoScale(sol::object id, sol::optional<bool> b) {
-	if (b) {
-		SetWindowAutosize(ToString(id, EmptyWindow), b.value());
-	}
-	else {
-		SetWindowAutosize(ToString(id, EmptyWindow), true);
-	}
+void l_SetWindowAutoScale(sol::object id, sol::object b) {
+	SetWindowAutosize(ToString(id, EmptyWindow), ToBool(b, true));
 }
 
 /*Синус ABS*/
@@ -617,14 +605,14 @@ float l_DCos(float f) {
 }
 
 /*Запретить или размешить менять размер окна*/
-void l_SetWindowResizable(sol::object id, bool b) {
-	SetWindowResizable(ToString(id, EmptyWindow), b);
+void l_SetWindowResizable(sol::object id, sol::object b) {
+	SetWindowResizable(ToString(id, EmptyWindow), ToBool(b,false));
 }
 
 /*Вызывает функцию когда окно закрывается*/
 void l_SetWindowEventClosed(sol::object id_, sol::function func) {
 	string id = ToString(id_, EmptyWindow);
-	if (func == sol::nil || !func.valid()) { PE("Function not found or does not exist for SetWindowEventClosed(" + id + ")!", "L0013"); }
+	if (func == sol::nil || !func.valid()) { PE("Function not found or does not exist for SetWindowEventClosed('" + id + "')!", "L0013"); }
 	else {
 		SetWindowClosedEvent(id, func);
 	}
@@ -888,19 +876,19 @@ bool l_CheckInternet() {
 }
 
 /*Конвертирует строку в bool*/
-bool l_StringToBool(sol::object s) {
-	return StringToBool(ToString(s));
+bool l_ToBool(sol::object s, sol::object ifnil) {
+	return ToBool(s,ToBool(ifnil,false));
 }
 
 /*Запускает строку кода lua*/
-string l_RunLua(sol::object s, bool DontError) {
+string l_RunLua(sol::object s, sol::object DontError) {
 	string code = ToString(s, "");
 	if (code == "") { PW("Empty code in RunLua()!","LW0024"); return "WARNING_LW0024"; }
 	sol::protected_function_result result = lua.safe_script(code, &sol::script_pass_on_error);
 	if (!result.valid()) {
 		sol::error err = result.get<sol::error>();
 		string what = err.what();
-		if (!DontError) { PE(what, "GLUA"); }
+		if (!ToBool(DontError,false)) { PE(what, "GLUA"); }
 		return what;
 	}
 
@@ -1016,8 +1004,8 @@ void l_SetSpriteSize(sol::object sceneid_, sol::object id_, l_Vector2 size) {
 }
 
 /*Установить позицию угла*/
-void l_SetSpriteCorner(sol::object sceneid, sol::object id, bool left, bool top, l_Vector2 pos) {
-	SetSpriteCorner(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), pos, left, top);
+void l_SetSpriteCorner(sol::object sceneid, sol::object id, sol::object left, sol::object top, l_Vector2 pos) {
+	SetSpriteCorner(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), pos, ToBool(left,false), ToBool(top,false));
 }
 
 /*Установить лимит фпс*/
@@ -1154,13 +1142,13 @@ l_Vector2 l_GetSpritePosition(sol::object sceneid, sol::object id) {
 }
 
 /*Отеркалить спрайт по X*/
-void l_SetSpriteMirrorX(sol::object sceneid, sol::object id, bool b) {
-	SetSpriteMirror(ToString(sceneid, EmptyScene), ToString(id, EmptySprite),true,b);
+void l_SetSpriteMirrorX(sol::object sceneid, sol::object id, sol::object b) {
+	SetSpriteMirror(ToString(sceneid, EmptyScene), ToString(id, EmptySprite),true,ToBool(b,true));
 }
 
 /*Отеркалить спрайт по Y*/
-void l_SetSpriteMirrorY(sol::object sceneid, sol::object id, bool b) {
-	SetSpriteMirror(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), false, b);
+void l_SetSpriteMirrorY(sol::object sceneid, sol::object id, sol::object b) {
+	SetSpriteMirror(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), false, ToBool(b,true));
 }
 
 /*Получить отзеркаливание по X*/
@@ -1174,8 +1162,8 @@ bool l_GetSpriteMirrorY(sol::object sceneid, sol::object id) {
 }
 
 /*Установить позицию угла UV*/
-void l_SetSpriteUVCorner(sol::object sceneid, sol::object id, bool left, bool top, l_Vector2 pos) {
-	SetSpriteCornerUV(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), pos, left, top);
+void l_SetSpriteUVCorner(sol::object sceneid, sol::object id, sol::object left, sol::object top, l_Vector2 pos) {
+	SetSpriteCornerUV(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), pos, ToBool(left,false), ToBool(top,false));
 }
 
 /*Установить поворот спрайта*/
@@ -1276,11 +1264,11 @@ void l_SetVolume(int v) {
 }
 
 /*Создать текстуру*/
-void l_LoadTexture(sol::object id_, sol::object path_, bool savecolors) {
+void l_LoadTexture(sol::object id_, sol::object path_, sol::object savecolors) {
 	string path = StringToPath(ToString(path_));
 	string id = ToString(id_, EmptyTexture);
 	if (HasDirectory(path)) {
-		CreateTexture(id, path, savecolors);
+		CreateTexture(id, path, ToBool(savecolors,false));
 	}
 	else {
 		PE("File not found! LoadTexture('"+id+"','"+path+"')","L0033");
@@ -1288,8 +1276,8 @@ void l_LoadTexture(sol::object id_, sol::object path_, bool savecolors) {
 }
 
 /*Установить видимость спрайта*/
-void l_SetSpriteVisible(sol::object sceneid, sol::object id, bool visible) {
-	SetSpriteVisible(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), visible);
+void l_SetSpriteVisible(sol::object sceneid, sol::object id, sol::object visible) {
+	SetSpriteVisible(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), ToBool(visible,false));
 }
 
 /*Получить видимость спрайта*/
@@ -1298,8 +1286,8 @@ bool l_GetSpriteVisible(sol::object sceneid, sol::object id) {
 }
 
 /*Установить размытие текстуре*/
-void l_SetTextureBlur(sol::object id, bool blur) {
-	SetTextureBlur(ToString(id, EmptyTexture), blur);
+void l_SetTextureBlur(sol::object id, sol::object blur) {
+	SetTextureBlur(ToString(id, EmptyTexture), ToBool(blur,false));
 }
 
 /*Получить массив цветов в текстуре*/
@@ -1318,7 +1306,7 @@ void l_SetConsoleTitle(sol::object title) {
 }
 
 /*Создать текстуру*/
-void l_CreateTexture(sol::object id_, int sizex, int sizey, sol::table colors, bool savecolors) {
+void l_CreateTexture(sol::object id_, int sizex, int sizey, sol::table colors, sol::object savecolors) {
 	string id = ToString(id_, EmptyTexture);
 	if (sizex <= 0 || sizey <= 0) {
 		PE("Size of the created texture cannot be <= 0 CreateTexture('"+id+"',"+to_string(sizex) + ","+to_string(sizey) + ")", "L0034");
@@ -1332,7 +1320,7 @@ void l_CreateTexture(sol::object id_, int sizex, int sizey, sol::table colors, b
 		for (size_t i = 1; i <= size; i++) {
 			colors_result.push_back(ObjToColor(colors[i]));
 		}
-		CreateTextureByArray(id, sizex, sizey, colors_result, savecolors);
+		CreateTextureByArray(id, sizex, sizey, colors_result, ToBool(savecolors,false));
 	}
 }
 
@@ -1435,7 +1423,7 @@ float l_GetSpriteHeight(sol::object sceneid, sol::object id) {
 /*Получить данные пользователя Discord*/
 void l_GetDiscordUserInfo(sol::object userid_, sol::function func) {
 	string userid = ToString(userid_, EmptyDUser);
-	if (func == sol::nil || !func.valid()) { PE("Function not found or does not exist for GetDiscordUserInfo(" + userid + ")!", "L0038"); }
+	if (func == sol::nil || !func.valid()) { PE("Function not found or does not exist for GetDiscordUserInfo('" + userid + "')!", "L0038"); }
 	else {
 		GetDiscordUserInfo(userid, func);
 	}
@@ -1510,13 +1498,13 @@ sol::table l_StringToColors(sol::object str_, sol::table colors, sol::object err
 }
 
 /*Показывать или спрятать курсор*/
-void l_ShowCursor(sol::object id, bool b) {
-	ShowCursor_(ToString(id, EmptyWindow),b);
+void l_ShowCursor(sol::object id, sol::object b) {
+	ShowCursor_(ToString(id, EmptyWindow),ToBool(b,true));
 }
 
 /*Установить моноспейс текст*/
-void l_SetTextMono(sol::object sceneid, sol::object id, bool b) {
-	SetTextMono(ToString(sceneid, EmptyScene), ToString(id, EmptyText), b);
+void l_SetTextMono(sol::object sceneid, sol::object id, sol::object b) {
+	SetTextMono(ToString(sceneid, EmptyScene), ToString(id, EmptyText), ToBool(b,true));
 }
 
 /*Получить показывать или спрятать курсор*/
@@ -1555,13 +1543,13 @@ l_Color l_GetTextColor(sol::object sceneid, sol::object id) {
 }
 
 /*Получить позицию левого верхнего угла*/
-l_Vector2 l_GetSpriteCorner(sol::object sceneid, sol::object id, bool left, bool top) {
-	return GetSpriteCorner(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), left, top);
+l_Vector2 l_GetSpriteCorner(sol::object sceneid, sol::object id, sol::object left, sol::object top) {
+	return GetSpriteCorner(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), ToBool(left,false), ToBool(top,false));
 }
 
 /*Получить позицию угла UV*/
-l_Vector2 l_GetSpriteUVCorner(sol::object sceneid, sol::object id, bool left, bool top) {
-	return GetSpriteCornerUV(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), left, top);
+l_Vector2 l_GetSpriteUVCorner(sol::object sceneid, sol::object id, sol::object left, sol::object top) {
+	return GetSpriteCornerUV(ToString(sceneid, EmptyScene), ToString(id, EmptySprite), ToBool(left,false), ToBool(top,false));
 }
 
 /*Получить символ из юникод таблицы*/
@@ -1571,14 +1559,14 @@ string l_GetUnicodeChar(int i) {
 }
 
 /*Создаёт message box*/
-void l_MessageBox(sol::object title, sol::object text, sol::object messageboxtype, sol::object messageboxbuttons, bool blockprogram, sol::function button1, sol::function button2, sol::function button3) {
+void l_MessageBox(sol::object title, sol::object text, sol::object messageboxtype, sol::object messageboxbuttons, sol::object blockprogram, sol::function button1, sol::function button2, sol::function button3) {
 	if (SafeMode()) {
 		PW("Function [MessageBox('" + ToString(title, "New Message Box") + "','" + ToString(text, "Hello world!") + "','" + ToString(messageboxtype,"") + "')] cannot be started in SafeMode!", "LW0042");
 	}
 	else {
 		long icon = GetFromMap(EnumMessageBoxType, ToString(messageboxtype, ""));
 		long buttons = GetFromMap(EnumMessageBoxButtons, ToString(messageboxbuttons, ""));
-		int result = MessageBoxW(NULL, StringToLPCWSTR(ToString(text, "Hello world!")), ConstCharToConstWChar(StringToConstChar(ToString(title,"New Message Box"))), icon | buttons | (blockprogram?MB_TASKMODAL:MB_APPLMODAL));
+		int result = MessageBoxW(NULL, StringToLPCWSTR(ToString(text, "Hello world!")), ConstCharToConstWChar(StringToConstChar(ToString(title,"New Message Box"))), icon | buttons | (ToBool(blockprogram,false)?MB_TASKMODAL:MB_APPLMODAL));
 		if (buttons == MB_OK) {
 			if (result == IDOK) {
 				button1();
@@ -1655,8 +1643,8 @@ void l_SetWindowImGui(sol::object id) {
 }
 
 /*Создать окно в ImGui*/
-void l_CreateImGuiWindow(sol::object id, sol::object title) {
-	CreateImGuiWindow(ToString(id,EmptyImGuiWindow),ToString(title,"New ImGui"));
+void l_CreateImGuiWindow(sol::object id, sol::object title, sol::object visible) {
+	CreateImGuiWindow(ToString(id,EmptyImGuiWindow),ToString(title,"New ImGui"),ToBool(visible,true));
 }
 
 /*Создать элемент в окне ImGui*/
@@ -1671,22 +1659,26 @@ void l_SetImGuiElementText(sol::object id, sol::object text) {
 
 /*Изменить цвет элемента ImGui*/
 void l_SetImGuiElementColor(sol::object id, sol::object color) {
-	SetImGuiElementColor(ToString(id, EmptyImGuiElement),ObjToColor(color,l_Color(255,255,255)));
+	SetImGuiElementColor(ToString(id, EmptyImGuiElement),ObjToColor(color,ErrorColor));
 }
 
 /*Возвращает случайный цвет*/
-l_Color l_RandomColor(bool WithAlpha) {
-	return l_Color(l_FRRandom(0, 255), l_FRRandom(0, 255), l_FRRandom(0, 255), (WithAlpha ? l_FRRandom(0, 255) : 255));
+l_Color l_RandomColor(sol::object WithAlpha) {
+	return l_Color(l_FRRandom(0, 255), l_FRRandom(0, 255), l_FRRandom(0, 255), (ToBool(WithAlpha,false) ? l_FRRandom(0, 255) : 255));
 }
 
 /*Изменить ивент элемента ImGui*/
-void l_SetImGuiElementEvent(sol::object id, sol::function func) {
-	SetImGuiElementEvent(ToString(id, EmptyImGuiElement), func);
+void l_SetImGuiElementEvent(sol::object id_, sol::function func) {
+	string id = ToString(id_, EmptyImGuiElement);
+	if (func == sol::nil || !func.valid()) { PE("Function not found or does not exist for SetImGuiElementEvent('" + id + "')!", "L0046"); }
+	else {
+		SetImGuiElementEvent(id, func);
+	}
 }
 
 /*Добавить точку к элементу ImGui*/
-void l_SetImGuiElementPoint(sol::object id, bool b) {
-	SetImGuiElementPoint(ToString(id, EmptyImGuiElement), b);
+void l_SetImGuiElementPoint(sol::object id, sol::object b) {
+	SetImGuiElementPoint(ToString(id, EmptyImGuiElement), ToBool(b,true));
 }
 
 /*Добавить переменную (строку) к ImGui*/
@@ -1695,8 +1687,8 @@ void l_SetImGuiElementStringValue(sol::object id, sol::object str) {
 }
 
 /*Заставить элемент присоеденится к прошлому ImGui*/
-void l_SetImGuiElementConnect(sol::object id, bool b) {
-	SetImGuiElementConnect(ToString(id, EmptyImGuiElement), b);
+void l_SetImGuiElementConnect(sol::object id, sol::object b) {
+	SetImGuiElementConnect(ToString(id, EmptyImGuiElement), ToBool(b,true));
 }
 
 /*Добавить подсказку к ImGui*/
@@ -1704,6 +1696,20 @@ void l_SetImGuiElementTooltip(sol::object id, sol::object str) {
 	SetImGuiElementTooltip(ToString(id, EmptyImGuiElement), ToString(str, "New Tooltip"));
 }
 
+/*Изменить размер шрифта ImGui*/
+void l_SetImGuiFontSize(float f) {
+	if (f > 0) {
+		SetImGuiFontSize(f);
+	}
+	else {
+		PE("Font scale cannot be <= 0! SetImGuiFontScale(" + to_string(f) + ")", "L0047");
+	}
+}
+
+/*Отображать окно ImGui*/
+void l_SetImGuiWindowVisible(sol::object id, bool b) {
+	SetImGuiWindowActive(ToString(id, EmptyImGuiWindow), b);
+}
 
 /*Зона woowzengine*/
 
@@ -1780,6 +1786,58 @@ string GetObjectType(sol::object obj) {
 
 float ToNumber(sol::object obj) {
 	return obj.as<float>();
+}
+
+bool ToBool(sol::object obj, bool IfNil) {
+	string type = GetObjectType(obj);
+	sol::userdata u = obj.as<sol::userdata>();
+
+	if (type == "string") {
+		return StringToBool(obj.as<std::string>());
+	}
+	else if (type == "number") {
+		return obj.as<double>() == 1;
+	}
+	else if (type == "nil") {
+		return IfNil;
+	}
+	else if (type == "bool") {
+		if (obj.as<bool>()) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	else {
+		return false;
+	}
+}
+
+float ToFloat(sol::object obj, float IfNil) {
+	string type = GetObjectType(obj);
+	sol::userdata u = obj.as<sol::userdata>();
+
+	if (type == "string") {
+		return StringToFloat(obj.as<std::string>());
+	}
+	else if (type == "number") {
+		return obj.as<double>();
+	}
+	else if (type == "nil") {
+		return IfNil;
+	}
+	else if (type == "bool") {
+		if (obj.as<bool>()) {
+			return 1;
+		}
+		else {
+			return 0;
+		}
+	}
+	else {
+		return 0;
+	}
 }
 
 string ToString(sol::object obj, string IfNil) {
@@ -2140,7 +2198,7 @@ void LuaCompile() {
 	lua.set_function("SetDiscordActivityDescription", &l_SetDiscordActivityDescription);
 	lua.set_function("GetUserName", &l_GetUserName);
 	lua.set_function("CheckInternet", &l_CheckInternet);
-	lua.set_function("ToBool", &l_StringToBool);
+	lua.set_function("ToBool", &l_ToBool);
 	lua.set_function("RunLua", &l_RunLua);
 	lua.set_function("Repeat", &l_Repeat);
 	lua.set_function("ProgramLaunched", &l_ProgramLaunched);
@@ -2259,6 +2317,8 @@ void LuaCompile() {
 	lua.set_function("SetImGuiElementStringValue", &l_SetImGuiElementStringValue);
 	lua.set_function("SetImGuiElementConnect", &l_SetImGuiElementConnect);
 	lua.set_function("SetImGuiElementTooltip", &l_SetImGuiElementTooltip);
+	lua.set_function("SetImGuiFontScale", &l_SetImGuiFontSize);
+	lua.set_function("SetImGuiWindowVisible", &l_SetImGuiWindowVisible);
 
 	P("LUA", "Lua functions and etc. are loaded!");
 	P("LUA", "Start '"+ GetEngineInfo("StartScript") +".lua' script...");
