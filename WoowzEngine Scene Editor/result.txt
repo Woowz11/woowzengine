@@ -1,0 +1,30 @@
+--[[
+Сцена (Новая сцена) создана (Неизвестно) с помощью WoowzEngine Scene Editor (0.0.0)
+Описание: Новая сцена без описания
+]]
+
+CreateScene("Новая сцена")
+SetWindowScene(--[[Укажите окно]],"Новая сцена")
+SetSceneBackgroundColor("Новая сцена",Black)
+
+--Компоненты на сцене
+--Компонент (Спрайт | New Object (1))
+CreateSprite("New Object (1)","Новая сцена")
+SetSpriteLayer("Новая сцена","New Object (1)",1)
+SetSpritePosition("Новая сцена","New Object (1)",Vector2.new(1,0))
+
+--Компонент (Спрайт | New Object (2))
+CreateSprite("New Object (2)","Новая сцена")
+SetSpriteLayer("Новая сцена","New Object (2)",2)
+SetSpritePosition("Новая сцена","New Object (2)",Vector2.new(-1,0))
+SetSpriteSize("Новая сцена","New Object (2)",Vector2.new(-1,0))
+SetSpriteRotation("Новая сцена","New Object (2)",15)
+SetSpriteColor("Новая сцена","New Object (2)",Color.new(106,148,142,106))
+
+--Компонент (Спрайт | New Object (0))
+CreateSprite("New Object (0)","Новая сцена")
+SetSpriteLayer("Новая сцена","New Object (0)",0)
+SetSpriteSize("Новая сцена","New Object (0)",Vector2.new(0,0))
+SetSpriteHeight("Новая сцена","New Object (0)",0.200000002980232)
+
+

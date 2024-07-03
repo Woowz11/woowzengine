@@ -2,10 +2,11 @@
 #include <mutex>
 #include <any>
 #include "l_Color.h"
+#include "WConst.h"
 #pragma once
 using namespace std;
 
-l_Color ObjToColor(sol::object obj, l_Color ifnil = l_Color(0, 0, 0, 255));
+l_Color ObjToColor(sol::object obj, l_Color ifnil = ErrorColor, bool ingoreerror = false);
 string GetObjectType(sol::object obj);
 void StartFunction(sol::function func, list<any> params);
 sol::object AnyToObject(any obj);

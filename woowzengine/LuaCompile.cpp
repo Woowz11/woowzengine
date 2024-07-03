@@ -422,7 +422,7 @@ float l_HTan(float f) {
 
 /*Удаление дробной части*/
 int l_Trunc(float f) {
-	return round(f-GetFractionalPart(f));
+	return floorf(f - GetFractionalPart(f));
 }
 
 /*Ищет строку в строке*/
@@ -1711,9 +1711,73 @@ void l_SetImGuiWindowVisible(sol::object id, bool b) {
 	SetImGuiWindowActive(ToString(id, EmptyImGuiWindow), b);
 }
 
+/*Изменить переменную ImGui*/
+void l_SetImGuiElementValue(sol::object id, sol::object v1, sol::object v2, sol::object v3, sol::object v4) {
+	vector<variant<string, double, bool, l_Color>> val1 = {ToString(v1,"nil"),ToNumber(v1),ToBool(v1,false),ObjToColor(v1,ErrorColor,true)};
+	vector<variant<string, double, bool, l_Color>> val2 = { ToString(v2,"nil"),ToNumber(v2),ToBool(v2,false),ObjToColor(v2,ErrorColor,true) };
+	vector<variant<string, double, bool, l_Color>> val3 = { ToString(v3,"nil"),ToNumber(v3),ToBool(v3,false),ObjToColor(v3,ErrorColor,true) };
+	vector<variant<string, double, bool, l_Color>> val4 = { ToString(v4,"nil"),ToNumber(v4),ToBool(v4,false),ObjToColor(v4,ErrorColor,true) };
+	SetImGuiElementValue(ToString(id, EmptyImGuiElement), val1, val2, val3, val4);
+}
+
+/*Получить переменную ImGui*/
+tuple<sol::object, sol::object, sol::object, sol::object> l_GetImGuiElementValue(sol::object id) {
+	variant<string, vector<string>, double, vector<double>, bool, l_Color> getted = GetImGuiElementValue(ToString(id, EmptyImGuiElement));
+	auto val = visit([](const auto& value) -> std::any { return value; }, getted);
+	sol::object obj1 = sol::nil;
+	sol::object obj2 = sol::nil;
+	sol::object obj3 = sol::nil;
+	sol::object obj4 = sol::nil;
+	if (val.type() == typeid(vector<double>)) {
+		vector<double> vs = std::any_cast<vector<double>>(val);
+		obj1 = AnyToObject(vs[0]);
+		if (vs.size() >= 2) {
+			obj2 = AnyToObject(vs[1]);
+			if (vs.size() >= 3) {
+				obj3 = AnyToObject(vs[2]);
+				if (vs.size() >= 4) {
+					obj4 = AnyToObject(vs[3]);
+				}
+			}
+		}
+	}
+	if (val.type() == typeid(vector<string>)) {
+		vector<string> vs = std::any_cast<vector<string>>(val);
+		obj1 = AnyToObject(vs[0]);
+		if (vs.size() >= 2) {
+			obj2 = AnyToObject(vs[1]);
+			if (vs.size() >= 3) {
+				obj3 = AnyToObject(vs[2]);
+				if (vs.size() >= 4) {
+					obj4 = AnyToObject(vs[3]);
+				}
+			}
+		}
+	}
+	else {
+		obj1 = AnyToObject(val);
+	}
+
+	return make_tuple(obj1, obj2, obj3, obj4);
+}
+
+string l_RemoveMagicalNumber(float f) {
+	int celaya = truncf(f);
+	string drob = to_string(abs(GetFractionalPart(f)));
+	double r = (double)celaya + stod((drob.size() > 6) ? drob.substr(0, 6) : drob) * GetNumberZnak(celaya);
+	std::stringstream stream;
+	stream << std::fixed << std::setprecision(5) << r;
+	drob = stream.str();
+	size_t dotPos = drob.find('.');
+	if (dotPos != std::string::npos) {
+		drob.erase(drob.find_last_not_of('0') + 1, std::string::npos);
+	}
+	return drob;
+}
+
 /*Зона woowzengine*/
 
-l_Color ObjToColor(sol::object obj, l_Color ifnil) {
+l_Color ObjToColor(sol::object obj, l_Color ifnil, bool ingoreerror) {
 	string type = GetObjectType(obj);
 	if (type == "color") {
 		return obj.as<sol::userdata>().as<l_Color>();
@@ -1722,7 +1786,9 @@ l_Color ObjToColor(sol::object obj, l_Color ifnil) {
 		return ifnil;
 	}
 	else {
-		PE("Failed to convert the object [" + ToString(obj) + "] to color!", "L0015");
+		if (!ingoreerror) {
+			PE("Failed to convert the object [" + ToString(obj) + "] to color!", "L0015");
+		}
 		return ErrorColor;
 	}
 }
@@ -1897,6 +1963,15 @@ sol::object AnyToObject(any obj) {
 	}
 	else if (obj.type() == typeid(double)) {
 		return sol::make_object(lua, std::any_cast<double>(obj));
+	}
+	else if (obj.type() == typeid(float)) {
+		return sol::make_object(lua, std::any_cast<float>(obj));
+	}
+	else if (obj.type() == typeid(bool)) {
+		return sol::make_object(lua, std::any_cast<bool>(obj));
+	}
+	else if (obj.type() == typeid(l_Color)) {
+		return sol::make_object(lua, std::any_cast<l_Color>(obj));
 	}
 	return sol::nil;
 }
@@ -2078,6 +2153,12 @@ void LuaCompile() {
 	lua["ErrorColor"] = sol::as_table(ErrorColor);
 	lua["StringMax"] = sol::as_table(4294967295);
 	lua["EngineChars"] = sol::as_table(GetCharsCount());
+	lua["Vector2Zero"] = sol::as_table(l_Vector2(0, 0));
+	lua["Vector2One"] = sol::as_table(l_Vector2(1, 1));
+	lua["Vector3Zero"] = sol::as_table(l_Vector3(0, 0, 0));
+	lua["Vector3One"] = sol::as_table(l_Vector3(1, 1, 1));
+	lua["Vector4Zero"] = sol::as_table(l_Vector4(0, 0, 0, 0));
+	lua["Vector4One"] = sol::as_table(l_Vector4(1, 1, 1, 1));
 
 	/*Функции*/
 	lua.set_function("CheckLua", &l_CheckLua);
@@ -2304,6 +2385,15 @@ void LuaCompile() {
 	lua.set_function("RandomColor", &l_RandomColor);
 	lua.set_function("SetImGuiElementEvent", &l_SetImGuiElementEvent);
 
+	lua.set_function("SetImGuiElementPoint", &l_SetImGuiElementPoint);
+	lua.set_function("SetImGuiElementStringValue", &l_SetImGuiElementStringValue);
+	lua.set_function("SetImGuiElementConnect", &l_SetImGuiElementConnect);
+	lua.set_function("SetImGuiElementTooltip", &l_SetImGuiElementTooltip);
+	lua.set_function("SetImGuiFontScale", &l_SetImGuiFontSize);
+	lua.set_function("SetImGuiWindowVisible", &l_SetImGuiWindowVisible);
+	lua.set_function("SetImGuiElementValue", &l_SetImGuiElementValue);
+	lua.set_function("GetImGuiElementValue", &l_GetImGuiElementValue);
+
 	lua.set_function("GetWindowTitle", &l_WIP);
 	lua.set_function("GetWindowAutoScale", &l_WIP);
 	lua.set_function("GetWindowResizable", &l_WIP);
@@ -2312,13 +2402,14 @@ void LuaCompile() {
 	lua.set_function("GetWindowImGui", &l_WIP);
 	lua.set_function("GetImGuiElementText", &l_WIP);
 	lua.set_function("GetImGuiElementColor", &l_WIP);
+	lua.set_function("GetImGuiElementPoint", &l_WIP);
+	lua.set_function("GetImGuiElementStringValue", &l_WIP);
+	lua.set_function("GetImGuiElementConnect", &l_WIP);
+	lua.set_function("GetImGuiElementTooltip", &l_WIP);
+	lua.set_function("GetImGuiFontScale", &l_WIP);
+	lua.set_function("GetImGuiWindowVisible", &l_WIP);
 
-	lua.set_function("SetImGuiElementPoint", &l_SetImGuiElementPoint);
-	lua.set_function("SetImGuiElementStringValue", &l_SetImGuiElementStringValue);
-	lua.set_function("SetImGuiElementConnect", &l_SetImGuiElementConnect);
-	lua.set_function("SetImGuiElementTooltip", &l_SetImGuiElementTooltip);
-	lua.set_function("SetImGuiFontScale", &l_SetImGuiFontSize);
-	lua.set_function("SetImGuiWindowVisible", &l_SetImGuiWindowVisible);
+	lua.set_function("RemoveMagicalNumber", &l_RemoveMagicalNumber);
 
 	P("LUA", "Lua functions and etc. are loaded!");
 	P("LUA", "Start '"+ GetEngineInfo("StartScript") +".lua' script...");

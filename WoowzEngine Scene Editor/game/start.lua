@@ -1,4 +1,6 @@
-PrintCustom("WESCENE","Welcome to WoowzEngine Scene Editor ("..Version..")!")
+local f = require("functions")
+
+f.Print("Welcome to WoowzEngine Scene Editor ("..Version..")!")
 
 local CreateWindows = require("createwindows")
 

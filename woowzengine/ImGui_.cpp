@@ -10,6 +10,7 @@
 #include "ImGuiWindow_.h"
 #include "ImGuiElement_.h"
 #include "Base.h"
+#include "WConst.h"
 
 using namespace std;
 
@@ -18,6 +19,7 @@ vector<string> ElementTypes{"text","button","checkbox"};
 unordered_map<string, ImGuiWindow_> Windows;
 unordered_map<string, ImGuiElement_> Elements;
 
+int imguielementid = 0;
 string ErrorElement = "tfgw3gsss#^@g eg12t g dsgsegkfk0wf03_#gef#tfqgeg#t 3 gwg @#g gg@#gsdg vegwe 3 g";
 
 void CreateImGuiWindow(string id, string title, bool visible) {
@@ -34,12 +36,99 @@ void CreateImGuiWindow(string id, string title, bool visible) {
 
 int zindexs = 0;
 unordered_map<int, string> zpos;
+
+unordered_map<string, bool> Checkboxs;
+unordered_map<string, vector<string>> ComboItems;
+unordered_map<string, int> ComboSelected;
+unordered_map<string, float> DragFloat;
+unordered_map<string, float*> DragFloat2;
+unordered_map<string, float*> DragFloat3;
+unordered_map<string, float*> DragFloat4;
+unordered_map<string, float> SliderFloat;
+unordered_map<string, float*> SliderFloat2;
+unordered_map<string, float*> SliderFloat3;
+unordered_map<string, float*> SliderFloat4;
+unordered_map<string, string> InputText;
+unordered_map<string, string*> InputText2;
+unordered_map<string, string> InputTextM;
+unordered_map<string, float*> EditRGB;
+unordered_map<string, float*> EditRGBA;
+unordered_map<string, float*> EditRGBE;
+unordered_map<string, float*> EditRGBAE;
+
 void CreateImGuiElement(string id, string window, string type) {
 	if (Elements.find(id) == Elements.end()) {
 		zindexs++;
 		ImGuiElement_ IGE = ImGuiElement_(id, window, type, zindexs);
 		Elements[id] = IGE;
 		zpos[zindexs] = id;
+		if (IGE.type == "checkbox") {
+			if (Checkboxs.find(IGE.id) == Checkboxs.end()) {
+				Checkboxs[IGE.id] = false;
+			}
+		}else if(IGE.type == "list") {
+			if (ComboSelected.find(IGE.id) == ComboSelected.end()) {
+				ComboSelected[IGE.id] = 0;
+			}
+			if (ComboItems.find(IGE.id) == ComboItems.end()) {
+				ComboItems[IGE.id] = StringSplit(IGE.stringvalue, ',');
+			}
+		}
+		else if (IGE.type == "drag number") {
+			if (DragFloat.find(IGE.id) == DragFloat.end()) {
+				DragFloat[IGE.id] = 0;
+			}
+		}
+		else if (IGE.type == "drag number 2") {
+			if (DragFloat2.find(IGE.id) == DragFloat2.end()) {
+				DragFloat2[IGE.id] = new float[2] {0, 0};
+			}
+		}
+		else if (IGE.type == "drag number 3") {
+			if (DragFloat3.find(IGE.id) == DragFloat3.end()) {
+				DragFloat3[IGE.id] = new float[3] {0, 0, 0};
+			}
+		}
+		else if (IGE.type == "drag number 4") {
+			if (DragFloat4.find(IGE.id) == DragFloat4.end()) {
+				DragFloat4[IGE.id] = new float[4] {0, 0, 0, 0};
+			}
+		}
+		else if (IGE.type == "slider number") {
+			if (SliderFloat.find(IGE.id) == SliderFloat.end()) {
+				SliderFloat[IGE.id] = 0;
+			}
+		}
+		else if (IGE.type == "slider number 2") {
+			if (SliderFloat2.find(IGE.id) == SliderFloat2.end()) {
+				SliderFloat2[IGE.id] = new float[2] {0, 0};
+			}
+		}
+		else if (IGE.type == "slider number 3") {
+			if (SliderFloat3.find(IGE.id) == SliderFloat3.end()) {
+				SliderFloat3[IGE.id] = new float[3] {0, 0, 0};
+			}
+		}
+		else if (IGE.type == "slider number 4") {
+			if (SliderFloat4.find(IGE.id) == SliderFloat4.end()) {
+				SliderFloat4[IGE.id] = new float[4] {0, 0, 0, 0};
+			}
+		}
+		else if (IGE.type == "input text") {
+			if (InputText.find(IGE.id) == InputText.end()) {
+				InputText[IGE.id] = "";
+			}
+		}
+		else if (IGE.type == "input text 2") {
+			if (InputText2.find(IGE.id) == InputText2.end()) {
+				InputText2[IGE.id] = new string[2]{"",""};
+			}
+		}
+		else if (IGE.type == "input text multiline") {
+			if (InputTextM.find(IGE.id) == InputTextM.end()) {
+				InputTextM[IGE.id] = "";
+			}
+		}
 		if (Windows.find(window) == Windows.end()) {
 			PW("Selected window ['"+window+"'] was not found. CreateImGuiElements('" + id + "','" + window + "','" + type + "')","LW0043");
 		}
@@ -115,6 +204,10 @@ void SetImGuiElementStringValue(string id, string str) {
 	ImGuiElement_ IGE = GetElement(id);
 	IGE.stringvalue = str;
 	AcceptElement(IGE);
+	if (IGE.type == "list") {
+		ComboSelected[IGE.id] = 0;
+		ComboItems[IGE.id] = StringSplit(IGE.stringvalue, ',');
+	}
 }
 
 void SetImGuiElementConnect(string id, bool b) {
@@ -160,11 +253,7 @@ void RenderButton(ImGuiElement_ IGE, bool smallbutton, bool lb, bool rb) {
 	}
 }
 
-unordered_map<string, bool> Checkboxs;
 void RenderCheckbox(ImGuiElement_ IGE) {
-	if (Checkboxs.find(IGE.id) == Checkboxs.end()) {
-		Checkboxs[IGE.id] = false;
-	}
 	if (ImGui::Checkbox(StringToConstChar(IGE.text), &Checkboxs[IGE.id])) {
 		if (IGE.func != sol::nil && IGE.func.valid()) {
 			try {
@@ -178,15 +267,7 @@ void RenderCheckbox(ImGuiElement_ IGE) {
 	}
 }
 
-unordered_map<string, vector<string>> ComboItems;
-unordered_map<string, int> ComboSelected;
 void RenderCombo(ImGuiElement_ IGE) {
-	if (ComboSelected.find(IGE.id) == ComboSelected.end()) {
-		ComboSelected[IGE.id] = 0;
-	}
-	if (ComboItems.find(IGE.id) == ComboItems.end()) {
-		ComboItems[IGE.id] = StringSplit(IGE.stringvalue, ',');
-	}
 	if (ImGui::BeginCombo(StringToConstChar(IGE.text), ComboItems[IGE.id][ComboSelected[IGE.id]].c_str())) {
 		for (int i = 0; i < ComboItems[IGE.id].size(); i++) {
 			bool isSelected = (ComboSelected[IGE.id] == i);
@@ -212,11 +293,7 @@ void RenderCombo(ImGuiElement_ IGE) {
 	}
 }
 
-unordered_map<string, float> DragFloat;
 void RenderDragFloat(ImGuiElement_ IGE) {
-	if (DragFloat.find(IGE.id) == DragFloat.end()) {
-		DragFloat[IGE.id] = 0;
-	}
 	if (ImGui::DragFloat(StringToConstChar(IGE.text), &DragFloat[IGE.id], IGE.floatvalue, IGE.min, IGE.max, StringToConstChar("%." + to_string(IGE.intvalue) + "f"))) {
 		if (IGE.func != sol::nil && IGE.func.valid()) {
 			try {
@@ -230,11 +307,7 @@ void RenderDragFloat(ImGuiElement_ IGE) {
 	}
 }
 
-unordered_map<string, float*> DragFloat2;
 void RenderDragFloat2(ImGuiElement_ IGE) {
-	if (DragFloat2.find(IGE.id) == DragFloat2.end()) {
-		DragFloat2[IGE.id] = new float[2] {0, 0};
-	}
 	if (ImGui::DragFloat2(StringToConstChar(IGE.text), DragFloat2[IGE.id], IGE.floatvalue, IGE.min, IGE.max, StringToConstChar("%." + to_string(IGE.intvalue) + "f"))) {
 		if (IGE.func != sol::nil && IGE.func.valid()) {
 			try {
@@ -248,11 +321,7 @@ void RenderDragFloat2(ImGuiElement_ IGE) {
 	}
 }
 
-unordered_map<string, float*> DragFloat3;
 void RenderDragFloat3(ImGuiElement_ IGE) {
-	if (DragFloat3.find(IGE.id) == DragFloat3.end()) {
-		DragFloat3[IGE.id] = new float[3] {0, 0, 0};
-	}
 	if (ImGui::DragFloat3(StringToConstChar(IGE.text), DragFloat3[IGE.id], IGE.floatvalue, IGE.min, IGE.max, StringToConstChar("%." + to_string(IGE.intvalue) + "f"))) {
 		if (IGE.func != sol::nil && IGE.func.valid()) {
 			try {
@@ -266,11 +335,7 @@ void RenderDragFloat3(ImGuiElement_ IGE) {
 	}
 }
 
-unordered_map<string, float*> DragFloat4;
 void RenderDragFloat4(ImGuiElement_ IGE) {
-	if (DragFloat4.find(IGE.id) == DragFloat4.end()) {
-		DragFloat4[IGE.id] = new float[4] {0, 0, 0, 0};
-	}
 	if (ImGui::DragFloat4(StringToConstChar(IGE.text), DragFloat4[IGE.id], IGE.floatvalue, IGE.min, IGE.max, StringToConstChar("%." + to_string(IGE.intvalue) + "f"))) {
 		if (IGE.func != sol::nil && IGE.func.valid()) {
 			try {
@@ -284,11 +349,7 @@ void RenderDragFloat4(ImGuiElement_ IGE) {
 	}
 }
 
-unordered_map<string, float> SliderFloat;
 void RenderSliderFloat(ImGuiElement_ IGE) {
-	if (SliderFloat.find(IGE.id) == SliderFloat.end()) {
-		SliderFloat[IGE.id] = 0;
-	}
 	if (ImGui::SliderFloat(StringToConstChar(IGE.text), &SliderFloat[IGE.id], IGE.min, IGE.max, StringToConstChar("%." + to_string(IGE.intvalue) + "f"))) {
 		if (IGE.func != sol::nil && IGE.func.valid()) {
 			try {
@@ -302,11 +363,7 @@ void RenderSliderFloat(ImGuiElement_ IGE) {
 	}
 }
 
-unordered_map<string, float*> SliderFloat2;
 void RenderSliderFloat2(ImGuiElement_ IGE) {
-	if (SliderFloat2.find(IGE.id) == SliderFloat2.end()) {
-		SliderFloat2[IGE.id] = new float[2] {0, 0};
-	}
 	if (ImGui::SliderFloat2(StringToConstChar(IGE.text), SliderFloat2[IGE.id], IGE.min, IGE.max, StringToConstChar("%." + to_string(IGE.intvalue) + "f"))) {
 		if (IGE.func != sol::nil && IGE.func.valid()) {
 			try {
@@ -320,11 +377,7 @@ void RenderSliderFloat2(ImGuiElement_ IGE) {
 	}
 }
 
-unordered_map<string, float*> SliderFloat3;
 void RenderSliderFloat3(ImGuiElement_ IGE) {
-	if (SliderFloat3.find(IGE.id) == SliderFloat3.end()) {
-		SliderFloat3[IGE.id] = new float[3] {0, 0, 0};
-	}
 	if (ImGui::SliderFloat3(StringToConstChar(IGE.text), SliderFloat3[IGE.id], IGE.min, IGE.max, StringToConstChar("%." + to_string(IGE.intvalue) + "f"))) {
 		if (IGE.func != sol::nil && IGE.func.valid()) {
 			try {
@@ -338,11 +391,7 @@ void RenderSliderFloat3(ImGuiElement_ IGE) {
 	}
 }
 
-unordered_map<string, float*> SliderFloat4;
 void RenderSliderFloat4(ImGuiElement_ IGE) {
-	if (SliderFloat4.find(IGE.id) == SliderFloat4.end()) {
-		SliderFloat4[IGE.id] = new float[4] {0, 0, 0, 0};
-	}
 	if (ImGui::SliderFloat4(StringToConstChar(IGE.text), SliderFloat4[IGE.id], IGE.min, IGE.max, StringToConstChar("%." + to_string(IGE.intvalue) + "f"))) {
 		if (IGE.func != sol::nil && IGE.func.valid()) {
 			try {
@@ -356,12 +405,7 @@ void RenderSliderFloat4(ImGuiElement_ IGE) {
 	}
 }
 
-unordered_map<string, string> InputText;
 void RenderInputText(ImGuiElement_ IGE) {
-	if (InputText.find(IGE.id) == InputText.end()) {
-		InputText[IGE.id] = "";
-	}
-
 	char buffer[256];
 	strncpy(buffer, InputText[IGE.id].c_str(), sizeof(buffer));
 	if (ImGui::InputText(StringToConstChar(IGE.text), buffer, sizeof(buffer))) {
@@ -378,15 +422,48 @@ void RenderInputText(ImGuiElement_ IGE) {
 	}
 }
 
-unordered_map<string, string> InputTextM;
-void RenderInputTextM(ImGuiElement_ IGE) {
-	if (InputTextM.find(IGE.id) == InputTextM.end()) {
-		InputTextM[IGE.id] = "";
+void RenderInputText2(ImGuiElement_ IGE) {
+	float width = ImGui::GetWindowSize().x / 3.1;
+	char buffer[256];
+	strncpy(buffer, InputText2[IGE.id][0].c_str(), sizeof(buffer));
+	ImGui::SetNextItemWidth(width);
+	if (ImGui::InputText("", buffer, sizeof(buffer))) {
+		InputText2[IGE.id][0] = buffer;
+		if (IGE.func != sol::nil && IGE.func.valid()) {
+			try {
+				IGE.func(InputText2[IGE.id][0], InputText2[IGE.id][1], true);
+			}
+			catch (const sol::error& e) {
+				std::string what = e.what();
+				PE(what, "IGLUA");
+			}
+		}
 	}
+	ImGui::SameLine();
+	ImGui::SetNextItemWidth(width);
+	ImGui::PushID(imguielementid);
+	imguielementid++;
+	char buffer2[256];
+	strncpy(buffer2, InputText2[IGE.id][1].c_str(), sizeof(buffer2));
+	if (ImGui::InputText(StringToConstChar(IGE.text), buffer2, sizeof(buffer2))) {
+		InputText2[IGE.id][1] = buffer2;
+		if (IGE.func != sol::nil && IGE.func.valid()) {
+			try {
+				IGE.func(InputText2[IGE.id][0], InputText2[IGE.id][1], false);
+			}
+			catch (const sol::error& e) {
+				std::string what = e.what();
+				PE(what, "IGLUA");
+			}
+		}
+	}
+	ImGui::PopID();
+}
 
+void RenderInputTextM(ImGuiElement_ IGE) {
 	char buffer[1024];
 	strncpy(buffer, InputTextM[IGE.id].c_str(), sizeof(buffer));
-	if (ImGui::InputTextMultiline(StringToConstChar(IGE.text), buffer, sizeof(buffer), ImVec2(200, 100))) {
+	if (ImGui::InputTextMultiline(StringToConstChar(IGE.text), buffer, sizeof(buffer), ImVec2(ImGui::GetWindowSize().x / 1.55 , 100))) {
 		InputTextM[IGE.id] = buffer;
 		if (IGE.func != sol::nil && IGE.func.valid()) {
 			try {
@@ -400,7 +477,6 @@ void RenderInputTextM(ImGuiElement_ IGE) {
 	}
 }
 
-unordered_map<string, float*> EditRGB;
 void RenderEditRGB(ImGuiElement_ IGE) {
 	if (EditRGB.find(IGE.id) == EditRGB.end()) {
 		EditRGB[IGE.id] = new float[3] {1, 1, 1};
@@ -419,7 +495,6 @@ void RenderEditRGB(ImGuiElement_ IGE) {
 	}
 }
 
-unordered_map<string, float*> EditRGBA;
 void RenderEditRGBA(ImGuiElement_ IGE) {
 	if (EditRGBA.find(IGE.id) == EditRGBA.end()) {
 		EditRGBA[IGE.id] = new float[4] {1, 1, 1, 1};
@@ -438,7 +513,6 @@ void RenderEditRGBA(ImGuiElement_ IGE) {
 	}
 }
 
-unordered_map<string, float*> EditRGBE;
 void RenderEditRGBExtended(ImGuiElement_ IGE) {
 	if (EditRGBE.find(IGE.id) == EditRGBE.end()) {
 		EditRGBE[IGE.id] = new float[3] {1, 1, 1};
@@ -457,7 +531,6 @@ void RenderEditRGBExtended(ImGuiElement_ IGE) {
 	}
 }
 
-unordered_map<string, float*> EditRGBAE;
 void RenderEditRGBAExtended(ImGuiElement_ IGE) {
 	if (EditRGBAE.find(IGE.id) == EditRGBAE.end()) {
 		EditRGBAE[IGE.id] = new float[4] {1, 1, 1, 1};
@@ -476,7 +549,165 @@ void RenderEditRGBAExtended(ImGuiElement_ IGE) {
 	}
 }
 
-float color[3] = { 1,0,0 };
+void SetImGuiElementValue(string id, vector<variant<string, double, bool, l_Color>> val1, vector<variant<string, double, bool, l_Color>> val2, vector<variant<string, double, bool, l_Color>> val3, vector<variant<string, double, bool, l_Color>> val4) {
+	ImGuiElement_ el = GetElement(id);
+	if (el.id != ErrorElement) {
+		string str = get<string>(val1[0]);
+		string str2 = get<string>(val2[0]);
+		string str3 = get<string>(val3[0]);
+		string str4 = get<string>(val4[0]);
+		double num = get<double>(val1[1]);
+		double num2 = get<double>(val2[1]);
+		double num3 = get<double>(val3[1]);
+		double num4 = get<double>(val4[1]);
+		bool bol = get<bool>(val1[2]);
+		bool bol2 = get<bool>(val2[2]);
+		bool bol3 = get<bool>(val3[2]);
+		bool bol4 = get<bool>(val4[2]);
+		l_Color col = get<l_Color>(val1[3]);
+		l_Color col2 = get<l_Color>(val2[3]);
+		l_Color col3 = get<l_Color>(val3[3]);
+		l_Color col4 = get<l_Color>(val4[3]);
+
+		if (el.type == "checkbox") {
+			Checkboxs[el.id] = bol;
+		}
+		else if (el.type == "list") {
+			auto it = find(ComboItems[el.id].begin(), ComboItems[el.id].end(), str);
+			if (it != ComboItems[el.id].end()) {
+				ComboSelected[el.id] = distance(ComboItems[el.id].begin(), it);
+			}
+			else {
+				PE("Not found item ['"+str+"'] in list! SetImGuiElementValue('"+id+"','"+str+"')","L0048");
+			}
+		}
+		else if (el.type == "drag number") {
+			DragFloat[el.id] = num;
+		}
+		else if (el.type == "drag number 2") {
+			DragFloat2[el.id][0] = num;
+			DragFloat2[el.id][1] = num2;
+		}
+		else if (el.type == "drag number 3") {
+			DragFloat3[el.id][0] = num;
+			DragFloat3[el.id][1] = num2;
+			DragFloat3[el.id][2] = num3;
+		}
+		else if (el.type == "drag number 4") {
+			DragFloat4[el.id][0] = num;
+			DragFloat4[el.id][1] = num2;
+			DragFloat4[el.id][2] = num3;
+			DragFloat4[el.id][3] = num4;
+		}
+		else if (el.type == "slider number") {
+			SliderFloat[el.id] = num;
+		}
+		else if (el.type == "slider number 2") {
+			SliderFloat2[el.id][0] = num;
+			SliderFloat2[el.id][1] = num2;
+		}
+		else if (el.type == "slider number 3") {
+			SliderFloat3[el.id][0] = num;
+			SliderFloat3[el.id][1] = num2;
+			SliderFloat3[el.id][2] = num3;
+		}
+		else if (el.type == "slider number 4") {
+			SliderFloat4[el.id][0] = num;
+			SliderFloat4[el.id][1] = num2;
+			SliderFloat4[el.id][2] = num3;
+			SliderFloat4[el.id][3] = num4;
+		}
+		else if (el.type == "input text") {
+			InputText[el.id] = str;
+		}
+		else if (el.type == "input text 2") {
+			InputText2[el.id][0] = str;
+			InputText2[el.id][1] = str2;
+		}
+		else if (el.type == "input text multiline") {
+			InputTextM[el.id] = str;
+		}
+		else if (el.type == "edit rgb") {
+			EditRGB[el.id] = new float[3] {(float)col.r / 255, (float)col.g / 255, (float)col.b / 255};
+		}
+		else if (el.type == "edit rgb extended") {
+			EditRGBE[el.id] = new float[3] {(float)col.r / 255, (float)col.g / 255, (float)col.b / 255};
+		}
+		else if (el.type == "edit rgba") {
+			EditRGBA[el.id] = new float[4] {(float)col.r / 255, (float)col.g / 255, (float)col.b / 255, (float)col.a / 255};
+		}
+		else if (el.type == "edit rgba extended") {
+			EditRGBAE[el.id] = new float[4] {(float)col.r / 255, (float)col.g / 255, (float)col.b / 255, (float)col.a / 255};
+		}
+		else {
+			PE("ImGui Element ['"+id+"'] type ['"+el.type+"'] don't accept values! SetImGuiElementValue('"+id+"','"+str+"')","L0016");
+		}
+	}
+}
+
+variant<string, vector<string>, double,vector<double>,bool,l_Color> GetImGuiElementValue(string id) {
+	ImGuiElement_ el = GetElement(id);
+
+	if (el.id != ErrorElement) {
+		if (el.type == "checkbox") {
+			return variant<string, vector<string>, double, vector<double>, bool, l_Color>((bool)Checkboxs[el.id]);
+		}
+		else if (el.type == "list") {
+			return variant<string, vector<string>, double, vector<double>, bool, l_Color>((string)ComboItems[el.id][ComboSelected[el.id]]);
+		}
+		else if (el.type == "drag number") {
+			return variant<string, vector<string>, double, vector<double>, bool, l_Color>((double)DragFloat[el.id]);
+		}
+		else if (el.type == "drag number 2") {
+			return variant<string, vector<string>, double, vector<double>, bool, l_Color>(vector<double>{ DragFloat2[el.id][0], DragFloat2[el.id][1]});
+		}
+		else if (el.type == "drag number 3") {
+			return variant<string, vector<string>, double, vector<double>, bool, l_Color>(vector<double>{ DragFloat3[el.id][0], DragFloat3[el.id][1], DragFloat3[el.id][2]});
+		}
+		else if (el.type == "drag number 4") {
+			return variant<string, vector<string>, double, vector<double>, bool, l_Color>(vector<double>{ DragFloat4[el.id][0], DragFloat4[el.id][1], DragFloat4[el.id][2], DragFloat4[el.id][3]});
+		}
+		else if (el.type == "slider number") {
+			return variant<string, vector<string>, double, vector<double>, bool, l_Color>((double)SliderFloat[el.id]);
+		}
+		else if (el.type == "slider number 2") {
+			return variant<string, vector<string>, double, vector<double>, bool, l_Color>(vector<double>{ SliderFloat2[el.id][0], SliderFloat2[el.id][1]});
+		}
+		else if (el.type == "slider number 3") {
+			return variant<string, vector<string>, double, vector<double>, bool, l_Color>(vector<double>{ SliderFloat3[el.id][0], SliderFloat3[el.id][1], SliderFloat3[el.id][2]});
+		}
+		else if (el.type == "slider number 4") {
+			return variant<string, vector<string>, double, vector<double>, bool, l_Color>(vector<double>{ SliderFloat4[el.id][0], SliderFloat4[el.id][1], SliderFloat4[el.id][2], SliderFloat4[el.id][3]});
+		}
+		else if (el.type == "input text") {
+			return variant<string, vector<string>, double, vector<double>, bool, l_Color>((string)InputText[el.id]);
+		}
+		else if (el.type == "input text 2") {
+			return variant<string, vector<string>, double, vector<double>, bool, l_Color>(vector<string>{ InputText2[el.id][0], InputText2[el.id][1] });
+		}
+		else if (el.type == "input text multiline") {
+			return variant<string, vector<string>, double, vector<double>, bool, l_Color>((string)InputTextM[el.id]);
+		}
+		else if (el.type == "edit rgb") {
+			return variant<string, vector<string>, double, vector<double>, bool, l_Color>(l_Color((int)(EditRGB[el.id][0] * 255), (int)(EditRGB[el.id][1] * 255), (int)(EditRGB[el.id][2] * 255)));
+		}
+		else if (el.type == "edit rgb extended") {
+			return variant<string, vector<string>, double, vector<double>, bool, l_Color>(l_Color((int)(EditRGBE[el.id][0] * 255), (int)(EditRGBE[el.id][1] * 255), (int)(EditRGBE[el.id][2] * 255)));
+		}
+		else if (el.type == "edit rgba") {
+			return variant<string, vector<string>, double, vector<double>, bool, l_Color>(l_Color((int)(EditRGBA[el.id][0] * 255), (int)(EditRGBA[el.id][1] * 255), (int)(EditRGBA[el.id][2] * 255), (int)(EditRGBA[el.id][3] * 255)));
+		}
+		else if (el.type == "edit rgba extended") {
+			return variant<string, vector<string>, double, vector<double>, bool, l_Color>(l_Color((int)(EditRGBAE[el.id][0] * 255), (int)(EditRGBAE[el.id][1] * 255), (int)(EditRGBAE[el.id][2] * 255), (int)(EditRGBAE[el.id][3] * 255)));
+		}
+		else {
+			PE("ImGui Element ['" + id + "'] type [" + el.type + "] don't accept values! GetImGuiElementValue('" + id + "')", "L0045");
+			return variant<string, vector<string>, double, vector<double>, bool, l_Color>("");
+		}
+	}
+	return variant<string, vector<string>, double, vector<double>, bool, l_Color>("Epic fail... error");
+}
+
 void RenderWindow(ImGuiWindow_ IGW) {
 	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
 	ImGui::Begin(StringToConstChar(IGW.title),NULL, ImGuiWindowFlags_NoSavedSettings);
@@ -485,6 +716,9 @@ void RenderWindow(ImGuiWindow_ IGW) {
 		if (el.windowid == IGW.id) {
 			string type = el.type;
 			ImGuiStyle& style = ImGui::GetStyle();
+
+			ImGui::PushID(imguielementid);
+			imguielementid++;
 			if (el.sameline) {
 				ImGui::SameLine(0, style.ItemInnerSpacing.x);
 			}
@@ -530,6 +764,9 @@ void RenderWindow(ImGuiWindow_ IGW) {
 			else if (type == "input text") {
 				RenderInputText(el);
 			}
+			else if (type == "input text 2") {
+				RenderInputText2(el);
+			}
 			else if (type == "input text multiline") {
 				RenderInputTextM(el);
 			}
@@ -562,6 +799,8 @@ void RenderWindow(ImGuiWindow_ IGW) {
 					ImGui::SetTooltip(StringToConstChar(el.tooltip));
 				}
 			}
+
+			ImGui::PopID();
 		}
 	}
 	ImGui::End();
@@ -631,6 +870,7 @@ void ImGuiRender(string windowid) {
 	ImGuiIO& io = ImGui::GetIO();
 	io.FontGlobalScale = globalfontsize;
 
+	imguielementid = 0;
 	for (const auto& pair : Windows) {
 		if (pair.second.active) {
 			RenderWindow(pair.second);

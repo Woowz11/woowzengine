@@ -49,7 +49,7 @@ public:
 			text = "New Slider Number";
 			intvalue = 2;
 		}
-		else if (type == "input text" || type == "input text multiline") {
+		else if (type == "input text" || type == "input text 2" || type == "input text multiline") {
 			text = "New Input Text";
 		}
 		else if (type == "edit rgb" || type == "edit rgba" || type == "edit rgb extended" || type == "edit rgba extended") {
