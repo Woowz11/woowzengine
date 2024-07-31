@@ -44,6 +44,7 @@
 using namespace std;
 
 sol::state lua{};
+float PI = 3.14159265358979323846;
 
 /*Зона игры*/
 
@@ -1775,6 +1776,26 @@ string l_RemoveMagicalNumber(float f) {
 	return drob;
 }
 
+/*С одинаковой скоростью синус*/
+float l_MSin(float f) {
+	return ((fabs(fmod((PI / 2 - f) / 2, PI) / (PI / 2) - 1) - 0.5) * 2);
+}
+
+/*С одинаковой скоростью положительный синус*/
+float l_DMSin(float f) {
+	return fabs(fmod((PI / 2 - f) / 2, PI) / (PI / 2) - 1);
+}
+
+/*С одинаковой скоростью косинус*/
+float l_MCos(float f) {
+	return ((fabs(fmod(f / 2, PI) / (PI / 2) - 1) - 0.5) * 2);
+}
+
+/*С одинаковой скоростью положительный косинус*/
+float l_DMCos(float f) {
+	return fabs(fmod(f / 2, PI) / (PI / 2) - 1);
+}
+
 /*Зона woowzengine*/
 
 l_Color ObjToColor(sol::object obj, l_Color ifnil, bool ingoreerror) {
@@ -2111,7 +2132,7 @@ void LuaCompile() {
 	);
 
 	/*Константы*/
-	lua["Pi"] = sol::as_table(3.14159265358979323846);
+	lua["Pi"] = sol::as_table(PI);
 	lua["Sqrt2"] = sol::as_table(1.41421356237309504880);
 	lua["E"] = sol::as_table(2.71828182845904523536);
 	lua["Log2E"] = sol::as_table(1.44269504088896340736);
@@ -2129,6 +2150,7 @@ void LuaCompile() {
 	lua["Version"] = sol::as_table(GetGameInfo("Version"));
 	lua["GameName"] = sol::as_table(GetGameInfo("Name"));
 	lua["Author"] = sol::as_table(GetGameInfo("Author"));
+	lua["EngineAuthor"] = sol::as_table("Woowz11");
 	lua["SafeMode"] = sol::as_table(StringToBool(GetSettingsInfo("SafeMode")));
 	lua["ConsoleEnabled"] = sol::as_table(StringToBool(GetSettingsInfo("Console")));
 	lua["DebugMode"] = sol::as_table(StringToBool(GetSessionInfo("Debug")));
@@ -2410,6 +2432,10 @@ void LuaCompile() {
 	lua.set_function("GetImGuiWindowVisible", &l_WIP);
 
 	lua.set_function("RemoveMagicalNumber", &l_RemoveMagicalNumber);
+	lua.set_function("MSin", &l_MSin);
+	lua.set_function("DMSin", &l_DMSin);
+	lua.set_function("MCos", &l_MCos);
+	lua.set_function("DMCos", &l_DMCos);
 
 	P("LUA", "Lua functions and etc. are loaded!");
 	P("LUA", "Start '"+ GetEngineInfo("StartScript") +".lua' script...");
