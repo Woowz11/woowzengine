@@ -22,13 +22,13 @@ string EngineVersion = "0.0.3";
 bool DebugVersion = false;
 
 string EngineName = "woowzengine.exe";
-string WoowzEnginePosition = "F:\\woowzengine\\WoowzEngine\\Build\\woowzengine\\Release\\"+EngineName;
+string WoowzEnginePosition = "F:\\woowzengine\\woowzengine\\Build\\woowzengine\\Release\\"+EngineName;
 string WoowzGamePosition = "F:\\woowzengine\\example_game\\"+EngineName;
 
 int main(int argc, char** argv)
 {
     ::ShowWindow(::GetConsoleWindow(), (DebugVersion? SW_SHOW : SW_HIDE));
-    if (argv[0] == WoowzEnginePosition) {
+    if (Lowercase(argv[0]) == Lowercase(WoowzEnginePosition)) {
         argv[0] = StringToCharArray(WoowzGamePosition);
     }
 

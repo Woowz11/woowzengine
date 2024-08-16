@@ -175,14 +175,16 @@ unordered_map<int, wstring> Chars_Pos = {
 	{272,L"‣"},{273,L"◼"},{274,L"◾"},{275,L"●"},{276,L"▞"},{277,L"Ω"},{278,L"α"},{279,L"β"},{280,L"γ"},{281,L"δ"},{282,L"θ"},{283,L"♥"},{284,L"★"},{285,L"♀"},{286,L"♂"},{287,L"♫"},
 	{288,L"₣"},{289,L"ε"},{290,L"π"},{291,L"▌"},{292,L"▐"},{293,L"▀"},{294,L"▄"},{295,L"▖"},{296,L"▗"},{297,L"▘"},{298,L"▝"},{299,L"▙"},{300,L"▟"},{301,L"▛"},{302,L"▜"},{303,L"✉"},
 };
+int Chars_Pos_Size = 0;
 int GetCharsCount() {
-	return Chars_Pos.size();
+	Chars_Pos_Size = std::max_element(Chars_Pos.begin(), Chars_Pos.end())->first;
+	return Chars_Pos_Size;
 }
 
 string GetEngineChar(int i) {
 	int id = abs(i);
-	int count = floor((float)id / (float)Chars_Pos.size());
-	id = id - count * Chars_Pos.size();
+	int count = floor((float)id / (float)(Chars_Pos_Size+1));
+	id = id - count * (Chars_Pos_Size+1);
 	return WStringToString(Chars_Pos[id]);
 }
 
@@ -799,7 +801,6 @@ float lerp(float a, float b, float t) {
 	return a + t * (b - a);
 }
 
-float PI = 3.1415926535;
 float DegToRad(float deg) {
 	return deg * (PI / 180);
 }

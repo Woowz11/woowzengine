@@ -3,6 +3,7 @@
 #include <vector>
 #include "l_Color.h"
 
+const float PI = 3.14159265358979323846;
 
 const l_Color ErrorColor(255,0,255,254);
 

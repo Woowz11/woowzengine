@@ -1,5 +1,6 @@
 ﻿#pragma warning(disable : 4244)
 #pragma warning(disable : 4267)
+#pragma warning(disable : 4305)
 
 #define _CRT_SECURE_NO_WARNINGS
 
@@ -44,7 +45,6 @@
 using namespace std;
 
 sol::state lua{};
-float PI = 3.14159265358979323846;
 
 /*Зона игры*/
 
@@ -100,7 +100,7 @@ float l_Random(float min,float max) {
 
 /*Дробное число в целое*/
 int l_Round(float val) {
-	return FloatToInt(val);
+	return roundf(val);
 }
 
 /*Есть папка или файл в этой позиции*/
@@ -400,10 +400,10 @@ float l_Fma(float x,float y,float z) {
 /*Остаток от деления*/
 float l_Mod(float f, float f2) {
 	if (f2 == 0) {
-		PE("Second number cannot be = 0! Mod("+to_string(f) + ",0)", "L0039");
+		PE("Second number cannot be = 0! Mod("+to_string(f)+",0)", "L0039");
 		return 0;
 	}
-	return fmod(f, f2);
+	return (f-l_Round(f/f2)*f2);
 }
 
 /*Гиперболический синус*/
@@ -1777,23 +1777,23 @@ string l_RemoveMagicalNumber(float f) {
 }
 
 /*С одинаковой скоростью синус*/
-float l_MSin(float f) {
-	return ((fabs(fmod((PI / 2 - f) / 2, PI) / (PI / 2) - 1) - 0.5) * 2);
+float l_MSin(float x) {
+	return (l_Abs((l_Mod(((PI/2)-x)/2,PI)/(PI/2))-1)-0.5)*2;
 }
 
 /*С одинаковой скоростью положительный синус*/
-float l_DMSin(float f) {
-	return fabs(fmod((PI / 2 - f) / 2, PI) / (PI / 2) - 1);
+float l_DMSin(float x) {
+	return l_Abs((l_Mod(((PI/2)-x)/2,PI)/(PI/2))-1);
 }
 
 /*С одинаковой скоростью косинус*/
-float l_MCos(float f) {
-	return ((fabs(fmod(f / 2, PI) / (PI / 2) - 1) - 0.5) * 2);
+float l_MCos(float x) {
+	return (l_Abs((l_Mod(x/2,PI)/(PI/2))-1)-0.5)*2;
 }
 
 /*С одинаковой скоростью положительный косинус*/
-float l_DMCos(float f) {
-	return fabs(fmod(f / 2, PI) / (PI / 2) - 1);
+float l_DMCos(float x) {
+	return l_Abs((l_Mod(x/2,PI)/(PI/2))-1);
 }
 
 /*Зона woowzengine*/
@@ -2150,7 +2150,7 @@ void LuaCompile() {
 	lua["Version"] = sol::as_table(GetGameInfo("Version"));
 	lua["GameName"] = sol::as_table(GetGameInfo("Name"));
 	lua["Author"] = sol::as_table(GetGameInfo("Author"));
-	lua["EngineAuthor"] = sol::as_table("Woowz11");
+	lua["EngineAuthor"] = sol::as_table(StringToConstChar("Woowz11"));
 	lua["SafeMode"] = sol::as_table(StringToBool(GetSettingsInfo("SafeMode")));
 	lua["ConsoleEnabled"] = sol::as_table(StringToBool(GetSettingsInfo("Console")));
 	lua["DebugMode"] = sol::as_table(StringToBool(GetSessionInfo("Debug")));
@@ -2165,7 +2165,8 @@ void LuaCompile() {
 	lua["Orange"] = sol::as_table(l_Color(255, 128, 0, 255));
 	lua["Purple"] = sol::as_table(l_Color(255, 0, 255, 255));
 	lua["Cyan"] = sol::as_table(l_Color(0, 255, 255, 255));
-	lua["Transparent"] = sol::as_table(l_Color(0, 0, 0, 0));
+	lua["Transparent"] = sol::as_table(l_Color(255, 255, 255, 0));
+	lua["TrueTransparent"] = sol::as_table(l_Color(0, 0, 0, 0));
 	lua["Up"] = sol::as_table(l_Vector2(0, 1));
 	lua["Down"] = sol::as_table(l_Vector2(0, -1));
 	lua["Right"] = sol::as_table(l_Vector2(1, 0));
